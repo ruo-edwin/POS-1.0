@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View / Update Stocks</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      padding: 40px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    button {
+      padding: 6px 10px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>View / Update Stocks</h1>
+
+  <a href="/add_product.html">
+    <button style="margin-bottom: 20px;">➕ Add New Product</button>
+  </a>
+
+  <table id="stockTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Quantity</th>
+        <th>Price (Ksh)</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <p id="message"></p>
+
+  <a href="index.html">⬅ Back to Home</a>
+
+  <script>
+    // Fetch and display all products
+    async function fetchStocks() {
+      try {
+        const res = await fetch("http://127.0.0.1:8001/products");
+        const data = await res.json();
+        const tbody = document.querySelector("#stockTable tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(product => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${product.id}</td>
+            <td>${product.name}</td>
+            <td><input type="number" value="${product.quantity}" id="qty-${product.id}" style="width:60px"></td>
+            <td><input type="number" step="0.01" value="${product.price}" id="price-${product.id}" style="width:80px"></td>
+            <td><button onclick="updateProduct(${product.id})">Update</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        document.getElementById("message").textContent = "⚠️ Failed to load products.";
+        document.getElementById("message").style.color = "red";
+      }
+    }
+
+    // Update product details
+    async function updateProduct(id) {
+      const quantity = parseInt(document.getElementById(`qty-${id}`).value);
+      const price = parseFloat(document.getElementById(`price-${id}`).value);
+
+      try {
+        const response = await fetch(`http://127.0.0.1:8001/products/update_stock/${id}`, {
+          method: "PUT",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ quantity, price })
+        });
+
+        const result = await response.json();
+        const msg = document.getElementById("message");
+
+        if (response.ok) {
+          msg.style.color = "green";
+          msg.textContent = result.message || "✅ Product updated successfully!";
+        } else {
+          msg.style.color = "red";
+          msg.textContent = result.detail || "❌ Failed to update product.";
+        }
+
+        fetchStocks(); // Refresh table
+      } catch (err) {
+        const msg = document.getElementById("message");
+        msg.style.color = "red";
+        msg.textContent = "⚠️ Network error. Please try again.";
+      }
+    }
+
+    fetchStocks(); // Load products on page load
+  </script>
+</body>
+</html>

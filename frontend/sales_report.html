@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      width: 80%;
+      margin: 30px auto;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    tfoot {
+      background-color: #eee;
+      font-weight: bold;
+    }
+    a {
+      text-decoration: none;
+      color: #4CAF50;
+      display: inline-block;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sales Report</h1>
+
+  <table id="salesTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Sale ID</th>
+        <th>Product Name</th>
+        <th>Quantity Sold</th>
+        <th>Total Price (Ksh)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4">Total Revenue</td>
+        <td id="totalRevenue">0</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <a href="index.html">⬅ Back to Home</a>
+
+  <script>
+    const baseURL = "http://127.0.0.1:8001";
+
+    async function loadSales() {
+      const response = await fetch(`${baseURL}/sales/get_sales`);
+      const sales = await response.json();
+
+      const tableBody = document.querySelector("#salesTable tbody");
+      const totalRevenueElem = document.getElementById("totalRevenue");
+      let totalRevenue = 0;
+
+      tableBody.innerHTML = "";
+
+      sales.forEach(sale => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${new Date(sale.date).toLocaleString()}</td>
+          <td>${sale.id}</td>
+          <td>${sale.product_name}</td>
+          <td>${sale.quantity}</td>
+          <td>${sale.total_price.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
+        totalRevenue += sale.total_price;
+      });
+
+      totalRevenueElem.textContent = totalRevenue.toFixed(2);
+    }
+
+    loadSales();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Super Admin Dashboard</title>
+  <style>
+    body { font-family: Arial; background: #f7f7f7; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #4CAF50; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Super Admin Dashboard</h1>
+  <table id="businessTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Business Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const baseURL = "http://127.0.0.1:8001";
+
+    async function loadBusinesses() {
+      const res = await fetch(`${baseURL}/auth/all_businesses/`);
+      const data = await res.json();
+
+      const tbody = document.querySelector("#businessTable tbody");
+      tbody.innerHTML = data.map(b => `
+        <tr>
+          <td>${b.id}</td>
+          <td>${b.business_name}</td>
+          <td>${b.email}</td>
+          <td>${b.phone || '-'}</td>
+          <td>${new Date(b.created_at).toLocaleString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    loadBusinesses();
+  </script>
+</body>
+</html>
