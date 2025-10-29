@@ -3,11 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.db import engine, Base
 import backend.models  # Ensure models are imported
 from routers import auth, product, sales
-from fastapi.templating import Jinja2Templates
+
 
 
 app = FastAPI()
-templates = Jinja2Templates(directory="frontend")
+
 
 # Create database tables
 backend.models.Base.metadata.create_all(bind=engine)

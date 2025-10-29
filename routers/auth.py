@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from datetime import datetime
 from backend.db import SessionLocal
 from backend import models
-from backend.main import templates
+from backend.config import templates
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
