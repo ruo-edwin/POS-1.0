@@ -5,7 +5,12 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
+print("DEBUG: DATABASE_URL =", DATABASE_URL)
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is missing or not set.")
+
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
