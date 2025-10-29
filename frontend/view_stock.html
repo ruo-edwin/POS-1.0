@@ -85,7 +85,7 @@
     // Fetch and display all products
     async function fetchStocks() {
       try {
-        const res = await fetch("http://127.0.0.1:8001/products");
+        const res = await fetch("https://pos-10-production.up.railway.app/products");
         const data = await res.json();
         const tbody = document.querySelector("#stockTable tbody");
         tbody.innerHTML = "";
@@ -113,7 +113,7 @@
       const price = parseFloat(document.getElementById(`price-${id}`).value);
 
       try {
-        const response = await fetch(`http://127.0.0.1:8001/products/update_stock/${id}`, {
+        const response = await fetch(`https://pos-10-production.up.railway.app/products/update_stock/${id}`, {
           method: "PUT",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({ quantity, price })

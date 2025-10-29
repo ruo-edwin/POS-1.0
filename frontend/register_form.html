@@ -171,7 +171,7 @@
       formData.append("password", password);
 
       try {
-        const response = await fetch("http://127.0.0.1:8001/auth/register_form/", {
+        const response = await fetch("https://pos-10-production.up.railway.app/auth/register_form/", {
           method: "POST",
           body: formData
         });
