@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Body, HTMLResponse, Request
+from fastapi import APIRouter, Depends, HTTPException, Form, Body, Request
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from backend.db import SessionLocal
 from backend import models
-from backend.main import templates
+from backend.config import templates
 
 router= APIRouter( prefix="/products", tags=["products"])
 

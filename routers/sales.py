@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Body, Request, HTMLResponse
+from fastapi import APIRouter, Depends, HTTPException, Form, Body, Request
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from backend.db import SessionLocal
 from backend import models
 from pydantic import BaseModel
 from typing import List
-from backend.main import templates
+from backend.config import templates
 router = APIRouter(prefix="/sales", tags=["sales"])
 
 
