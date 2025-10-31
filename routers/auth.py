@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from backend import models
 from backend.db import SessionLocal
 from backend.auth_utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
-from backend.config import templates
+from backend.config import templates  # keep this for register/login forms
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -19,8 +19,8 @@ def get_db():
     finally:
         db.close()
 
-# ✅ Dashboard (protected)
-@router.get("/dashboard", response_class=HTMLResponse)
+# ✅ Dashboard (protected) - redirect to actual URL
+@router.get("/dashboard")
 def get_dashboard(request: Request):
     token = request.cookies.get("access_token")
     if not token:
@@ -29,17 +29,12 @@ def get_dashboard(request: Request):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("username")
-        business_name = payload.get("business_name", "Unknown")
-        last_login = payload.get("last_login", "N/A")
     except JWTError:
         return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
 
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "username": username,
-        "business_name": business_name,
-        "last_login": last_login
-    })
+    # Redirect to your actual frontend dashboard
+    return RedirectResponse(url="https://pos-10-production-frontend.up.railway.app/dashboard")
+
 
 # ✅ Registration Page
 @router.get("/register", response_class=HTMLResponse)
