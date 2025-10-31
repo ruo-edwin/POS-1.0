@@ -5,12 +5,19 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from backend import models
-from backend.db import SessionLocal, get_db
+from backend.db import SessionLocal
 from backend.auth_utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from backend.config import templates
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # ✅ Dashboard (protected)
 @router.get("/dashboard", response_class=HTMLResponse)
