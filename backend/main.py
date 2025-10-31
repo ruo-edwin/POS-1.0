@@ -8,6 +8,11 @@ from backend.auth_utils import SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 app = FastAPI()
 
+
+origins = [
+    "https://pos-10-production-frontend.up.railway.app",
+    "http://localhost:3000",  # if testing locally
+]
 @app.middleware("http")
 async def enforce_https(request: Request, call_next):
     # Check if the request came through HTTP instead of HTTPS
