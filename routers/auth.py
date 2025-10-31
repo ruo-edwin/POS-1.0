@@ -1,43 +1,51 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from datetime import datetime
-from backend.db import SessionLocal
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
 from backend import models
+from backend.db import SessionLocal, get_db
+from backend.auth_utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from backend.config import templates
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
-
-# 🔐 Password hashing setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
-# 📦 DB dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
+# ✅ Dashboard (protected)
 @router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+def get_dashboard(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
 
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("username")
+        business_name = payload.get("business_name", "Unknown")
+        last_login = payload.get("last_login", "N/A")
+    except JWTError:
+        return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
+
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request,
+        "username": username,
+        "business_name": business_name,
+        "last_login": last_login
+    })
+
+# ✅ Registration Page
 @router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
     return templates.TemplateResponse("register_form.html", {"request": request})
 
-
+# ✅ Login Page
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-
-# ✅ 1️⃣ Register a new business + admin user
-@router.post("/register_form/")
+# ✅ Register Business & Admin User
+@router.post("/register_form")
 def register_business(
     business_name: str = Form(...),
     username: str = Form(...),
@@ -47,19 +55,12 @@ def register_business(
     db: Session = Depends(get_db)
 ):
     try:
-         # ✅ Clean the password before hashing
         clean_password = password.strip()
-      
-
-        # Check if email or username already exists
-        existing_business = db.query(models.Business).filter(models.Business.email == email).first()
-        existing_user = db.query(models.User).filter(models.User.username == username).first()
-        if existing_business:
+        if db.query(models.Business).filter(models.Business.email == email).first():
             raise HTTPException(status_code=400, detail="Email already registered")
-        if existing_user:
+        if db.query(models.User).filter(models.User.username == username).first():
             raise HTTPException(status_code=400, detail="Username already taken")
 
-        # Create business
         new_business = models.Business(
             business_name=business_name,
             username=username,
@@ -70,13 +71,9 @@ def register_business(
         db.add(new_business)
         db.commit()
         db.refresh(new_business)
-
         new_business.business_code = f"RP{new_business.id}"
         db.commit()
-        db.refresh(new_business)
 
-
-        # Create admin user for this business
         admin_user = models.User(
             business_id=new_business.id,
             username=username,
@@ -87,61 +84,51 @@ def register_business(
         )
         db.add(admin_user)
         db.commit()
-        db.refresh(admin_user)
 
-        return {
-            "message": "✅ Business and admin user registered successfully!",
-            "business_id": new_business.id,
-            "business_name": new_business.business_name,
-            "username": admin_user.username,
-            "role": admin_user.role
-        }
-
+        return {"message": "✅ Business and admin user registered successfully!"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
-
-
-# ✅ 2️⃣ Login route
-@router.post("/login_form/")
-def login_user(
-    username: str = Form(...),
-    password: str = Form(...),
-    db: Session = Depends(get_db)
-):
+# ✅ Login & Set JWT Cookie
+@router.post("/login_form")
+def login_user(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     try:
-        # Check if user exists
         user = db.query(models.User).filter(models.User.username == username).first()
-        if not user:
+        if not user or not pwd_context.verify(password, user.password_hash):
             raise HTTPException(status_code=400, detail="Invalid username or password")
 
-        # Verify password
-        if not pwd_context.verify(password, user.password_hash):
-            raise HTTPException(status_code=400, detail="Invalid username or password")
-
-        # Update last login and status
         user.is_active = 1
         user.last_login = datetime.utcnow()
         db.commit()
 
-        # Fetch the business info
-        business = db.query(models.Business).filter(models.Business.id == user.business_id).first()
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"user_id": user.id, "username": user.username, "business_id": user.business_id},
+            expires_delta=access_token_expires
+        )
 
-        return {
-            "message": f"✅ Welcome back, {user.username}!",
-            "username": user.username,
-            "business_name": business.business_name if business else None,
-            "business_id": user.business_id,
-            "role": user.role,
-            "last_login": user.last_login
-        }
+        response = RedirectResponse(
+            url="https://pos-10-production.up.railway.app/auth/dashboard",
+            status_code=303
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
+        return response
 
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
-    
-@router.get("all_businesses/")
-def get_all_businesses(db: Session = Depends(get_db)):
-    businesses = db.query(models.Business).all()
-    return businesses
+
+# ✅ Logout
+@router.get("/logout")
+def logout_user():
+    response = RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
+    response.delete_cookie("access_token")
+    return response

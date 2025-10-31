@@ -128,38 +128,39 @@
     </div>
   </div>
  <script>
-    async function login(e) {
-      e.preventDefault();
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+async function login(e) {
+  e.preventDefault();
 
-      const formData = new FormData();
-      formData.append("username", username);
-      formData.append("password", password);
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-      try {
-        const response = await fetch("https://pos-10-production.up.railway.app/auth/login_form/", {
-          method: "POST",
-          body: formData
-        });
+  const formData = new FormData();
+  formData.append("username", username);
+  formData.append("password", password);
 
-        const data = await response.json();
+  try {
+    const response = await fetch("https://pos-10-production.up.railway.app/auth/login_form", {
+      method: "POST",
+      body: formData
+    });
 
-        if (!response.ok) {
-          throw new Error(data.detail || "Login failed");
-        }
+    const data = await response.json();
 
-        // ✅ Save user session info (can be used later)
-        localStorage.setItem("business_id", data.business_id);
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("role", data.role);
-
-        alert(`✅ Welcome ${data.username}! Business: ${data.business_name}`);
-        window.location.href = "/index.html"; // redirect after success
-      } catch (error) {
-        alert("❌ " + error.message);
-      }
+    if (!response.ok) {
+      throw new Error(data.detail || "Login failed");
     }
-  </script>
+
+    // ✅ Save the JWT token and basic info
+    localStorage.setItem("token", data.access_token);
+    localStorage.setItem("token_type", data.token_type);
+    localStorage.setItem("username", username);
+
+    alert(`✅ Welcome ${username}!`);
+    window.location.href = "https://pos-10-production.up.railway.app/auth/dashboard"; // redirect after success
+  } catch (error) {
+    alert("❌ " + error.message);
+  }
+}
+</script>
 </body>
 </html>

@@ -37,6 +37,12 @@
       font-weight: 500;
       font-size: 18px;
       color: #6c757d;
+      margin-bottom: 10px;
+    }
+
+    .user-info {
+      font-size: 15px;
+      color: #6c757d;
       margin-bottom: 25px;
     }
 
@@ -66,6 +72,22 @@
       margin-top: 25px;
     }
 
+    .logout-btn {
+      margin-top: 25px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+      background-color: #b02a37;
+    }
+
     footer {
       margin-top: 30px;
       color: #888;
@@ -83,14 +105,22 @@
 <body>
   <div class="dashboard-container">
     <h1>SmartPOS Dashboard</h1>
-    <div class="biz-name">Business: <strong>Ruo Mart</strong></div>
+    <div class="biz-name">Business: <strong>{{ business_name }}</strong></div>
+    <div class="user-info">
+      Logged in as <strong>{{ username }}</strong><br>
+      Last login: {{ last_login }}
+    </div>
 
     <div class="menu">
-      <a href="https://pos-10-production.up.railway.app/sales/recordsale">💰 Sell Products</a>
-      <a href="https://pos-10-production.up.railway.app/products/addproduct">➕ Add New Product</a>
-      <a href="https://pos-10-production.up.railway.app/products/viewstocks">📦 View / Update Stock</a>
-      <a href="https://pos-10-production.up.railway.app/sales/salesreport">📊 Sales Reports</a>
+      <a href="/sales/recordsale">💰 Sell Products</a>
+      <a href="/products/addproduct">➕ Add New Product</a>
+      <a href="/products/viewstocks">📦 View / Update Stock</a>
+      <a href="/sales/salesreport">📊 Sales Reports</a>
     </div>
+
+    <form action="/auth/logout" method="post">
+      <button type="submit" class="logout-btn">🚪 Logout</button>
+    </form>
   </div>
 
   <footer>© 2025 SmartPOS – Simplifying Inventory & Sales Management</footer>

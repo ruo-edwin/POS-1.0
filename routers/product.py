@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from backend.db import SessionLocal
 from backend import models
 from backend.config import templates
+from backend.auth_utils import verify_token
 
-router= APIRouter( prefix="/products", tags=["products"])
+router= APIRouter( prefix="/products", tags=["products"], dependencies=[Depends(verify_token)]  )
 
 
 @router.get("/addproduct", response_class=HTMLResponse)
@@ -31,10 +32,11 @@ def add_product(
     name: str = Form(...),
     price: float = Form(...),
     quantity: int = Form(...),
+    current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
     try:
-        new_product = models.Product(name=name, price=price, quantity=quantity)
+        new_product = models.Product(name=name, price=price, quantity=quantity, business_id=current_user["business_id"])
         db.add(new_product)
         db.commit()
         db.refresh(new_product)
@@ -46,7 +48,7 @@ def add_product(
 
 # ✅ Get all products
 @router.get("/")
-def get_products(db: Session = Depends(get_db)):
+def get_products( current_use : dict= Depends(verify_token),db: Session = Depends(get_db)):
     products = db.query(models.Product).all()
     return products
 
@@ -54,8 +56,8 @@ def get_products(db: Session = Depends(get_db)):
 # ✅ Update stock quantity
 
 @router.put("/update_stock/{product_id}")
-def update_stock(product_id: int, data: dict = Body(...), db: Session = Depends(get_db)):
-    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+def update_stock(product_id: int, data: dict = Body(...),current_user: dict =Depends(verify_token), db: Session = Depends(get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id,models.Product.business_id ==current_user["business_id"]).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
