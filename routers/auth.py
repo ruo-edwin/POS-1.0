@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from backend import models
 from backend.db import SessionLocal
 from backend.auth_utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
-from backend.config import templates  # keep this for register/login forms
+from backend.config import templates
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -19,34 +19,32 @@ def get_db():
     finally:
         db.close()
 
-# ✅ Dashboard (protected) - redirect to actual URL
+# ✅ Dashboard redirect to frontend
 @router.get("/dashboard")
 def get_dashboard(request: Request):
     token = request.cookies.get("access_token")
     if not token:
         return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
-
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("username")
     except JWTError:
         return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
-
-    # Redirect to your actual frontend dashboard
+    
+    # Redirect to frontend dashboard
     return RedirectResponse(url="https://pos-10-production-frontend.up.railway.app/auth/dashboard")
 
-
-# ✅ Registration Page
+# ✅ Registration page
 @router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
     return templates.TemplateResponse("register_form.html", {"request": request})
 
-# ✅ Login Page
+# ✅ Login page
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-# ✅ Register Business & Admin User
+# ✅ Register business & admin
 @router.post("/register_form")
 def register_business(
     business_name: str = Form(...),
@@ -92,7 +90,7 @@ def register_business(
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
-# ✅ Login & Set JWT Cookie
+# ✅ Login & set JWT cookie (return JSON for fetch)
 @router.post("/login_form")
 def login_user(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     try:
@@ -110,10 +108,10 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
             expires_delta=access_token_expires
         )
 
-        response = RedirectResponse(
-            url="https://pos-10-production.up.railway.app/auth/dashboard",
-            status_code=303
-        )
+        response = JSONResponse({
+            "message": "Login successful",
+            "dashboard_url": "https://pos-10-production-frontend.up.railway.app/auth/dashboard"
+        })
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -123,7 +121,6 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
             max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
         return response
-
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
