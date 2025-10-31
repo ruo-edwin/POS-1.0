@@ -8,6 +8,17 @@ from backend.auth_utils import SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 app = FastAPI()
 
+@app.middleware("http")
+async def enforce_https(request: Request, call_next):
+    # Check if the request came through HTTP instead of HTTPS
+    proto = request.headers.get("x-forwarded-proto", "http")
+    if proto == "http":
+        # Redirect to HTTPS version of the same URL
+        https_url = request.url.replace(scheme="https")
+        return RedirectResponse(url=str(https_url))
+    
+    # Continue to the next middleware if already HTTPS
+    return await call_next(request)
 
 @app.middleware("http")
 async def redirect_or_json_on_unauthorized(request: Request, call_next):
