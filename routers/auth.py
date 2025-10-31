@@ -34,7 +34,7 @@ def get_dashboard(request: Request):
     except JWTError:
         return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
 
-    return templates.TemplateResponse("dashboard.html", {
+    return templates.TemplateResponse("index.html", {
         "request": request,
         "username": username,
         "business_name": business_name,
