@@ -33,7 +33,7 @@ def get_dashboard(request: Request):
         return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
 
     # Redirect to your actual frontend dashboard
-    return RedirectResponse(url="https://pos-10-production-frontend.up.railway.app/dashboard")
+    return RedirectResponse(url="https://pos-10-production-frontend.up.railway.app/auth/dashboard")
 
 
 # ✅ Registration Page
