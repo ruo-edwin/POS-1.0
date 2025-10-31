@@ -9,10 +9,7 @@ from jose import jwt, JWTError
 app = FastAPI()
 
 
-origins = [
-    "https://pos-10-production-frontend.up.railway.app",
-    "http://localhost:3000",  # if testing locally
-]
+
 @app.middleware("http")
 async def enforce_https(request: Request, call_next):
     # Check if the request came through HTTP instead of HTTPS
@@ -59,9 +56,14 @@ backend.models.Base.metadata.create_all(bind=engine)
 print("✅ Tables that will be created:", Base.metadata.tables.keys())
 
 # Allow frontend access (e.g. from local HTML files)
+
+origins = [
+    "https://pos-10-production-frontend.up.railway.app",
+    "http://localhost:3000",  # if testing locally
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict this later to your frontend domain
+    allow_origins= origins,  # You can restrict this later to your frontend domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
