@@ -110,7 +110,7 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
 
         response = JSONResponse({
             "message": "Login successful",
-            "dashboard_url": "https://pos-10-production-frontend.up.railway.app/auth/dashboard"
+            "dashboard_url": "https://pos-10-production-frontend.up.railway.app/index.html"
         })
         response.set_cookie(
             key="access_token",
