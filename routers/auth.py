@@ -109,10 +109,8 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
             expires_delta=access_token_expires
         )
 
-        response = JSONResponse({
-            "message": "Login successful",
-            "dashboard_url": "https://pos-10-production-frontend.up.railway.app/index.html"
-        })
+      
+        response = RedirectResponse(url="/auth/dashboard", status_code=302)
         response.set_cookie(
             key="access_token",
             value=access_token,
