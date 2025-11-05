@@ -33,7 +33,7 @@ def get_dashboard(request: Request):
         return RedirectResponse(url="/auth/login")
     
     # Redirect to frontend dashboard
-    return templates.TemplateResponse("dashboard.html", {"request": request, "username": username})
+    return templates.TemplateResponse("index.html", {"request": request, "username": username})
 
 # ✅ Registration page
 @router.get("/register", response_class=HTMLResponse)
