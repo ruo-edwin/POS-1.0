@@ -1,10 +1,10 @@
-from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
 from jose import jwt , JWTError
 from fastapi import Depends, HTTPException
-
+from fastapi.responses import RedirectResponse, HTTPException
+from fastapi import Request
 load_dotenv()
 
 
@@ -16,7 +16,6 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable is missing or not set.")
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 token_blacklist = set()  # In-memory token blacklist for simplicity
 
@@ -29,12 +28,16 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 def blacklist_token(token: str):
     token_blacklist.add(token)
 
-def verify_token(token: str = Depends(oauth2_scheme)):
+def verify_token(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse(url="/auth/login")  # or raise HTTPException if API
+
     if token in token_blacklist:
-        raise HTTPException(status_code=401, detail="Token revoked. Please log in again.")
+        return RedirectResponse(url="/auth/login")
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token.")
+        return RedirectResponse(url="/auth/login")
