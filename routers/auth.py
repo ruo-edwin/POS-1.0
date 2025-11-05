@@ -24,16 +24,16 @@ def get_db():
 def get_dashboard(request: Request):
     token = request.cookies.get("access_token")
     if not token:
-        return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
+        return RedirectResponse(url="/auth/login")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("username")
     except JWTError:
-        return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
+        # Redirect to login if token invalid or expired
+        return RedirectResponse(url="/auth/login")
     
     # Redirect to frontend dashboard
-    return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/dashboard")
-
+    return templates.TemplateResponse("dashboard.html", {"request": request, "username": username})
 
 # ✅ Registration page
 @router.get("/register", response_class=HTMLResponse)
