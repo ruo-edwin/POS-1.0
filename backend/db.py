@@ -11,7 +11,11 @@ print("DEBUG: DATABASE_URL =", DATABASE_URL)
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is missing or not set.")
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,   # Reconnects automatically if MySQL has gone away
+    pool_recycle=280,     # Recycle connections every ~5 min
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
