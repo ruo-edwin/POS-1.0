@@ -47,12 +47,17 @@ def add_product(
 
 
 # ✅ Get all products
-@router.get("/")
-def get_products( current_use : dict= Depends(verify_token),db: Session = Depends(get_db)):
-    business_id = current_use["business_id"]
-    products = db.query(models.Product).filter(models.Product.business_id == business_id).all()
-    return products
+def get_products(current_use: dict = Depends(verify_token), db: Session = Depends(get_db)):
+    print("🔹 current_use =", current_use)
+    business_id = current_use.get("business_id")
 
+    if not business_id:
+        print("❌ No business_id found in token!")
+        raise HTTPException(status_code=401, detail="Not authenticated or no business ID")
+
+    products = db.query(models.Product).filter(models.Product.business_id == business_id).all()
+    print("✅ Found products:", products)
+    return products
 
 # ✅ Update stock quantity
 
