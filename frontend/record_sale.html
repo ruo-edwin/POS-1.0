@@ -93,14 +93,21 @@
   <a href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
 
   <script>
-    
+    // ✅ Always use the full secure base URL
+    const baseURL = "https://pos-10-production.up.railway.app";
     let allProducts = [];
 
-    // Load all products initially
+    // ✅ Load all products
     async function loadProducts() {
-      const res = await fetch("/products",{credentials: 'include'});
-      allProducts = await res.json();
-      addRow(); // Add first row automatically
+      try {
+        const res = await fetch(`${baseURL}/products`, { credentials: 'include' });
+        if (!res.ok) throw new Error("Failed to fetch products");
+        allProducts = await res.json();
+        addRow();
+      } catch (error) {
+        console.error("❌ Error loading products:", error);
+        document.getElementById("message").textContent = "❌ Could not load products.";
+      }
     }
 
     // Add a new row for a product
@@ -178,7 +185,7 @@
       document.getElementById("grandTotal").textContent = total.toFixed(2);
     }
 
-    // ✅ Updated submitSale function (uses product_name)
+    // ✅ Submit Sale
     async function submitSale() {
       const rows = document.querySelectorAll("#salesBody tr");
       const items = [];
@@ -191,7 +198,7 @@
 
         if (productId && qty > 0) {
           items.push({
-            product_name: product.name,  // ✅ Correct key
+            product_name: product.name,
             quantity: qty
           });
         }
@@ -202,27 +209,34 @@
         return;
       }
 
-      const response = await fetch("/sales/record_sale/", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ items })
-      });
+      try {
+        const response = await fetch(`${baseURL}/sales/record_sale/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items }),
+          credentials: "include"
+        });
 
-      const result = await response.json();
-      const msg = document.getElementById("message");
+        const result = await response.json();
+        const msg = document.getElementById("message");
 
-      if (response.ok) {
-        msg.style.color = "green";
-        msg.textContent = result.message || "✅ Sale recorded successfully!";
-        document.getElementById("salesBody").innerHTML = "";
-        addRow();
-        updateGrandTotal();
-      } else {
-        msg.style.color = "red";
-        msg.textContent = result.detail || "❌ Failed to record sale.";
+        if (response.ok) {
+          msg.style.color = "green";
+          msg.textContent = result.message || "✅ Sale recorded successfully!";
+          document.getElementById("salesBody").innerHTML = "";
+          addRow();
+          updateGrandTotal();
+        } else {
+          msg.style.color = "red";
+          msg.textContent = result.detail || "❌ Failed to record sale.";
+        }
+      } catch (error) {
+        console.error("❌ Sale submission error:", error);
+        document.getElementById("message").textContent = "❌ Error submitting sale.";
       }
     }
 
+    // Load products on page load
     loadProducts();
   </script>
 </body>
