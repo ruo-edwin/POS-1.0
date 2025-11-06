@@ -98,7 +98,7 @@
 
     // Load all products initially
     async function loadProducts() {
-      const res = await fetch(`${baseURL}/products`);
+      const res = await fetch(`${baseURL}/products`,{credentials: 'include'});
       allProducts = await res.json();
       addRow(); // Add first row automatically
     }
