@@ -27,7 +27,7 @@ def get_db():
         db.close()
 
 # ✅ Add a new product (Form submission)
-@router.post("/add_product/")
+@router.post("/add_product")
 def add_product(
     name: str = Form(...),
     price: float = Form(...),

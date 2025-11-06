@@ -79,8 +79,9 @@
       formData.append('price', price);
 
       try {
-        const response = await fetch('https://pos-10-production.up.railway.app/products/add_product', {
+        const response = await fetch('/products/add_product', {
           method: 'POST',
+          credentials: 'include',
           body: formData
         });
 
