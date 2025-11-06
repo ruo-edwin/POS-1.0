@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from jose import jwt , JWTError
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
+from starlette.status import HTTP_401_UNAUTHORIZED
 load_dotenv()
 
 
@@ -29,14 +30,18 @@ def blacklist_token(token: str):
 
 def verify_token(request: Request):
     token = request.cookies.get("access_token")
-    if not token:
-        return RedirectResponse(url="/auth/login")  # or raise HTTPException if API
-
-    if token in token_blacklist:
-        return RedirectResponse(url="/auth/login")
+    
+    if not token or token in token_blacklist:
+        # If the request is from an API (fetch), raise HTTP 401 instead of redirect
+        if request.url.path.startswith("/api") or request.headers.get("accept") == "application/json":
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        # Otherwise, it's a web page — redirect to login
+        return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
-        return RedirectResponse(url="/auth/login")
+        if request.url.path.startswith("/api") or request.headers.get("accept") == "application/json":
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+        return RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
