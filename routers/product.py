@@ -49,7 +49,8 @@ def add_product(
 # ✅ Get all products
 @router.get("/")
 def get_products( current_use : dict= Depends(verify_token),db: Session = Depends(get_db)):
-    products = db.query(models.Product).all()
+    business_id = current_use["business_id"]
+    products = db.query(models.Product).filter(models.Product.business_id == business_id).all()
     return products
 
 
