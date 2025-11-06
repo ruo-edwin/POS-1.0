@@ -2,9 +2,8 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
 from jose import jwt , JWTError
-from fastapi import Depends, HTTPException
-from fastapi.responses import RedirectResponse, HTTPException
-from fastapi import Request
+from fastapi import Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
 load_dotenv()
 
 
