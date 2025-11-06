@@ -93,12 +93,12 @@
   <a href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
 
   <script>
-    const baseURL = "https://pos-10-production.up.railway.app";
+    
     let allProducts = [];
 
     // Load all products initially
     async function loadProducts() {
-      const res = await fetch(`${baseURL}/products`,{credentials: 'include'});
+      const res = await fetch("/products",{credentials: 'include'});
       allProducts = await res.json();
       addRow(); // Add first row automatically
     }
@@ -202,7 +202,7 @@
         return;
       }
 
-      const response = await fetch(`${baseURL}/sales/record_sale/`, {
+      const response = await fetch("/sales/record_sale/", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ items })
