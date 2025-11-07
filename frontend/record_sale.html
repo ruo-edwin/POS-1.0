@@ -100,7 +100,7 @@
     // ✅ Load all products
     async function loadProducts() {
       try {
-        const res = await fetch(`${baseURL}/products`, { credentials: 'include' });
+        const res = await fetch(`${baseURL}/products/`, { credentials: 'include' });
         if (!res.ok) throw new Error("Failed to fetch products");
         allProducts = await res.json();
         addRow();
