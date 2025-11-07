@@ -7,6 +7,8 @@ from backend.db import SessionLocal
 from backend import models
 from backend.config import templates
 from backend.auth_utils import verify_token  # ✅ import token verification
+from jose import jwt
+from backend.config import SECRET_KEY, ALGORITHM  # ✅ add this if not imported
 
 # 🔒 Secure all routes under /sales
 router = APIRouter(
@@ -43,11 +45,30 @@ class SaleRequest(BaseModel):
 
 # ✅ Record a sale
 @router.post("/record_sale/")
-def record_sale(sale_data: SaleRequest, db: Session = Depends(get_db)):
+def record_sale(request: Request, sale_data: SaleRequest, db: Session = Depends(get_db)):
+    # 🔑 Extract token and get user business_id
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Unauthorized: No access token found")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        business_id = payload.get("business_id")
+        if not business_id:
+            raise HTTPException(status_code=401, detail="Invalid token: business_id missing")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired, please log in again")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     total_sales = []
 
     for item in sale_data.items:
-        product = db.query(models.Product).filter(models.Product.name == item.product_name).first()
+        product = db.query(models.Product).filter(
+            models.Product.name == item.product_name,
+            models.Product.business_id == business_id  # ✅ ensure product belongs to same business
+        ).first()
+
         if not product:
             raise HTTPException(status_code=404, detail=f"Product '{item.product_name}' not found")
 
@@ -57,11 +78,12 @@ def record_sale(sale_data: SaleRequest, db: Session = Depends(get_db)):
         total_price = product.price * item.quantity
         product.quantity -= item.quantity
 
-        # Create sale record
+        # ✅ Create sale record with business_id
         sale = models.Sales(
             product_id=product.id,
             quantity=item.quantity,
-            total_price=total_price
+            total_price=total_price,
+            business_id=business_id
         )
         db.add(sale)
         db.commit()
