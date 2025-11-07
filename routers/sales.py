@@ -84,10 +84,20 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     db.commit()  # commit after all sales
     # refresh all sales if needed
     return {"message": "✅ Sales recorded successfully!", "sales": total_sales}
-# ✅ Get all sales
-@router.get("/get_sales")
-def get_sales(db: Session = Depends(get_db)):
-    sales = db.query(models.Sales).all()
+
+
+# ✅ Get sales
+@router.get("/get_sales/")
+def get_sales(request: Request, db: Session = Depends(get_db)):
+    # ✅ Get current user from token
+    current_user = verify_token(request)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    # ✅ Only get sales for this user's business
+    sales = db.query(models.Sales).filter(
+        models.Sales.business_id == current_user["business_id"]
+    ).all()
 
     result = []
     for sale in sales:
