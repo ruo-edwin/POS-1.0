@@ -85,7 +85,7 @@
     // Fetch and display all products
     async function fetchStocks() {
       try {
-        const res = await fetch("https://pos-10-production.up.railway.app/products");
+        const res = await fetch("https://pos-10-production.up.railway.app/products/");
         const data = await res.json();
         const tbody = document.querySelector("#stockTable tbody");
         tbody.innerHTML = "";
