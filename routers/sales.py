@@ -46,7 +46,7 @@ class SaleRequest(BaseModel):
 def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(get_db)):
     # ✅ Get current user from token
     
-    current_user = verify_token(Request)   # should return dict with business_id
+    current_user = verify_token(request)   # should return dict with business_id
 
     if not current_user:
         raise HTTPException(status_code=401, detail="Invalid token")
