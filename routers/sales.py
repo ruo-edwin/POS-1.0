@@ -45,8 +45,8 @@ class SaleRequest(BaseModel):
 @router.post("/record_sale/")
 def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(get_db)):
     # ✅ Get current user from token
-    token = request.cookies.get("access_token")
-    current_user = verify_token(token)  # should return dict with business_id
+    
+    current_user = verify_token(Request)   # should return dict with business_id
 
     if not current_user:
         raise HTTPException(status_code=401, detail="Invalid token")
