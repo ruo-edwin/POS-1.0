@@ -43,7 +43,14 @@ class SaleRequest(BaseModel):
 
 # ✅ Record a sale
 @router.post("/record_sale/")
-def record_sale(sale_data: SaleRequest, db: Session = Depends(get_db)):
+def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(get_db)):
+    # ✅ Get current user from token
+    token = request.cookies.get("access_token")
+    current_user = verify_token(token)  # should return dict with business_id
+
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     total_sales = []
 
     for item in sale_data.items:
@@ -57,15 +64,14 @@ def record_sale(sale_data: SaleRequest, db: Session = Depends(get_db)):
         total_price = product.price * item.quantity
         product.quantity -= item.quantity
 
-        # Create sale record
+        # ✅ Create sale record with business_id
         sale = models.Sales(
             product_id=product.id,
             quantity=item.quantity,
-            total_price=total_price
+            total_price=total_price,
+            business_id=current_user["business_id"],  # <- fix here
         )
         db.add(sale)
-        db.commit()
-        db.refresh(sale)
 
         total_sales.append({
             "sale_code": sale.sale_code,
@@ -75,9 +81,9 @@ def record_sale(sale_data: SaleRequest, db: Session = Depends(get_db)):
             "total_price": total_price
         })
 
+    db.commit()  # commit after all sales
+    # refresh all sales if needed
     return {"message": "✅ Sales recorded successfully!", "sales": total_sales}
-
-
 # ✅ Get all sales
 @router.get("/get_sales")
 def get_sales(db: Session = Depends(get_db)):
