@@ -156,8 +156,15 @@
 
       sales.forEach(sale => {
         const row = document.createElement("tr");
+
+        // --- ADDED: Convert UTC timestamp to user's local time ---
+        const localTime = new Date(sale.date).toLocaleString(undefined, {
+          hour12: false,        // optional: 24-hour format
+          timeZoneName: 'short' // shows user's local timezone abbreviation
+        });
+
         row.innerHTML = `
-          <td>${new Date(sale.date).toLocaleString()}</td>
+          <td>${localTime}</td>
           <td>${sale.id}</td>
           <td>${sale.product_name}</td>
           <td>${sale.quantity}</td>
