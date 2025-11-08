@@ -6,64 +6,149 @@
   <title>Record Sales</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Poppins", Arial, sans-serif;
       background-color: #f7f7f7;
       text-align: center;
-      padding: 40px;
+      padding: 20px;
+      margin: 0;
     }
+
     h1 {
       color: #333;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
     }
+
     table {
-      width: 90%;
-      margin: 20px auto;
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto 20px auto;
       border-collapse: collapse;
       background: white;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      font-size: 0.95rem;
     }
+
     th, td {
-      padding: 12px;
+      padding: 10px;
       border-bottom: 1px solid #ddd;
       text-align: center;
+      vertical-align: middle;
     }
+
     th {
       background-color: #4CAF50;
       color: white;
+      font-weight: 600;
     }
+
     input, select {
       padding: 8px;
       width: 100%;
       border-radius: 6px;
       border: 1px solid #ccc;
       text-align: center;
+      font-size: 0.95rem;
     }
+
     input[readonly] {
-      background-color: #eee;
+      background-color: #f0f0f0;
     }
+
     button {
       background-color: #4CAF50;
       color: white;
       border: none;
-      padding: 10px 15px;
+      padding: 10px 18px;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
     }
+
     button:hover {
       background-color: #45a049;
     }
+
     .total {
       font-weight: bold;
-      font-size: 18px;
-      margin-top: 20px;
+      font-size: 1.2rem;
+      margin-top: 15px;
+      color: #333;
     }
+
     a {
       display: inline-block;
       margin-top: 20px;
       color: #4CAF50;
       text-decoration: none;
+      font-weight: 500;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: 500;
+    }
+
+    /* ✅ Responsive Styles */
+    @media (max-width: 992px) {
+      body {
+        padding: 15px;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 9px 16px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .total {
+        font-size: 1.1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      a {
+        font-size: 0.95rem;
+      }
+
+      .total {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
@@ -93,11 +178,9 @@
   <a href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
 
   <script>
-    // ✅ Always use the full secure base URL
     const baseURL = "https://pos-10-production.up.railway.app";
     let allProducts = [];
 
-    // ✅ Load all products
     async function loadProducts() {
       try {
         const res = await fetch(`${baseURL}/products/`, { credentials: 'include' });
@@ -110,7 +193,6 @@
       }
     }
 
-    // Add a new row for a product
     function addRow() {
       const tbody = document.getElementById("salesBody");
       const row = document.createElement("tr");
@@ -136,13 +218,11 @@
       tbody.appendChild(row);
     }
 
-    // Remove row
     function removeRow(btn) {
       btn.closest("tr").remove();
       updateGrandTotal();
     }
 
-    // When product is selected
     function updateProductDetails(selectEl) {
       const row = selectEl.closest("tr");
       const selected = allProducts.find(p => p.id == selectEl.value);
@@ -155,7 +235,6 @@
       updateGrandTotal();
     }
 
-    // Update total for each row
     function updateRowTotal(qtyInput) {
       const row = qtyInput.closest("tr");
       const price = parseFloat(row.querySelector("#price").value) || 0;
@@ -176,7 +255,6 @@
       updateGrandTotal();
     }
 
-    // Update overall total
     function updateGrandTotal() {
       let total = 0;
       document.querySelectorAll("#total").forEach(input => {
@@ -185,7 +263,6 @@
       document.getElementById("grandTotal").textContent = total.toFixed(2);
     }
 
-    // ✅ Submit Sale
     async function submitSale() {
       const rows = document.querySelectorAll("#salesBody tr");
       const items = [];
@@ -236,7 +313,6 @@
       }
     }
 
-    // Load products on page load
     loadProducts();
   </script>
 </body>

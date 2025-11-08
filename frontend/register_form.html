@@ -27,6 +27,7 @@
       max-width: 750px;
       width: 100%;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      margin: auto;
     }
 
     .card-body {
@@ -73,12 +74,55 @@
       background-color: #4b4fc1;
     }
 
-    @media (max-width: 576px) {
+    /* --- Mobile & Tablet Responsiveness --- */
+    @media (max-width: 768px) {
       .card-body {
         padding: 1.5rem;
       }
+
+      h3 {
+        font-size: 1.4rem;
+      }
+
+      p.text-muted strong {
+        font-size: 0.85rem;
+      }
+
+      .btn-primary {
+        width: 100% !important;
+      }
+    }
+
+    @media (max-width: 576px) {
+      body {
+        padding: 10px;
+      }
+
+      .card {
+        max-width: 100%;
+      }
+
+      .card-body {
+        padding: 1.2rem;
+      }
+
       .form-control {
         font-size: 0.9rem;
+        padding-left: 38px;
+        height: 42px;
+      }
+
+      .icon-wrapper {
+        font-size: 1rem;
+      }
+
+      .text-center img {
+        width: 60px;
+      }
+
+      p.text-muted strong {
+        display: block;
+        font-size: 0.8rem;
       }
     }
   </style>
@@ -147,7 +191,8 @@
 
     </div>
   </div>
- <script>
+
+  <script>
     async function submitForm(e) {
       e.preventDefault();
 
@@ -182,8 +227,6 @@
           alert("❌ Error: " + result.detail);
         } else {
           alert("✅ " + result.message);
-          console.log(result);
-          // Redirect or open login
           window.location.href = "https://pos-10-production.up.railway.app/auth/login";
         }
       } catch (error) {
