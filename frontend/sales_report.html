@@ -155,14 +155,17 @@
       tableBody.innerHTML = "";
 
       sales.forEach(sale => {
-        const row = document.createElement("tr");
-
-        // --- ADDED: Convert UTC timestamp to user's local time ---
+        // ✅ Convert to local time with clean format (no seconds, no GMT offset)
         const localTime = new Date(sale.date).toLocaleString(undefined, {
-          hour12: false,        // optional: 24-hour format
-          timeZoneName: 'short' // shows user's local timezone abbreviation
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
         });
 
+        const row = document.createElement("tr");
         row.innerHTML = `
           <td>${localTime}</td>
           <td>${sale.id}</td>
