@@ -87,7 +87,7 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
 
 
 # ✅ Get sales
-@router.get("/get_sales/")
+@router.get("/get_sales")
 def get_sales(request: Request, db: Session = Depends(get_db)):
     # ✅ Get current user from token
     current_user = verify_token(request)
