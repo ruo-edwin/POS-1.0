@@ -75,7 +75,7 @@
     const baseURL = "https://pos-10-production.up.railway.app";
 
     async function loadSales() {
-      const response = await fetch(`${baseURL}/sales/get_sales/`);
+      const response = await fetch(`${baseURL}/sales/get_sales`);
       const sales = await response.json();
 
       const tableBody = document.querySelector("#salesTable tbody");
