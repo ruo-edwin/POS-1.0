@@ -10,39 +10,107 @@
       background-color: #f7f7f7;
       text-align: center;
       padding: 40px;
+      margin: 0;
     }
+
     h1 {
       color: #333;
+      font-size: 2rem;
+      margin-bottom: 20px;
     }
-    table {
-      width: 80%;
-      margin: 30px auto;
-      border-collapse: collapse;
+
+    .table-container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 0 auto;
+      overflow-x: auto;
       background-color: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       border-radius: 10px;
-      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
     th, td {
       padding: 12px 15px;
       border-bottom: 1px solid #ddd;
+      text-align: left;
+      font-size: 0.95rem;
     }
+
     th {
       background-color: #4CAF50;
       color: white;
+      text-align: left;
     }
+
     tr:hover {
       background-color: #f1f1f1;
     }
+
     tfoot {
       background-color: #eee;
       font-weight: bold;
     }
+
     a {
       text-decoration: none;
       color: #4CAF50;
       display: inline-block;
-      margin-top: 20px;
+      margin-top: 25px;
+      font-weight: bold;
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      color: #3e8e41;
+    }
+
+    /* --- Responsive Styles --- */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      .table-container {
+        width: 100%;
+      }
+
+      th, td {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      body {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      table {
+        min-width: 500px;
+      }
+
+      th, td {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+
+      a {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -50,24 +118,26 @@
 
   <h1>Sales Report</h1>
 
-  <table id="salesTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Sale ID</th>
-        <th>Product Name</th>
-        <th>Quantity Sold</th>
-        <th>Total Price (Ksh)</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr>
-        <td colspan="4">Total Revenue</td>
-        <td id="totalRevenue">0</td>
-      </tr>
-    </tfoot>
-  </table>
+  <div class="table-container">
+    <table id="salesTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Sale ID</th>
+          <th>Product Name</th>
+          <th>Quantity Sold</th>
+          <th>Total Price (Ksh)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4">Total Revenue</td>
+          <td id="totalRevenue">0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
   <a href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
 
