@@ -155,16 +155,15 @@
       tableBody.innerHTML = "";
 
       sales.forEach(sale => {
-    // ✅ Convert UTC to local time with clean format (dd/mm/yyyy, HH:MM, 24-hour)
-    const localTime = new Date(sale.date).toLocaleString(undefined, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZoneName: 'short' // optional, shows local timezone like GMT+3
-    });
+        // ✅ Convert UTC to local time with clean format (dd/mm/yyyy, HH:MM, 24-hour)
+        const localTime = new Date(sale.date).toLocaleString(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
 
         const row = document.createElement("tr");
         row.innerHTML = `
