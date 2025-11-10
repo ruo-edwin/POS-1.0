@@ -58,8 +58,29 @@
       background-color: #3e8e41;
     }
 
-    .info {
+    .info-dashboard {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: #fff;
+      padding: 15px 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      min-width: 150px;
+    }
+
+    .card p {
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .card h2 {
+      margin: 5px 0 0 0;
     }
 
     .table-container {
@@ -140,10 +161,20 @@
     <button onclick="resetFilters()">Reset</button>
   </div>
 
-  <div class="info">
-    <p id="totalOrders" style="font-weight:bold; margin-bottom:10px;">Total Orders: 0</p>
-    <p id="topProduct" style="font-weight:bold; margin-bottom:10px;">Top Product: -</p>
-    <p id="totalSalesToday" style="font-weight:bold; margin-bottom:15px;">Total Sales Today: 0</p>
+  <!-- Dashboard-style summary row -->
+  <div class="info-dashboard">
+    <div class="card">
+      <p>Total Orders</p>
+      <h2 id="totalOrders">0</h2>
+    </div>
+    <div class="card">
+      <p>Top Product</p>
+      <h2 id="topProduct">-</h2>
+    </div>
+    <div class="card">
+      <p>Sales Today</p>
+      <h2 id="totalSalesToday">0</h2>
+    </div>
   </div>
 
   <div class="table-container">
@@ -202,12 +233,10 @@
       tableBody.innerHTML = "";
 
       const todayStr = new Date().toISOString().split("T")[0]; // current date in YYYY-MM-DD
-
-      // Count products for top product
       const productCounts = {};
 
       sales.forEach(sale => {
-        const saleDate = sale.date.split("T")[0]; // get YYYY-MM-DD
+        const saleDate = sale.date.split("T")[0];
         const row = document.createElement("tr");
         const localTime = new Date(sale.date).toLocaleString(undefined, {
           year: 'numeric',
@@ -236,17 +265,17 @@
         productCounts[sale.product_name] = (productCounts[sale.product_name] || 0) + sale.quantity;
       });
 
-      // Update Top Product
+      // Update dashboard cards
+      totalRevenueElem.textContent = totalRevenue.toFixed(2);
+      totalOrdersElem.textContent = sales.length;
+      totalSalesTodayElem.textContent = totalToday.toFixed(2);
+
       if(Object.keys(productCounts).length){
         const topProduct = Object.entries(productCounts).sort((a,b) => b[1]-a[1])[0];
-        topProductElem.textContent = `Top Product: ${topProduct[0]} (${topProduct[1]} sold)`;
+        topProductElem.textContent = `${topProduct[0]} (${topProduct[1]} sold)`;
       } else {
-        topProductElem.textContent = "Top Product: -";
+        topProductElem.textContent = "-";
       }
-
-      totalRevenueElem.textContent = totalRevenue.toFixed(2);
-      totalOrdersElem.textContent = `Total Orders: ${sales.length}`;
-      totalSalesTodayElem.textContent = totalToday.toFixed(2);
     }
 
     function applyFilters() {
