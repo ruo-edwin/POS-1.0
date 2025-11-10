@@ -58,6 +58,10 @@
       background-color: #3e8e41;
     }
 
+    .info {
+      margin-bottom: 20px;
+    }
+
     .table-container {
       width: 90%;
       max-width: 1000px;
@@ -87,6 +91,11 @@
       text-align: left;
     }
 
+    th:hover {
+      background-color: #45a049;
+      cursor: pointer;
+    }
+
     tr:hover {
       background-color: #f1f1f1;
     }
@@ -94,6 +103,7 @@
     tfoot {
       background-color: #eee;
       font-weight: bold;
+      font-size: 1.05rem;
     }
 
     a {
@@ -128,6 +138,12 @@
 
     <button onclick="applyFilters()">Filter</button>
     <button onclick="resetFilters()">Reset</button>
+  </div>
+
+  <div class="info">
+    <p id="totalOrders" style="font-weight:bold; margin-bottom:10px;">Total Orders: 0</p>
+    <p id="topProduct" style="font-weight:bold; margin-bottom:10px;">Top Product: -</p>
+    <p id="totalSalesToday" style="font-weight:bold; margin-bottom:15px;">Total Sales Today: 0</p>
   </div>
 
   <div class="table-container">
@@ -177,10 +193,21 @@
     function displaySales(sales) {
       const tableBody = document.querySelector("#salesTable tbody");
       const totalRevenueElem = document.getElementById("totalRevenue");
+      const totalOrdersElem = document.getElementById("totalOrders");
+      const topProductElem = document.getElementById("topProduct");
+      const totalSalesTodayElem = document.getElementById("totalSalesToday");
+
       let totalRevenue = 0;
+      let totalToday = 0;
       tableBody.innerHTML = "";
 
+      const todayStr = new Date().toISOString().split("T")[0]; // current date in YYYY-MM-DD
+
+      // Count products for top product
+      const productCounts = {};
+
       sales.forEach(sale => {
+        const saleDate = sale.date.split("T")[0]; // get YYYY-MM-DD
         const row = document.createElement("tr");
         const localTime = new Date(sale.date).toLocaleString(undefined, {
           year: 'numeric',
@@ -199,10 +226,27 @@
           <td>${sale.total_price.toFixed(2)}</td>
         `;
         tableBody.appendChild(row);
+
         totalRevenue += sale.total_price;
+
+        if(saleDate === todayStr){
+          totalToday += sale.total_price;
+        }
+
+        productCounts[sale.product_name] = (productCounts[sale.product_name] || 0) + sale.quantity;
       });
 
+      // Update Top Product
+      if(Object.keys(productCounts).length){
+        const topProduct = Object.entries(productCounts).sort((a,b) => b[1]-a[1])[0];
+        topProductElem.textContent = `Top Product: ${topProduct[0]} (${topProduct[1]} sold)`;
+      } else {
+        topProductElem.textContent = "Top Product: -";
+      }
+
       totalRevenueElem.textContent = totalRevenue.toFixed(2);
+      totalOrdersElem.textContent = `Total Orders: ${sales.length}`;
+      totalSalesTodayElem.textContent = totalToday.toFixed(2);
     }
 
     function applyFilters() {
