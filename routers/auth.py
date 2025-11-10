@@ -125,7 +125,7 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
         raise HTTPException(status_code=400, detail=str(e))
 
 # ✅ Logout
-@router.post("/logout")
+@router.get("/logout")
 def logout_user():
     response = RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
     response.delete_cookie("access_token")
