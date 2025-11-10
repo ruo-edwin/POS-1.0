@@ -19,6 +19,45 @@
       margin-bottom: 20px;
     }
 
+    .filters {
+      margin-bottom: 25px;
+      background: #fff;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      display: inline-flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filters label {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .filters input, .filters select {
+      padding: 6px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
+
+    .filters button {
+      padding: 8px 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .filters button:hover {
+      background-color: #3e8e41;
+    }
+
     .table-container {
       width: 90%;
       max-width: 1000px;
@@ -69,54 +108,27 @@
     a:hover {
       color: #3e8e41;
     }
-
-    /* --- Responsive Styles --- */
-    @media (max-width: 768px) {
-      body {
-        padding: 20px;
-      }
-
-      h1 {
-        font-size: 1.6rem;
-      }
-
-      .table-container {
-        width: 100%;
-      }
-
-      th, td {
-        padding: 10px;
-        font-size: 0.9rem;
-      }
-    }
-
-    @media (max-width: 576px) {
-      body {
-        padding: 15px;
-      }
-
-      h1 {
-        font-size: 1.4rem;
-      }
-
-      table {
-        min-width: 500px;
-      }
-
-      th, td {
-        padding: 8px 10px;
-        font-size: 0.85rem;
-      }
-
-      a {
-        font-size: 0.9rem;
-      }
-    }
   </style>
 </head>
 <body>
 
   <h1>Sales Report</h1>
+
+  <div class="filters">
+    <label for="startDate">From:</label>
+    <input type="date" id="startDate">
+
+    <label for="endDate">To:</label>
+    <input type="date" id="endDate">
+
+    <label for="productFilter">Product:</label>
+    <select id="productFilter">
+      <option value="">All Products</option>
+    </select>
+
+    <button onclick="applyFilters()">Filter</button>
+    <button onclick="resetFilters()">Reset</button>
+  </div>
 
   <div class="table-container">
     <table id="salesTable">
@@ -143,24 +155,40 @@
 
   <script>
     const baseURL = "https://pos-10-production.up.railway.app";
+    let allSales = [];
 
     async function loadSales() {
       const response = await fetch(`${baseURL}/sales/get_sales`);
-      const sales = await response.json();
+      allSales = await response.json();
 
+      // Populate product dropdown
+      const productSelect = document.getElementById("productFilter");
+      const uniqueProducts = [...new Set(allSales.map(s => s.product_name))];
+      uniqueProducts.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p;
+        option.textContent = p;
+        productSelect.appendChild(option);
+      });
+
+      displaySales(allSales);
+    }
+
+    function displaySales(sales) {
       const tableBody = document.querySelector("#salesTable tbody");
       const totalRevenueElem = document.getElementById("totalRevenue");
       let totalRevenue = 0;
-
       tableBody.innerHTML = "";
 
       sales.forEach(sale => {
         const row = document.createElement("tr");
-
-        // --- ADDED: Convert UTC timestamp to user's local time ---
         const localTime = new Date(sale.date).toLocaleString(undefined, {
-          hour12: false,        // optional: 24-hour format
-          timeZoneName: 'short' // shows user's local timezone abbreviation
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
         });
 
         row.innerHTML = `
@@ -175,6 +203,35 @@
       });
 
       totalRevenueElem.textContent = totalRevenue.toFixed(2);
+    }
+
+    function applyFilters() {
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+      const product = document.getElementById("productFilter").value;
+
+      let filtered = allSales;
+
+      if (startDate) {
+        filtered = filtered.filter(s => new Date(s.date) >= new Date(startDate));
+      }
+
+      if (endDate) {
+        filtered = filtered.filter(s => new Date(s.date) <= new Date(endDate + 'T23:59:59'));
+      }
+
+      if (product) {
+        filtered = filtered.filter(s => s.product_name === product);
+      }
+
+      displaySales(filtered);
+    }
+
+    function resetFilters() {
+      document.getElementById("startDate").value = "";
+      document.getElementById("endDate").value = "";
+      document.getElementById("productFilter").value = "";
+      displaySales(allSales);
     }
 
     loadSales();
