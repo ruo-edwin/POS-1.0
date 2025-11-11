@@ -6,21 +6,27 @@
   <title>Sales Report</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", Arial, sans-serif;
       background-color: #f7f7f7;
       text-align: center;
-      padding: 40px;
+      padding: 30px 10px;
       margin: 0;
     }
 
     h1 {
-      color: #333;
-      font-size: 2rem;
-      margin-bottom: 20px;
+      background: linear-gradient(90deg, #4CAF50, #2e7d32);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      display: inline-block;
+      font-size: 1.8rem;
+      letter-spacing: 0.5px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     .filters {
-      margin-bottom: 25px;
+      margin-bottom: 30px;
       background: #fff;
       padding: 15px 20px;
       border-radius: 10px;
@@ -29,6 +35,7 @@
       gap: 15px;
       align-items: center;
       flex-wrap: wrap;
+      justify-content: center;
     }
 
     .filters label {
@@ -37,25 +44,26 @@
     }
 
     .filters input, .filters select {
-      padding: 6px 10px;
+      padding: 7px 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 0.95rem;
     }
 
     .filters button {
-      padding: 8px 12px;
+      padding: 8px 14px;
       background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
-      transition: background 0.2s;
+      transition: background 0.25s, transform 0.1s;
     }
 
     .filters button:hover {
-      background-color: #3e8e41;
+      background-color: #388e3c;
+      transform: scale(1.05);
     }
 
     /* Dashboard cards */
@@ -69,10 +77,10 @@
 
     .card {
       background: #fff;
-      padding: 20px 30px;
-      border-radius: 12px;
+      padding: 25px 35px;
+      border-radius: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      min-width: 180px;
+      min-width: 200px;
       transition: transform 0.2s, box-shadow 0.2s;
       text-align: center;
     }
@@ -84,31 +92,25 @@
 
     .card p {
       margin: 0;
-      font-weight: bold;
-      color: #555;
+      font-weight: 600;
+      color: #444;
       font-size: 0.9rem;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
     }
 
     .card h2 {
-      margin: 10px 0 0 0;
-      font-size: 1.5rem;
-      color: #333;
+      margin: 12px 0 0 0;
+      font-size: 1.6rem;
+      color: #222;
+      font-weight: bold;
     }
 
-    .card.sales-today {
-      color: #4CAF50;
-    }
+    .card.total-quantity h2 { color: #2196F3; }
+    .card.top-product h2 { color: #FF9800; }
+    .card.sales-today h2 { color: #4CAF50; }
 
-    .card.top-product {
-      color: #FF9800;
-    }
-
-    .card.total-quantity {
-      color: #2196F3;
-    }
-
+    /* Table */
     .table-container {
       width: 90%;
       max-width: 1000px;
@@ -135,12 +137,6 @@
     th {
       background-color: #4CAF50;
       color: white;
-      text-align: left;
-    }
-
-    th:hover {
-      background-color: #45a049;
-      cursor: pointer;
     }
 
     tr:hover {
@@ -163,7 +159,13 @@
     }
 
     a:hover {
-      color: #3e8e41;
+      color: #2e7d32;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        min-width: 100%;
+      }
     }
   </style>
 </head>
@@ -185,9 +187,10 @@
 
     <button onclick="applyFilters()">Filter</button>
     <button onclick="resetFilters()">Reset</button>
+    <button onclick="exportToExcel()">Export to Excel</button>
   </div>
 
-  <!-- Dashboard-style summary row -->
+  <!-- Dashboard -->
   <div class="info-dashboard">
     <div class="card total-quantity">
       <p>Total Quantity Sold</p>
@@ -226,6 +229,9 @@
 
   <a href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
 
+  <!-- ✅ SheetJS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <script>
     const baseURL = "https://pos-10-production.up.railway.app";
     let allSales = [];
@@ -234,7 +240,6 @@
       const response = await fetch(`${baseURL}/sales/get_sales`);
       allSales = await response.json();
 
-      // Populate product dropdown
       const productSelect = document.getElementById("productFilter");
       const uniqueProducts = [...new Set(allSales.map(s => s.product_name))];
       uniqueProducts.forEach(p => {
@@ -259,7 +264,7 @@
       let totalQuantity = 0;
       tableBody.innerHTML = "";
 
-      const todayStr = new Date().toISOString().split("T")[0]; // current date in YYYY-MM-DD
+      const todayStr = new Date().toISOString().split("T")[0];
       const productCounts = {};
 
       sales.forEach(sale => {
@@ -279,27 +284,27 @@
           <td>${sale.id}</td>
           <td>${sale.product_name}</td>
           <td>${sale.quantity}</td>
-          <td>${sale.total_price.toFixed(2).toLocaleString()}</td>
+          <td>${Number(sale.total_price.toFixed(2)).toLocaleString()}</td>
         `;
         tableBody.appendChild(row);
 
         totalRevenue += sale.total_price;
         totalQuantity += sale.quantity;
 
-        if(saleDate === todayStr){
+        if (saleDate === todayStr) {
           totalToday += sale.total_price;
         }
 
         productCounts[sale.product_name] = (productCounts[sale.product_name] || 0) + sale.quantity;
       });
 
-      // Update dashboard cards with commas
-      totalRevenueElem.textContent = totalRevenue.toFixed(2).toLocaleString();
+      // Format with commas
+      totalRevenueElem.textContent = Number(totalRevenue.toFixed(2)).toLocaleString();
       totalOrdersElem.textContent = totalQuantity.toLocaleString();
-      totalSalesTodayElem.textContent = totalToday.toFixed(2).toLocaleString();
+      totalSalesTodayElem.textContent = Number(totalToday.toFixed(2)).toLocaleString();
 
-      if(Object.keys(productCounts).length){
-        const topProduct = Object.entries(productCounts).sort((a,b) => b[1]-a[1])[0];
+      if (Object.keys(productCounts).length) {
+        const topProduct = Object.entries(productCounts).sort((a, b) => b[1] - a[1])[0];
         topProductElem.textContent = `${topProduct[0]} (${topProduct[1].toLocaleString()} sold)`;
       } else {
         topProductElem.textContent = "-";
@@ -313,17 +318,9 @@
 
       let filtered = allSales;
 
-      if (startDate) {
-        filtered = filtered.filter(s => new Date(s.date) >= new Date(startDate));
-      }
-
-      if (endDate) {
-        filtered = filtered.filter(s => new Date(s.date) <= new Date(endDate + 'T23:59:59'));
-      }
-
-      if (product) {
-        filtered = filtered.filter(s => s.product_name === product);
-      }
+      if (startDate) filtered = filtered.filter(s => new Date(s.date) >= new Date(startDate));
+      if (endDate) filtered = filtered.filter(s => new Date(s.date) <= new Date(endDate + 'T23:59:59'));
+      if (product) filtered = filtered.filter(s => s.product_name === product);
 
       displaySales(filtered);
     }
@@ -333,6 +330,15 @@
       document.getElementById("endDate").value = "";
       document.getElementById("productFilter").value = "";
       displaySales(allSales);
+    }
+
+    // ✅ Export to Excel Function
+    function exportToExcel() {
+      const table = document.getElementById("salesTable");
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Sales Report" });
+      const now = new Date();
+      const filename = `Sales_Report_${now.toISOString().slice(0, 19).replace(/:/g, "-")}.xlsx`;
+      XLSX.writeFile(wb, filename);
     }
 
     loadSales();
