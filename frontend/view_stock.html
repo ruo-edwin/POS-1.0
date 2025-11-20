@@ -71,6 +71,10 @@
         <th>Name</th>
         <th>Quantity</th>
         <th>Price (Ksh)</th>
+
+        <!-- ✅ ADDED BUYING PRICE COLUMN -->
+        <th>Buying Price</th>
+
         <th>Action</th>
       </tr>
     </thead>
@@ -97,6 +101,10 @@
             <td>${product.name}</td>
             <td><input type="number" value="${product.quantity}" id="qty-${product.id}" style="width:60px"></td>
             <td><input type="number" step="0.01" value="${product.price}" id="price-${product.id}" style="width:80px"></td>
+
+            <!-- ✅ BUYING PRICE INPUT -->
+            <td><input type="number" step="0.01" value="${product.buying_price}" id="buying-${product.id}" style="width:80px"></td>
+
             <td><button onclick="updateProduct(${product.id})">Update</button></td>
           `;
           tbody.appendChild(row);
@@ -112,11 +120,16 @@
       const quantity = parseInt(document.getElementById(`qty-${id}`).value);
       const price = parseFloat(document.getElementById(`price-${id}`).value);
 
+      // ✅ GET BUYING PRICE
+      const buying_price = parseFloat(document.getElementById(`buying-${id}`).value);
+
       try {
         const response = await fetch(`https://pos-10-production.up.railway.app/products/update_stock/${id}`, {
           method: "PUT",
           headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ quantity, price })
+
+          // ✅ ADDED buying_price TO BODY
+          body: JSON.stringify({ quantity, price, buying_price })
         });
 
         const result = await response.json();

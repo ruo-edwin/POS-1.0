@@ -42,6 +42,7 @@ def get_db():
 def add_product(
     name: str = Form(...),
     price: float = Form(...),
+    buying_price: float = Form(...),
     quantity: int = Form(...),
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
@@ -50,6 +51,7 @@ def add_product(
         new_product = models.Product(
             name=name,
             price=price,
+            buying_price=buying_price,
             quantity=quantity,
             business_id=current_user["business_id"]
         )
@@ -96,9 +98,12 @@ def update_stock(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    # Update fields
     product.quantity = data.get("quantity", product.quantity)
     product.price = data.get("price", product.price)
+    product.buying_price = data.get("buying_price", product.buying_price)   # ← ADD THIS
 
     db.commit()
     db.refresh(product)
     return {"message": "✅ Product updated successfully", "product": product.name}
+

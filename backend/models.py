@@ -9,9 +9,10 @@ class Product(Base):
     name =Column(String(255), unique=True, index=True, nullable=False)
     business_id =Column(Integer, ForeignKey("business.id"), nullable=False)
     price =Column(Float, nullable=False)
+    buying_price =Column(Float, nullable=False)
     quantity =Column(Integer, default=0)
     created_at =Column(DateTime, default=datetime.utcnow)
-
+    
     sales =relationship("Sales", back_populates="product")
     business =relationship("Business", back_populates="products")
 
