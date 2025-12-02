@@ -94,7 +94,7 @@ class Subscription(Base):
     start_date = Column(DateTime, default=datetime.utcnow)
     end_date = Column(DateTime)  # demo expiry OR paid expiry
 
-    status = Column(String, default="demo")  
+    status = Column(String(50), default="demo")  
     # demo, active, expired, suspended
 
     is_active = Column(Boolean, default=True)
