@@ -106,6 +106,7 @@ def get_sales(request: Request, db: Session = Depends(get_db)):
             "date": sale.created_at,
             "product_name": sale.product.name if sale.product else "Unknown",
             "quantity": sale.quantity,
-            "total_price": sale.total_price
+            "total_price": sale.total_price,
+            "buying_price": sale.product.buying_price if sale.product else None
         })
     return result

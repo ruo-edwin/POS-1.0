@@ -46,6 +46,25 @@
       margin-bottom: 25px;
     }
 
+    /* SUPERADMIN BUTTON */
+    #superadminBtn {
+      display: none;
+      background: linear-gradient(90deg, #ffb300, #ff9800);
+      color: white;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      transition: 0.2s ease-in-out;
+      box-shadow: 0 3px 8px rgba(255, 152, 0, 0.4);
+    }
+
+    #superadminBtn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(90deg, #ffa000, #fb8c00);
+    }
+
     .menu a {
       display: flex;
       align-items: center;
@@ -105,11 +124,15 @@
 <body>
   <div class="dashboard-container">
     <h1>SmartPOS Dashboard</h1>
+
     <div class="biz-name">Business: <strong>{{ business_name }}</strong></div>
     <div class="user-info">
       Logged in as <strong>{{ username }}</strong><br>
       Last login: {{ last_login }}
     </div>
+
+    <!-- SUPERADMIN BUTTON -->
+    <a id="superadminBtn" href="/superadmin/admin_panel">🔐 Superadmin Panel</a>
 
     <div class="menu">
       <a href="/sales/recordsale">💰 Sell Products</a>
@@ -123,6 +146,25 @@
     </form>
   </div>
 
-  <footer>© 2025 SmartPOS – Simplifying,Inventory & Sales Management</footer>
+  <footer>© 2025 SmartPOS – Simplifying Inventory & Sales Management</footer>
+
+<script>
+function getTokenPayload() {
+    const cookie = document.cookie.split("; ").find(row => row.startsWith("access_token="));
+    if (!cookie) return null;
+
+    const token = cookie.split("=")[1];
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload;
+}
+
+const payload = getTokenPayload();
+
+// Only show button if role == superadmin
+if (payload && payload.role === "superadmin") {
+    document.getElementById("superadminBtn").style.display = "block";
+}
+</script>
+
 </body>
 </html>

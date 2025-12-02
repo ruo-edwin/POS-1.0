@@ -3,8 +3,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
-load_dotenv()
+# ensure we load backend/.env (relative to this file)
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)   
 DATABASE_URL = os.getenv("DATABASE_URL")
 print("DEBUG: DATABASE_URL =", DATABASE_URL)
 

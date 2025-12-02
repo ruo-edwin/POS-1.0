@@ -215,12 +215,13 @@
           <th>Product Name</th>
           <th>Quantity Sold</th>
           <th>Total Price (Ksh)</th>
+          <th>Profit (Ksh)</th>
         </tr>
       </thead>
       <tbody></tbody>
       <tfoot>
         <tr>
-          <td colspan="4">Total Revenue</td>
+          <td colspan="5">Total Revenue</td>
           <td id="totalRevenue">0</td>
         </tr>
       </tfoot>
@@ -229,7 +230,7 @@
 
   <a href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
 
-  <!-- ✅ SheetJS Library -->
+  <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script>
@@ -260,6 +261,7 @@
       const totalSalesTodayElem = document.getElementById("totalSalesToday");
 
       let totalRevenue = 0;
+      let totalProfit = 0;
       let totalToday = 0;
       let totalQuantity = 0;
       tableBody.innerHTML = "";
@@ -268,6 +270,8 @@
       const productCounts = {};
 
       sales.forEach(sale => {
+        const profit = sale.total_price - (sale.buying_price * sale.quantity);
+
         const saleDate = sale.date.split("T")[0];
         const row = document.createElement("tr");
         const localTime = new Date(sale.date).toLocaleString(undefined, {
@@ -285,10 +289,12 @@
           <td>${sale.product_name}</td>
           <td>${sale.quantity}</td>
           <td>${Number(sale.total_price.toFixed(2)).toLocaleString()}</td>
+          <td>${profit.toLocaleString()}</td>
         `;
         tableBody.appendChild(row);
 
         totalRevenue += sale.total_price;
+        totalProfit += profit;
         totalQuantity += sale.quantity;
 
         if (saleDate === todayStr) {
@@ -298,7 +304,6 @@
         productCounts[sale.product_name] = (productCounts[sale.product_name] || 0) + sale.quantity;
       });
 
-      // Format with commas
       totalRevenueElem.textContent = Number(totalRevenue.toFixed(2)).toLocaleString();
       totalOrdersElem.textContent = totalQuantity.toLocaleString();
       totalSalesTodayElem.textContent = Number(totalToday.toFixed(2)).toLocaleString();
@@ -332,7 +337,6 @@
       displaySales(allSales);
     }
 
-    // ✅ Export to Excel Function
     function exportToExcel() {
       const table = document.getElementById("salesTable");
       const wb = XLSX.utils.table_to_book(table, { sheet: "Sales Report" });
