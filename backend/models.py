@@ -88,7 +88,7 @@ class Subscription(Base):
     id = Column(Integer, primary_key=True, index=True)
     business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
 
-    plan_name = Column(String, default="monthly")  # demo / monthly / yearly (future)
+    plan_name = Column(String(50), default="monthly")  # demo / monthly / yearly (future)
     amount = Column(Numeric(10,2), default=0)
 
     start_date = Column(DateTime, default=datetime.utcnow)
@@ -102,4 +102,3 @@ class Subscription(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     business = relationship("Business", back_populates="subscription")
-    
