@@ -70,7 +70,7 @@ class Business(Base):
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
+    business_id = Column(Integer, ForeignKey("business.id"), nullable=True)
     username = Column(String(50), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False)  # e.g., 'admin', 'staff'
