@@ -51,7 +51,6 @@ class Business(Base):
 
     users = relationship("User", back_populates="business")
     products = relationship("Product", back_populates="business")
-    sales = relationship("Sales", back_populates="business")
     subscription = relationship("Subscription", back_populates="business", uselist=False)
     orders = relationship("Order", back_populates="business")
 
