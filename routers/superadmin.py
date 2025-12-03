@@ -63,7 +63,7 @@ def create_superadmin(
         raise HTTPException(status_code=400, detail="Superadmin already exists!")
 
     new_superadmin = models.User(
-        business_id=0,      # Superadmin is not tied to a business
+        business_id=None,      # Superadmin is not tied to a business
         username=username,
         password_hash=pwd_context.hash(password),
         role="superadmin",
