@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Body, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+
 from backend.db import SessionLocal
 from backend import models
 from backend.config import templates
-from backend.auth_utils import verify_token  # secure routes
+from backend.auth_utils import verify_token
 
 
 router = APIRouter(
@@ -15,7 +16,6 @@ router = APIRouter(
     tags=["sales"],
     dependencies=[Depends(verify_token)]
 )
-
 
 # -------------------------
 # DB Session
@@ -42,7 +42,7 @@ async def sales_report_page(request: Request):
 
 
 # -------------------------
-# Pydantic Models
+# Input Models
 # -------------------------
 class SaleItem(BaseModel):
     product_name: str
@@ -50,46 +50,46 @@ class SaleItem(BaseModel):
 
 
 class SaleRequest(BaseModel):
+    client_name: Optional[str] = None
+    sales_person: Optional[str] = None
     items: List[SaleItem]
 
 
-# ======================================================
-# 🚀 RECORD SALE — ONE ORDER = ONE sale_code
-# ======================================================
+# =======================================================================
+# 🚀 RECORD SALE — CREATE ORDER & ITEMS
+# =======================================================================
 @router.post("/record_sale/")
 def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(get_db)):
 
-    current_user = verify_token(request)
-    if not current_user:
+    user = verify_token(request)
+    if not user:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    business_id = current_user["business_id"]
+    business_id = user["business_id"]
 
-    # =====================================================
-    # SAFE ORDER CODE GENERATION (NO DUPLICATES EVER)
-    # =====================================================
-    result = db.execute(text("""
-        SELECT sale_code FROM sales 
-        ORDER BY id DESC LIMIT 1
-    """)).fetchone()
+    # Generate order code
+    last_order = db.execute(text("SELECT id FROM orders ORDER BY id DESC LIMIT 1")).fetchone()
+    next_number = 1 if not last_order else last_order[0] + 1
+    order_code = f"ORD-{next_number:05d}"
 
-    if not result or not result[0]:
-        next_number = 1
-    else:
-        last_code = result[0]             # e.g. "SALE-0041"
-        num = int(last_code.replace("SALE-", ""))
-        next_number = num + 1
+    # Create order
+    new_order = models.Order(
+        order_code=order_code,
+        business_id=business_id,
+        client_name=sale_data.client_name,
+        sales_person=sale_data.sales_person,
+        total_amount=0
+    )
+    db.add(new_order)
+    db.commit()
+    db.refresh(new_order)
 
-    order_code = f"SALE-{next_number:04d}"
+    total_amount = 0
+    output_items = []
 
-    # =====================================================
-    # PROCESS CART ITEMS
-    # =====================================================
-    total_sales = []
-
+    # Process items
     for item in sale_data.items:
 
-        # Get product for this business
         product = db.query(models.Product).filter(
             models.Product.name == item.product_name,
             models.Product.business_id == business_id
@@ -98,73 +98,112 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
         if not product:
             raise HTTPException(status_code=404, detail=f"Product '{item.product_name}' not found")
 
-        # Check stock
         if product.quantity < item.quantity:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Not enough stock for '{item.product_name}'"
-            )
+            raise HTTPException(status_code=400, detail=f"Not enough stock for '{item.product_name}'")
 
-        # Calculate total price
-        total_price = product.price * item.quantity
-
-        # Reduce stock
+        subtotal = product.price * item.quantity
         product.quantity -= item.quantity
+        total_amount += subtotal
 
-        # Create the sale row
-        sale = models.Sales(
-            business_id=business_id,
+        sale_row = models.Sales(
+            order_id=new_order.id,
             product_id=product.id,
             quantity=item.quantity,
-            total_price=total_price,
-            sale_code=order_code    # 👈 ONE order code for all items
+            total_price=subtotal
         )
+        db.add(sale_row)
 
-        db.add(sale)
-
-        total_sales.append({
-            "order_code": order_code,
-            "product_name": product.name,
-            "quantity_sold": item.quantity,
-            "remaining_stock": product.quantity,
-            "total_price": total_price
+        output_items.append({
+            "product": product.name,
+            "quantity": item.quantity,
+            "subtotal": subtotal
         })
 
+    new_order.total_amount = total_amount
     db.commit()
 
     return {
-        "message": "✅ Sale recorded successfully!",
+        "message": "Order recorded successfully!",
         "order_code": order_code,
-        "items": total_sales
+        "client_name": new_order.client_name,
+        "sales_person": new_order.sales_person,
+        "total_amount": total_amount,
+        "items": output_items
     }
 
 
-# ======================================================
-# GET SALES FOR THIS BUSINESS
-# ======================================================
+# =======================================================================
+# 🧾 ORDER-WISE SALES REPORT
+# =======================================================================
 @router.get("/get_sales")
 def get_sales(request: Request, db: Session = Depends(get_db)):
 
-    current_user = verify_token(request)
-    if not current_user:
+    user = verify_token(request)
+    if not user:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    business_id = current_user["business_id"]
+    business_id = user["business_id"]
 
-    sales = db.query(models.Sales).filter(
-        models.Sales.business_id == business_id
-    ).all()
+    orders = db.query(models.Order).filter(
+        models.Order.business_id == business_id
+    ).order_by(models.Order.id.desc()).all()
 
-    result = []
-    for sale in sales:
-        result.append({
-            "id": sale.id,
-            "date": sale.created_at,
-            "order_code": sale.sale_code,
-            "product_name": sale.product.name if sale.product else "Unknown",
-            "quantity": sale.quantity,
-            "total_price": sale.total_price,
-            "buying_price": sale.product.buying_price if sale.product else None
+    final_output = []
+
+    for order in orders:
+        order_items = []
+
+        for sale in order.sales:  # FIXED
+            order_items.append({
+                "product_name": sale.product.name,
+                "quantity": sale.quantity,
+                "subtotal": sale.total_price
+            })
+
+        final_output.append({
+            "order_code": order.order_code,
+            "date": order.created_at,
+            "client_name": order.client_name,
+            "sales_person": order.sales_person,
+            "total_amount": order.total_amount,
+            "items": order_items
         })
 
-    return result
+    return final_output
+
+
+# =======================================================================
+# 📌 ITEM-WISE SALES REPORT (Flat list)
+# =======================================================================
+@router.get("/get_sales_items")
+def get_sales_items(request: Request, db: Session = Depends(get_db)):
+
+    user = verify_token(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    business_id = user["business_id"]
+
+    sales_items = (
+        db.query(models.Sales, models.Order, models.Product)
+        .join(models.Order, models.Sales.order_id == models.Order.id)
+        .join(models.Product, models.Sales.product_id == models.Product.id)
+        .filter(models.Order.business_id == business_id)
+        .order_by(models.Sales.id.desc())
+        .all()
+    )
+
+    output = []
+
+    for sale, order, product in sales_items:
+        output.append({
+            "order_code": order.order_code,
+            "date": order.created_at,
+            "client_name": order.client_name,
+            "sales_person": order.sales_person,
+            "product_name": product.name,
+            "quantity": sale.quantity,
+            "subtotal": sale.total_price
+        })
+
+    return output

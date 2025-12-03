@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Report</title>
+
   <style>
     body {
       font-family: "Segoe UI", Arial, sans-serif;
@@ -38,16 +39,16 @@
       justify-content: center;
     }
 
-    .filters label {
-      font-weight: bold;
-      color: #333;
-    }
-
-    .filters input, .filters select {
+    .filters input, 
+    .filters select {
       padding: 7px 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 0.95rem;
+    }
+    .filters label {
+      font-weight: bold;
+      color: #333;
     }
 
     .filters button {
@@ -58,15 +59,35 @@
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
-      transition: background 0.25s, transform 0.1s;
     }
 
     .filters button:hover {
       background-color: #388e3c;
-      transform: scale(1.05);
     }
 
-    /* Dashboard cards */
+    /* Pagination */
+    .pagination {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .pagination button {
+      padding: 6px 14px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      background-color: #9CCC9C;
+      cursor: not-allowed;
+    }
+
+    /* Dashboard Cards */
     .info-dashboard {
       display: flex;
       justify-content: center;
@@ -81,272 +102,218 @@
       border-radius: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       min-width: 200px;
-      transition: transform 0.2s, box-shadow 0.2s;
       text-align: center;
     }
 
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
-
-    .card p {
-      margin: 0;
-      font-weight: 600;
-      color: #444;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-
-    .card h2 {
-      margin: 12px 0 0 0;
-      font-size: 1.6rem;
-      color: #222;
-      font-weight: bold;
-    }
-
-    .card.total-quantity h2 { color: #2196F3; }
-    .card.top-product h2 { color: #FF9800; }
-    .card.sales-today h2 { color: #4CAF50; }
-
-    /* Table */
     .table-container {
-      width: 90%;
-      max-width: 1000px;
+      width: 95%;
+      max-width: 1100px;
       margin: 0 auto;
-      overflow-x: auto;
       background-color: white;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px;
+      min-width: 900px;
     }
 
     th, td {
       padding: 12px 15px;
       border-bottom: 1px solid #ddd;
       text-align: left;
-      font-size: 0.95rem;
     }
 
     th {
       background-color: #4CAF50;
       color: white;
     }
-
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-
-    tfoot {
-      background-color: #eee;
-      font-weight: bold;
-      font-size: 1.05rem;
-    }
-
-    a {
-      text-decoration: none;
-      color: #4CAF50;
-      display: inline-block;
-      margin-top: 25px;
-      font-weight: bold;
-      transition: color 0.2s ease;
-    }
-
-    a:hover {
-      color: #2e7d32;
-    }
-
-    @media (max-width: 600px) {
-      .card {
-        min-width: 100%;
-      }
-    }
   </style>
 </head>
+
 <body>
 
-  <h1>Sales Report</h1>
+<h1>Sales Report</h1>
 
-  <div class="filters">
-    <label for="startDate">From:</label>
-    <input type="date" id="startDate">
+<div class="filters">
 
-    <label for="endDate">To:</label>
-    <input type="date" id="endDate">
+  <label>From:</label>
+  <input type="date" id="startDate">
 
-    <label for="productFilter">Product:</label>
-    <select id="productFilter">
-      <option value="">All Products</option>
-    </select>
+  <label>To:</label>
+  <input type="date" id="endDate">
 
-    <button onclick="applyFilters()">Filter</button>
-    <button onclick="resetFilters()">Reset</button>
-    <button onclick="exportToExcel()">Export to Excel</button>
-  </div>
+  <label>Order Code:</label>
+  <input type="text" id="orderFilter" placeholder="ORD-00001">
 
-  <!-- Dashboard -->
-  <div class="info-dashboard">
-    <div class="card total-quantity">
-      <p>Total Quantity Sold</p>
-      <h2 id="totalOrders">0</h2>
-    </div>
-    <div class="card top-product">
-      <p>Top Product</p>
-      <h2 id="topProduct">-</h2>
-    </div>
-    <div class="card sales-today">
-      <p>Sales Today</p>
-      <h2 id="totalSalesToday">0</h2>
-    </div>
-  </div>
+  <label>Client:</label>
+  <input type="text" id="clientFilter" placeholder="Client name">
 
-  <div class="table-container">
-    <table id="salesTable">
-      <thead>
+  <label>Sales Person:</label>
+  <input type="text" id="salesFilter" placeholder="Sales person">
+
+  <label>Product:</label>
+  <select id="productFilter">
+    <option value="">All</option>
+  </select>
+
+  <button onclick="applyFilters()">Filter</button>
+  <button onclick="resetFilters()">Reset</button>
+  <button onclick="exportToExcel()">Export</button>
+</div>
+
+<!-- Dashboard Cards -->
+<div class="info-dashboard">
+  <div class="card"><p>Total Items Sold</p><h2 id="totalQty">0</h2></div>
+  <div class="card"><p>Total Revenue</p><h2 id="totalRevenue">0</h2></div>
+  <div class="card"><p>Total Profit</p><h2 id="totalProfit">0</h2></div>
+</div>
+
+<div class="table-container">
+  <table id="salesTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Order Code</th>
+        <th>Client</th>
+        <th>Sales Person</th>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Subtotal</th>
+        <th>Profit</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="pagination">
+  <button id="prevBtn" onclick="prevPage()">Prev</button>
+  <button id="nextBtn" onclick="nextPage()">Next</button>
+</div>
+
+<a href="/auth/dashboard">⬅ Back to Home</a>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script>
+  const baseURL = "https://pos-10-production.up.railway.app";
+  let allItems = [];
+  let currentPage = 1;
+  const pageSize = 25;
+
+  async function loadSales() {
+    const res = await fetch(`${baseURL}/sales/get_sales_items`);
+    allItems = await res.json();
+    loadFilters();
+    renderTable(allItems);
+  }
+
+  function loadFilters() {
+    const select = document.getElementById("productFilter");
+    const products = [...new Set(allItems.map(i => i.product_name))];
+    products.forEach(p => {
+      const op = document.createElement("option");
+      op.value = p;
+      op.textContent = p;
+      select.appendChild(op);
+    });
+  }
+
+  function applyFilters() {
+    let data = allItems;
+
+    const sDate = startDate.value;
+    const eDate = endDate.value;
+    const order = orderFilter.value.trim().toLowerCase();
+    const client = clientFilter.value.trim().toLowerCase();
+    const sales = salesFilter.value.trim().toLowerCase();
+    const product = productFilter.value;
+
+    if (sDate) data = data.filter(i => new Date(i.date) >= new Date(sDate));
+    if (eDate) data = data.filter(i => new Date(i.date) <= new Date(eDate + "T23:59:59"));
+    if (order) data = data.filter(i => i.order_code.toLowerCase().includes(order));
+    if (client) data = data.filter(i => (i.client_name || "").toLowerCase().includes(client));
+    if (sales) data = data.filter(i => (i.sales_person || "").toLowerCase().includes(sales));
+    if (product) data = data.filter(i => i.product_name === product);
+
+    currentPage = 1;
+    renderTable(data);
+  }
+
+  function resetFilters() {
+    startDate.value = "";
+    endDate.value = "";
+    orderFilter.value = "";
+    clientFilter.value = "";
+    salesFilter.value = "";
+    productFilter.value = "";
+
+    currentPage = 1;
+    renderTable(allItems);
+  }
+
+  function renderTable(data) {
+    const tbody = document.querySelector("#salesTable tbody");
+    tbody.innerHTML = "";
+
+    const start = (currentPage - 1) * pageSize;
+    const paginated = data.slice(start, start + pageSize);
+
+    let totalQty = 0;
+    let totalRevenue = 0;
+    let totalProfit = 0;
+
+    paginated.forEach(i => {
+      const profit = (i.subtotal - (i.buying_price * i.quantity));
+
+      const row = `
         <tr>
-          <th>Date</th>
-          <th>Sale ID</th>
-          <th>Product Name</th>
-          <th>Quantity Sold</th>
-          <th>Total Price (Ksh)</th>
-          <th>Profit (Ksh)</th>
+          <td>${new Date(i.date).toLocaleString()}</td>
+          <td>${i.order_code}</td>
+          <td>${i.client_name || "-"}</td>
+          <td>${i.sales_person || "-"}</td>
+          <td>${i.product_name}</td>
+          <td>${i.quantity}</td>
+          <td>${i.subtotal.toFixed(2)}</td>
+          <td>${profit.toFixed(2)}</td>
         </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="5">Total Revenue</td>
-          <td id="totalRevenue">0</td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
+      `;
+      tbody.innerHTML += row;
 
-  <a href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
+      totalQty += i.quantity;
+      totalRevenue += i.subtotal;
+      totalProfit += profit;
+    });
 
-  <!-- SheetJS -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    document.getElementById("totalQty").textContent = totalQty.toLocaleString();
+    document.getElementById("totalRevenue").textContent = totalRevenue.toLocaleString();
+    document.getElementById("totalProfit").textContent = totalProfit.toLocaleString();
 
-  <script>
-    const baseURL = "https://pos-10-production.up.railway.app";
-    let allSales = [];
+    document.getElementById("prevBtn").disabled = currentPage === 1;
+    document.getElementById("nextBtn").disabled = (start + pageSize) >= data.length;
+  }
 
-    async function loadSales() {
-      const response = await fetch(`${baseURL}/sales/get_sales`);
-      allSales = await response.json();
+  function nextPage() {
+    currentPage++;
+    applyFilters();
+  }
 
-      const productSelect = document.getElementById("productFilter");
-      const uniqueProducts = [...new Set(allSales.map(s => s.product_name))];
-      uniqueProducts.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p;
-        option.textContent = p;
-        productSelect.appendChild(option);
-      });
+  function prevPage() {
+    currentPage--;
+    applyFilters();
+  }
 
-      displaySales(allSales);
-    }
+  function exportToExcel() {
+    const wb = XLSX.utils.table_to_book(document.getElementById("salesTable"));
+    XLSX.writeFile(wb, "Sales_Report.xlsx");
+  }
 
-    function displaySales(sales) {
-      const tableBody = document.querySelector("#salesTable tbody");
-      const totalRevenueElem = document.getElementById("totalRevenue");
-      const totalOrdersElem = document.getElementById("totalOrders");
-      const topProductElem = document.getElementById("topProduct");
-      const totalSalesTodayElem = document.getElementById("totalSalesToday");
-
-      let totalRevenue = 0;
-      let totalProfit = 0;
-      let totalToday = 0;
-      let totalQuantity = 0;
-      tableBody.innerHTML = "";
-
-      const todayStr = new Date().toISOString().split("T")[0];
-      const productCounts = {};
-
-      sales.forEach(sale => {
-        const profit = sale.total_price - (sale.buying_price * sale.quantity);
-
-        const saleDate = sale.date.split("T")[0];
-        const row = document.createElement("tr");
-        const localTime = new Date(sale.date).toLocaleString(undefined, {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        });
-
-        row.innerHTML = `
-          <td>${localTime}</td>
-          <td>${sale.id}</td>
-          <td>${sale.product_name}</td>
-          <td>${sale.quantity}</td>
-          <td>${Number(sale.total_price.toFixed(2)).toLocaleString()}</td>
-          <td>${profit.toLocaleString()}</td>
-        `;
-        tableBody.appendChild(row);
-
-        totalRevenue += sale.total_price;
-        totalProfit += profit;
-        totalQuantity += sale.quantity;
-
-        if (saleDate === todayStr) {
-          totalToday += sale.total_price;
-        }
-
-        productCounts[sale.product_name] = (productCounts[sale.product_name] || 0) + sale.quantity;
-      });
-
-      totalRevenueElem.textContent = Number(totalRevenue.toFixed(2)).toLocaleString();
-      totalOrdersElem.textContent = totalQuantity.toLocaleString();
-      totalSalesTodayElem.textContent = Number(totalToday.toFixed(2)).toLocaleString();
-
-      if (Object.keys(productCounts).length) {
-        const topProduct = Object.entries(productCounts).sort((a, b) => b[1] - a[1])[0];
-        topProductElem.textContent = `${topProduct[0]} (${topProduct[1].toLocaleString()} sold)`;
-      } else {
-        topProductElem.textContent = "-";
-      }
-    }
-
-    function applyFilters() {
-      const startDate = document.getElementById("startDate").value;
-      const endDate = document.getElementById("endDate").value;
-      const product = document.getElementById("productFilter").value;
-
-      let filtered = allSales;
-
-      if (startDate) filtered = filtered.filter(s => new Date(s.date) >= new Date(startDate));
-      if (endDate) filtered = filtered.filter(s => new Date(s.date) <= new Date(endDate + 'T23:59:59'));
-      if (product) filtered = filtered.filter(s => s.product_name === product);
-
-      displaySales(filtered);
-    }
-
-    function resetFilters() {
-      document.getElementById("startDate").value = "";
-      document.getElementById("endDate").value = "";
-      document.getElementById("productFilter").value = "";
-      displaySales(allSales);
-    }
-
-    function exportToExcel() {
-      const table = document.getElementById("salesTable");
-      const wb = XLSX.utils.table_to_book(table, { sheet: "Sales Report" });
-      const now = new Date();
-      const filename = `Sales_Report_${now.toISOString().slice(0, 19).replace(/:/g, "-")}.xlsx`;
-      XLSX.writeFile(wb, filename);
-    }
-
-    loadSales();
-  </script>
+  loadSales();
+</script>
 
 </body>
 </html>

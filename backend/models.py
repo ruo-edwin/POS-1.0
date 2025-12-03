@@ -26,16 +26,16 @@ class Product(Base):
 
 class Sales(Base):
     __tablename__ = "sales"
+
     id = Column(Integer, primary_key=True, index=True)
-    sale_code = Column(String(10), unique=True, index=True)
-    business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
     total_price = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    product = relationship("Product", back_populates="sales")
-    business = relationship("Business", back_populates="sales")
+    product = relationship("Product")
+    order = relationship("Order", back_populates="sales")
 
 
 class Business(Base):
@@ -53,7 +53,7 @@ class Business(Base):
     products = relationship("Product", back_populates="business")
     sales = relationship("Sales", back_populates="business")
     subscription = relationship("Subscription", back_populates="business", uselist=False)
-
+    orders = relationship("Order", back_populates="business")
 
 
 class User(Base):
@@ -91,3 +91,20 @@ class Subscription(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     business = relationship("Business", back_populates="subscription")
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_code = Column(String(20), unique=True, index=True)
+    business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
+
+    client_name = Column(String(100), nullable=True)
+    sales_person = Column(String(100), nullable=True)
+
+    total_amount = Column(Float, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    business = relationship("Business", back_populates="orders")
+    sales = relationship("Sales", back_populates="order")
