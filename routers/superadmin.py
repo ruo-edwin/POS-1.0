@@ -46,7 +46,7 @@ def require_superadmin(request: Request, db: Session):
 @router.get("/admin_panel", response_class=HTMLResponse)
 def admin_panel_page(request: Request, db: Session = Depends(get_db)):
     require_superadmin(request, db)
-    return templates.TemplateResponse("admin_dashboard.html", {"request": request})
+    return templates.TemplateResponse("super_admin.html", {"request": request})
 
 
 # ----------------------------------------------------
