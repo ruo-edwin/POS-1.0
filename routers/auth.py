@@ -22,17 +22,35 @@ def get_db():
 
 # ✅ Dashboard redirect
 @router.get("/dashboard")
-def get_dashboard(request: Request):
+def get_dashboard(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
         return RedirectResponse(url="/auth/login")
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("username")
+        user_id = payload.get("user_id")
     except JWTError:
         return RedirectResponse(url="/auth/login")
 
-    return templates.TemplateResponse("index.html", {"request": request, "username": username})
+    # Fetch user details from DB
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return RedirectResponse(url="/auth/login")
+
+    # Fetch business name (superadmin has no business)
+    business_name = user.business.business_name if user.business_id else "Superadmin"
+
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "username": user.username,
+            "business_name": business_name,
+            "last_login": user.last_login,
+            "role": user.role
+        }
+    )
 
 
 # ✅ Registration page
