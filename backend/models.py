@@ -86,7 +86,7 @@ class Subscription(Base):
     __tablename__ = "subscriptions"
 
     id = Column(Integer, primary_key=True, index=True)
-    business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
+    business_id = Column(Integer, ForeignKey("business.id"), nullable=True)
 
     plan_name = Column(String(50), default="monthly")  # demo / monthly / yearly (future)
     amount = Column(Numeric(10,2), default=0)
