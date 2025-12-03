@@ -65,18 +65,31 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
 
     business_id = current_user["business_id"]
 
-    # --------------------------
-    # Generate ONE order_code
-    # --------------------------
-    result = db.execute(text("SELECT id FROM sales ORDER BY id DESC LIMIT 1")).fetchone()
-    next_number = 1 if not result else result[0] + 1
+    # =====================================================
+    # SAFE ORDER CODE GENERATION (NO DUPLICATES EVER)
+    # =====================================================
+    result = db.execute(text("""
+        SELECT sale_code FROM sales 
+        ORDER BY id DESC LIMIT 1
+    """)).fetchone()
+
+    if not result or not result[0]:
+        next_number = 1
+    else:
+        last_code = result[0]             # e.g. "SALE-0041"
+        num = int(last_code.replace("SALE-", ""))
+        next_number = num + 1
+
     order_code = f"SALE-{next_number:04d}"
 
+    # =====================================================
+    # PROCESS CART ITEMS
+    # =====================================================
     total_sales = []
 
     for item in sale_data.items:
 
-        # Get product
+        # Get product for this business
         product = db.query(models.Product).filter(
             models.Product.name == item.product_name,
             models.Product.business_id == business_id
@@ -92,17 +105,19 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
                 detail=f"Not enough stock for '{item.product_name}'"
             )
 
-        # Calculate totals and update stock
+        # Calculate total price
         total_price = product.price * item.quantity
+
+        # Reduce stock
         product.quantity -= item.quantity
 
-        # Create sale row
+        # Create the sale row
         sale = models.Sales(
             business_id=business_id,
             product_id=product.id,
             quantity=item.quantity,
             total_price=total_price,
-            sale_code=order_code   # 👈 SAME SALE CODE FOR ALL ITEMS
+            sale_code=order_code    # 👈 ONE order code for all items
         )
 
         db.add(sale)
