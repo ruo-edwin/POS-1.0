@@ -22,7 +22,7 @@ async def enforce_https(request: Request, call_next):
 @app.middleware("http")
 async def redirect_or_json_on_unauthorized(request: Request, call_next):
     public_paths = [
-        "/auth/login", "/auth/login_form", "/auth/register", "/static", "/favicon.ico","/superadmin/create_superadmin"
+        "/auth/login", "/auth/login_form", "/auth/register", "/static", "/favicon.ico","/superadmin/create_superadmin","/docs"
     ]
     if any(request.url.path.startswith(p) for p in public_paths):
         return await call_next(request)
