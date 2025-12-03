@@ -67,7 +67,8 @@ def create_superadmin(
         username=username,
         password_hash=pwd_context.hash(password),
         role="superadmin",
-        is_active=1
+        is_active=1,
+         last_login=datetime.utcnow()
     )
 
     db.add(new_superadmin)
