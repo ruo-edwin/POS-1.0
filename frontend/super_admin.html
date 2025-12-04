@@ -8,93 +8,128 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
+    :root {
+      --primary: #5b6dff;
+      --secondary: #6a11cb;
+      --gradient: linear-gradient(135deg, #6a11cb, #2575fc);
+      --bg-light: #f4f7fb;
+      --card-bg: rgba(255,255,255,0.8);
+      --table-header: #eef1f7;
+    }
+
     body {
-      background-color: #f1f3f5;
       font-family: 'Poppins', sans-serif;
+      background: var(--bg-light);
+      margin: 0;
+      padding: 0;
     }
 
-    .container-box {
-      background: #ffffff;
-      padding: 35px;
-      border-radius: 18px;
-      margin-top: 40px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-      border: 1px solid #e5e7eb;
-    }
-
-    /* Modern Gradient Title */
-    h2 {
+    /* Premium Header */
+    .dashboard-title {
+      font-size: 2.4rem;
       font-weight: 700;
-      margin-bottom: 25px;
-      font-size: 2rem;
       text-align: center;
-
-      background: linear-gradient(90deg, #5e4fc7, #4e8df5);
+      background: var(--gradient);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
-      -webkit-text-fill-color: transparent;
+      padding-top: 40px;
+      margin-bottom: 20px;
     }
 
-    /* Table Container */
+    /* Glassmorphism Container */
+    .glass-box {
+      max-width: 1100px;
+      margin: auto;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.08);
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    /* Table Styling */
     .table-container {
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
+      border: 1px solid #e0e6f0;
+    }
+
+    table {
+      margin: 0 !important;
       background: white;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    table th {
-      background: #4e8df5 !important;
-      color: white;
-      font-size: 0.95rem;
-      letter-spacing: 0.5px;
+    thead {
+      background: var(--table-header);
     }
 
-    table td {
-      vertical-align: middle;
+    thead th {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #4a4f60;
+      font-weight: 600;
+      padding: 12px;
+    }
+
+    tbody td {
       font-size: 0.92rem;
+      padding: 14px 12px;
+      color: #2b2f3a;
     }
 
-    /* Status badges */
+    tbody tr:hover {
+      background: #f7f9fc;
+      transition: 0.25s;
+    }
+
+    /* Status Badges */
     .badge-status {
-      padding: 6px 10px;
-      font-size: 0.85rem;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+
+    /* Premium Buttons */
+    .action-btn {
+      border-radius: 10px !important;
+      font-size: 0.82rem;
+      padding: 7px 12px !important;
       font-weight: 600;
     }
 
-    /* Action buttons */
-    .action-btn {
-      padding: 6px 12px !important;
-      font-size: 0.85rem;
-      border-radius: 6px;
-    }
+    .btn-success { background: #28c76f !important; border: none; }
+    .btn-primary { background: #5b6dff !important; border: none; }
+    .btn-danger { background: #ff4961 !important; border: none; }
+    .btn-warning { background: #ffb400 !important; border: none; color: black; }
   </style>
 </head>
 
 <body>
 
-  <div class="container container-box">
-    <h2>Superadmin Panel – Manage Clients</h2>
+  <h2 class="dashboard-title">Superadmin Client Management</h2>
 
-    <div class="table-responsive table-container">
-      <table class="table table-bordered table-striped align-middle m-0">
+  <div class="glass-box">
+
+    <div class="table-container mt-3">
+      <table class="table align-middle">
         <thead>
           <tr>
-            <th>Business Name</th>
+            <th>Business</th>
             <th>Username</th>
             <th>Phone</th>
             <th>Subscription</th>
             <th>Days Left</th>
             <th>Status</th>
-            <th style="width: 220px;">Actions</th>
+            <th style="width: 260px;">Actions</th>
           </tr>
         </thead>
-        <tbody id="clientTable">
-          <!-- Dynamic rows insert here -->
-        </tbody>
+
+        <tbody id="clientTable"></tbody>
       </table>
     </div>
   </div>
@@ -115,6 +150,7 @@
 
         table.innerHTML += `
           <tr>
+
             <td>${client.business_name}</td>
             <td>${client.username}</td>
             <td>${client.phone || "-"}</td>
@@ -147,6 +183,7 @@
                 : `<button class="btn btn-warning btn-sm action-btn" onclick="reactivate(${client.business_id})">Reactivate</button>`
               }
             </td>
+
           </tr>
         `;
       });
@@ -174,5 +211,6 @@
 
     loadClients();
   </script>
+
 </body>
 </html>
