@@ -1,118 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard | SmartPOS</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Inter Font -->
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
   <style>
+    :root {
+      --accent: #4f46e5;
+      --accent-strong: #6366f1;
+
+      --bg-light: #eef2f7;
+      --bg-card: #ffffff;
+
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+
+      --border-soft: rgba(0,0,0,0.08);
+
+      --radius: 18px;
+      --shadow-soft: 0 18px 40px rgba(0,0,0,0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+
     body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8f9fa;
+      margin: 0;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #f7f9fc 0%, #e7ebf5 40%, #dee2ef 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      color: var(--text-main);
       min-height: 100vh;
-      padding: 40px 20px;
     }
 
+    /* MAIN CONTAINER */
     .dashboard-container {
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-radius: 16px;
-      padding: 40px 30px;
-      max-width: 400px;
+      background: var(--bg-card);
       width: 100%;
+      max-width: 460px;
+      padding: 40px 32px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
       text-align: center;
+      animation: fadeIn 0.4s ease;
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER */
     h1 {
-      font-weight: 600;
-      color: #333;
-      font-size: 24px;
+      margin: 0 0 10px;
+      font-size: 1.9rem;
+      background: linear-gradient(90deg, #1f2937, #6366f1);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
     }
 
     .biz-name {
-      font-weight: 500;
-      font-size: 18px;
-      color: #6c757d;
-      margin-bottom: 10px;
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 12px;
     }
 
     .user-info {
-      font-size: 15px;
-      color: #6c757d;
-      margin-bottom: 25px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+      line-height: 1.5;
     }
 
     /* SUPERADMIN BUTTON */
     #superadminBtn {
-      background: linear-gradient(90deg, #ffb300, #ff9800);
-      color: white;
-      text-decoration: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      margin-bottom: 20px;
       display: block;
-      transition: 0.2s ease-in-out;
-      box-shadow: 0 3px 8px rgba(255, 152, 0, 0.4);
+      text-decoration: none;
+      padding: 12px 14px;
+      margin-bottom: 22px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ffa000, #fb8c00);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 8px 16px rgba(251, 140, 0, 0.3);
+      transition: 0.2s;
     }
-
     #superadminBtn:hover {
       transform: translateY(-2px);
-      background: linear-gradient(90deg, #ffa000, #fb8c00);
+      filter: brightness(1.05);
     }
 
-    .menu a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background-color: #6f42c1;
-      color: white;
-      text-decoration: none;
-      padding: 12px;
-      border-radius: 8px;
-      transition: all 0.2s ease-in-out;
-      font-weight: 500;
-    }
-
-    .menu a:hover {
-      background-color: #5a32a3;
-      transform: translateY(-2px);
-    }
-
+    /* MENU BUTTONS */
     .menu {
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      margin-top: 25px;
+      gap: 16px;
+      margin-top: 20px;
     }
 
-    .logout-btn {
-      margin-top: 25px;
-      background-color: #dc3545;
+    .menu a {
+      text-decoration: none;
+      padding: 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
       color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
+      font-size: 1rem;
       font-weight: 500;
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.25s ease;
+    }
+
+    .menu a:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.07);
+    }
+
+    /* LOGOUT */
+    .logout-btn {
+      margin-top: 28px;
+      width: 100%;
+      border: none;
+      background: #ef4444;
+      color: white;
+      padding: 12px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: 0.2s;
+      box-shadow: 0 5px 14px rgba(239, 68, 68, 0.25);
+      transition: 0.25s;
     }
 
     .logout-btn:hover {
-      background-color: #b02a37;
+      background: #dc2626;
+      transform: translateY(-2px);
     }
 
     footer {
       margin-top: 30px;
-      color: #888;
-      font-size: 13px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
     }
+
   </style>
 </head>
 
@@ -121,18 +163,21 @@
   <div class="dashboard-container">
     <h1>SmartPOS Dashboard</h1>
 
-    <div class="biz-name">Business: <strong>{{ business_name }}</strong></div>
+    <div class="biz-name">
+      Business: <strong>{{ business_name }}</strong>
+    </div>
 
     <div class="user-info">
       Logged in as <strong>{{ username }}</strong><br>
       Last login: {{ last_login }}
     </div>
 
-    <!-- SUPERADMIN BUTTON (Visible Only for Superadmin) -->
+    <!-- SUPERADMIN BUTTON -->
     {% if role == "superadmin" %}
     <a id="superadminBtn" href="/superadmin/admin_panel">🔐 Superadmin Panel</a>
     {% endif %}
 
+    <!-- MENU -->
     <div class="menu">
       <a href="/sales/recordsale">💰 Sell Products</a>
       <a href="/products/addproduct">➕ Add New Product</a>
@@ -140,6 +185,7 @@
       <a href="/sales/salesreport">📊 Sales Reports</a>
     </div>
 
+    <!-- LOGOUT -->
     <form action="/auth/logout" method="get">
       <button type="submit" class="logout-btn">🚪 Logout</button>
     </form>

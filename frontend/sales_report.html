@@ -10,42 +10,42 @@
 
   <style>
     :root {
-      --bg-body: #0f172a;              /* deep navy */
-      --bg-card: #0b1220;              /* darker card */
-      --border-subtle: rgba(148, 163, 184, 0.25);
-      --accent: #4f46e5;               /* indigo */
-      --accent-soft: rgba(79, 70, 229, 0.12);
+      --bg-body: #eef2f7;              
+      --bg-card: #ffffff;              
+      --border-subtle: rgba(0, 0, 0, 0.08);
+
+      --accent: #4f46e5;
+      --accent-soft: rgba(79, 70, 229, 0.08);
       --accent-strong: #6366f1;
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --table-header: rgba(15, 23, 42, 0.9);
-      --chip-bg: rgba(15, 23, 42, 0.75);
-      --chip-border: rgba(148, 163, 184, 0.4);
-      --danger: #f97373;
-      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.75);
+
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+
+      --table-header: #f3f4f6;
+      --chip-bg: #f3f4f6;
+      --chip-border: rgba(0, 0, 0, 0.15);
+
+      --danger: #dc2626;
+
+      --shadow-soft: 0 10px 35px rgba(0, 0, 0, 0.08);
       --radius-lg: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       padding: 24px 16px 40px;
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #1f2937 0, #020617 45%, #000 100%);
+      font-family: "Inter", system-ui;
+      background: linear-gradient(135deg, #f7f9fc 0%, #e3e7f0 40%, #d8dcee 100%);
       color: var(--text-main);
       display: flex;
       justify-content: center;
     }
 
-    .container {
-      width: 100%;
-      max-width: 1280px;
-    }
+    .container { width: 100%; max-width: 1280px; }
 
-    /* ====== HEADER ====== */
+    /* ---------------- HEADER ---------------- */
     .page-header {
       display: flex;
       align-items: center;
@@ -54,178 +54,120 @@
       margin-bottom: 20px;
     }
 
-    .page-title {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    .page-title { display: flex; flex-direction: column; gap: 4px; }
 
     .page-title h1 {
       margin: 0;
       font-size: 1.8rem;
       letter-spacing: -0.03em;
-      background: linear-gradient(120deg, #e5e7eb, #818cf8);
-      background-clip: text;  
+      background: linear-gradient(120deg, #1f2937, #6366f1);
+      background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
     }
 
-    .page-title span {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
+    .page-title span { font-size: 0.9rem; color: var(--text-muted); }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
     .header-actions a {
       text-decoration: none;
-      font-size: 0.85rem;
       padding: 7px 12px;
       border-radius: 999px;
       border: 1px solid var(--border-subtle);
       color: var(--text-muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(15, 23, 42, 0.85);
-    }
-
-    .header-actions a:hover {
-      border-color: var(--accent-strong);
-      color: #e5e7eb;
+      background: #ffffff;
     }
 
     .header-actions button {
       border: none;
       border-radius: 999px;
       padding: 8px 16px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
       background: linear-gradient(135deg, var(--accent), var(--accent-strong));
       color: white;
-      box-shadow: 0 12px 30px rgba(88, 80, 236, 0.65);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(100, 85, 236, 0.3);
     }
 
-    .header-actions button:hover {
-      filter: brightness(1.05);
-    }
-
-    /* ====== FILTERS ====== */
+    /* ---------------- FILTERS ---------------- */
     .filters {
-      background: radial-gradient(circle at top left, #1f2937 0, #020617 55%);
+      background: #ffffff;
       border-radius: var(--radius-lg);
       padding: 14px 16px;
       border: 1px solid var(--border-subtle);
       box-shadow: var(--shadow-soft);
       display: flex;
       flex-wrap: wrap;
-      gap: 10px 14px;
-      align-items: center;
-      margin-bottom: 20px;
+      gap: 14px;
+      margin-bottom: 24px;
     }
 
     .filter-group {
+      flex: 1;
+      min-width: 160px;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      min-width: 160px;
-      flex: 1;
     }
 
     .filter-label {
       font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--text-muted);
+      text-transform: uppercase;
     }
 
     .filters input,
     .filters select {
-      padding: 7px 9px;
+      padding: 8px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: #ffffff;
       color: var(--text-main);
       font-size: 0.85rem;
-      outline: none;
-    }
-
-    .filters input::placeholder {
-      color: rgba(148, 163, 184, 0.8);
-    }
-
-    .filters select {
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
-                        linear-gradient(135deg, #9ca3af 50%, transparent 50%);
-      background-position: calc(100% - 14px) 9px, calc(100% - 10px) 9px;
-      background-size: 5px 5px, 5px 5px;
-      background-repeat: no-repeat;
-      padding-right: 24px;
     }
 
     .filter-actions {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
-      justify-content: flex-end;
-      flex: 1;
+      flex-wrap: wrap;
+      align-items: flex-end;
     }
 
     .filter-actions button {
+      padding: 8px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-main);
-      font-size: 0.8rem;
-      padding: 7px 14px;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #ffffff;
     }
 
     .filter-actions button.primary {
       border: none;
       background: var(--accent);
-      color: white;
+      color: #fff;
     }
 
     .filter-actions button.export {
-      border-color: rgba(56, 189, 248, 0.7);
-      color: #e0f2fe;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(8, 47, 73, 0.95));
+      border-color: #60a5fa;
+      color: #1e40af;
+      background: #e0f2fe;
     }
 
-    .filter-actions button:hover {
-      filter: brightness(1.06);
-    }
-
-    /* ====== DASHBOARD CARDS ====== */
+    /* ---------------- DASHBOARD CARDS ---------------- */
     .info-dashboard {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .card {
+      background: #ffffff;
+      padding: 20px;
       border-radius: var(--radius-lg);
-      background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.16), #020617);
+      box-shadow: var(--shadow-soft);
       border: 1px solid var(--border-subtle);
-      padding: 16px 18px;
-      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.9);
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -233,127 +175,85 @@
 
     .card-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
       font-size: 0.8rem;
       color: var(--text-muted);
     }
 
-    .card-badge {
-      border-radius: 999px;
-      padding: 3px 9px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.9);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
     .card h2 {
       margin: 0;
       font-size: 1.4rem;
-      letter-spacing: -0.03em;
-      color: #e5e7eb;
+      font-weight: 600;
     }
 
-    .card-sub {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
+    .card-sub { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* ====== TABLE ====== */
+    /* ---------------- TABLE ---------------- */
     .table-container {
       border-radius: var(--radius-lg);
       border: 1px solid var(--border-subtle);
-      background: radial-gradient(circle at top left, #020617, #020617);
-      box-shadow: 0 22px 55px rgba(15, 23, 42, 0.95);
+      background: #ffffff;
+      box-shadow: var(--shadow-soft);
       overflow: hidden;
-      position: relative;
     }
 
-    .table-scroll {
-      overflow-x: auto;
-    }
+    .table-scroll { overflow-x: auto; }
 
     table {
       width: 100%;
-      border-collapse: collapse;
       min-width: 920px;
+      border-collapse: collapse;
       font-size: 0.86rem;
     }
 
-    thead tr {
-      background: radial-gradient(circle at top left, #111827, #020617);
+    th {
+      background: var(--table-header);
+      padding: 12px;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
-      text-align: left;
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
       white-space: nowrap;
     }
 
-    th {
-      font-weight: 500;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #9ca3af;
-    }
-
-    tbody tr:hover {
-      background: rgba(15, 23, 42, 0.8);
+    tr:hover {
+      background: #f9fafb;
     }
 
     .chip {
+      padding: 4px 10px;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      border-radius: 999px;
       display: inline-flex;
       align-items: center;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--chip-border);
-      background: var(--chip-bg);
-      font-size: 0.75rem;
-      color: var(--text-main);
-      gap: 6px;
     }
 
-    .amount {
-      font-variant-numeric: tabular-nums;
-    }
+    .amount.pos { color: #16a34a; }
+    .amount.neg { color: var(--danger); }
 
-    .amount.pos {
-      color: #4ade80;
-    }
-
-    .amount.neg {
-      color: var(--danger);
-    }
-
-    /* ====== PAGINATION ====== */
+    /* ---------------- PAGINATION ---------------- */
     .pagination {
+      padding: 14px;
       display: flex;
-      justify-content: flex-end;
       gap: 10px;
-      padding: 12px 16px 10px;
-      background: rgba(15, 23, 42, 0.92);
-      border-top: 1px solid rgba(30, 64, 175, 0.6);
       align-items: center;
-      flex-wrap: wrap;
+      justify-content: flex-end;
+      background: #ffffff;
+      border-top: 1px solid var(--border-subtle);
     }
 
-    .pagination span {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-right: auto;
-    }
+    .pagination span { color: var(--text-muted); font-size: 0.8rem; }
 
     .pagination button {
       padding: 6px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-main);
-      font-size: 0.78rem;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #ffffff;
       cursor: pointer;
     }
 
@@ -362,60 +262,14 @@
       cursor: not-allowed;
     }
 
-    /* ====== BACK LINK ====== */
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 22px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      text-decoration: none;
-    }
-
-    .back-link:hover {
-      color: #e5e7eb;
-    }
-
-    /* ====== RESPONSIVE ====== */
+    /* ---------------- RESPONSIVE ---------------- */
     @media (max-width: 900px) {
-      .info-dashboard {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+      .info-dashboard { grid-template-columns: repeat(2,1fr); }
     }
 
     @media (max-width: 700px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .header-actions {
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .info-dashboard {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .filters {
-        align-items: stretch;
-      }
-
-      .filter-actions {
-        justify-content: flex-start;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 16px 10px 28px;
-      }
-
-      .page-title h1 {
-        font-size: 1.5rem;
-      }
+      .info-dashboard { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -429,16 +283,16 @@
       <h1>Sales Report</h1>
       <span>Track item-level performance across all orders</span>
     </div>
+
     <div class="header-actions">
       <a href="/auth/dashboard">← Back to dashboard</a>
-      <button type="button" onclick="exportToExcel()">
-        ⬇ Export Excel
-      </button>
+      <button onclick="exportToExcel()">⬇ Export Excel</button>
     </div>
   </div>
 
   <!-- FILTERS -->
   <div class="filters">
+
     <div class="filter-group">
       <span class="filter-label">From</span>
       <input type="date" id="startDate">
@@ -466,46 +320,38 @@
 
     <div class="filter-group">
       <span class="filter-label">Product</span>
-      <select id="productFilter">
-        <option value="">All products</option>
-      </select>
+      <select id="productFilter"><option value="">All products</option></select>
     </div>
 
     <div class="filter-actions">
       <button class="primary" onclick="applyFilters()">Filter</button>
       <button onclick="resetFilters()">Reset</button>
-      <button class="export" type="button" onclick="exportToExcel()">Export</button>
+      <button class="export" onclick="exportToExcel()">Export</button>
     </div>
+
   </div>
 
-  <!-- DASHBOARD CARDS -->
+  <!-- DASHBOARD -->
   <div class="info-dashboard">
+
     <div class="card">
-      <div class="card-header">
-        <span>Total Items Sold</span>
-        <span class="card-badge">Volume</span>
-      </div>
+      <div class="card-header"><span>Total Items Sold</span><span class="card-badge">Volume</span></div>
       <h2 id="totalQty">0</h2>
       <div class="card-sub">Sum of all quantities in this view</div>
     </div>
 
     <div class="card">
-      <div class="card-header">
-        <span>Total Revenue</span>
-        <span class="card-badge">Gross</span>
-      </div>
+      <div class="card-header"><span>Total Revenue</span><span class="card-badge">Gross</span></div>
       <h2 id="totalRevenue">0</h2>
-      <div class="card-sub">Subtotal (Ksh) for current page/filter</div>
+      <div class="card-sub">Subtotal (Ksh)</div>
     </div>
 
     <div class="card">
-      <div class="card-header">
-        <span>Total Profit</span>
-        <span class="card-badge">Net</span>
-      </div>
+      <div class="card-header"><span>Total Profit</span><span class="card-badge">Net</span></div>
       <h2 id="totalProfit">0</h2>
-      <div class="card-sub">Based on buying price × quantity</div>
+      <div class="card-sub">Profit from buying price</div>
     </div>
+
   </div>
 
   <!-- TABLE -->
@@ -537,9 +383,10 @@
   </div>
 
   <a class="back-link" href="/auth/dashboard">← Back to Home</a>
+
 </div>
 
-<!-- SheetJS -->
+<!-- Excel Export -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
@@ -552,8 +399,7 @@
   async function loadSales() {
     const res = await fetch(`${baseURL}/sales/get_sales_items`, { credentials: "include" });
     allItems = await res.json();
-    filteredItems = allItems.slice(); // copy
-
+    filteredItems = allItems.slice();
     loadProductFilter();
     renderTable();
   }
@@ -570,46 +416,36 @@
   }
 
   function applyFilters() {
-    const sDate = document.getElementById("startDate").value;
-    const eDate = document.getElementById("endDate").value;
-    const order = document.getElementById("orderFilter").value.trim().toLowerCase();
-    const client = document.getElementById("clientFilter").value.trim().toLowerCase();
-    const sales = document.getElementById("salesFilter").value.trim().toLowerCase();
-    const product = document.getElementById("productFilter").value;
+    const sDate = startDate.value;
+    const eDate = endDate.value;
+    const order = orderFilter.value.trim().toLowerCase();
+    const client = clientFilter.value.trim().toLowerCase();
+    const sales = salesFilter.value.trim().toLowerCase();
+    const product = productFilter.value;
 
     let data = allItems.slice();
 
-    if (sDate) {
-      data = data.filter(i => new Date(i.date) >= new Date(sDate));
-    }
-    if (eDate) {
-      data = data.filter(i => new Date(i.date) <= new Date(eDate + "T23:59:59"));
-    }
-    if (order) {
-      data = data.filter(i => (i.order_code || "").toLowerCase().includes(order));
-    }
-    if (client) {
-      data = data.filter(i => (i.client_name || "").toLowerCase().includes(client));
-    }
-    if (sales) {
-      data = data.filter(i => (i.sales_person || "").toLowerCase().includes(sales));
-    }
-    if (product) {
-      data = data.filter(i => i.product_name === product);
-    }
+    if (sDate) data = data.filter(i => new Date(i.date) >= new Date(sDate));
+    if (eDate) data = data.filter(i => new Date(i.date) <= new Date(eDate + "T23:59:59"));
+
+    if (order) data = data.filter(i => (i.order_code || "").toLowerCase().includes(order));
+    if (client) data = data.filter(i => (i.client_name || "").toLowerCase().includes(client));
+    if (sales) data = data.filter(i => (i.sales_person || "").toLowerCase().includes(sales));
+    if (product) data = data.filter(i => i.product_name === product);
 
     filteredItems = data;
     currentPage = 1;
+
     renderTable();
   }
 
   function resetFilters() {
-    document.getElementById("startDate").value = "";
-    document.getElementById("endDate").value = "";
-    document.getElementById("orderFilter").value = "";
-    document.getElementById("clientFilter").value = "";
-    document.getElementById("salesFilter").value = "";
-    document.getElementById("productFilter").value = "";
+    startDate.value = "";
+    endDate.value = "";
+    orderFilter.value = "";
+    clientFilter.value = "";
+    salesFilter.value = "";
+    productFilter.value = "";
 
     filteredItems = allItems.slice();
     currentPage = 1;
@@ -628,47 +464,45 @@
     let totalProfit = 0;
 
     paginated.forEach(i => {
-      const quantity = Number(i.quantity) || 0;
+      const qty = Number(i.quantity) || 0;
       const subtotal = Number(i.subtotal) || 0;
       const buyingPrice = Number(i.buying_price) || 0;
-
-      // Profit = subtotal - (buying_price * quantity)
-      const profit = subtotal - (buyingPrice * quantity) || 0;
+      const profit = subtotal - (buyingPrice * qty);
 
       const profitClass = profit >= 0 ? "pos" : "neg";
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${new Date(i.date).toLocaleString()}</td>
-        <td><span class="chip">${i.order_code || "-"}</span></td>
-        <td>${i.client_name || "-"}</td>
-        <td>${i.sales_person || "-"}</td>
-        <td>${i.product_name}</td>
-        <td class="amount">${quantity}</td>
-        <td class="amount">${subtotal.toFixed(2)}</td>
-        <td class="amount ${profitClass}">${profit.toFixed(2)}</td>
+      const row = `
+        <tr>
+          <td>${new Date(i.date).toLocaleString()}</td>
+          <td><span class="chip">${i.order_code || "-"}</span></td>
+          <td>${i.client_name || "-"}</td>
+          <td>${i.sales_person || "-"}</td>
+          <td>${i.product_name}</td>
+          <td>${qty}</td>
+          <td>${subtotal.toFixed(2)}</td>
+          <td class="amount ${profitClass}">${profit.toFixed(2)}</td>
+        </tr>
       `;
-      tbody.appendChild(row);
 
-      totalQty += quantity;
+      tbody.innerHTML += row;
+
+      totalQty += qty;
       totalRevenue += subtotal;
       totalProfit += profit;
     });
 
-    document.getElementById("totalQty").textContent = totalQty.toLocaleString();
-    document.getElementById("totalRevenue").textContent = totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById("totalProfit").textContent = totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    totalQty.innerText = totalQty.toLocaleString();
+    totalRevenue.innerText = totalRevenue.toLocaleString();
+    totalProfit.innerText = totalProfit.toLocaleString();
 
-    const pageInfo = document.getElementById("pageInfo");
-    const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-
-    document.getElementById("prevBtn").disabled = currentPage <= 1;
-    document.getElementById("nextBtn").disabled = currentPage >= totalPages;
+    const totalPages = Math.ceil(filteredItems.length / pageSize);
+    document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
   }
 
   function nextPage() {
-    const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+    const totalPages = Math.ceil(filteredItems.length / pageSize);
     if (currentPage < totalPages) {
       currentPage++;
       renderTable();
