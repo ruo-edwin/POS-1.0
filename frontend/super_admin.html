@@ -5,107 +5,111 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Superadmin Dashboard | SmartPOS</title>
 
+  <!-- Stripe Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #5b6dff;
-      --secondary: #6a11cb;
-      --gradient: linear-gradient(135deg, #6a11cb, #2575fc);
-      --bg-light: #f4f7fb;
-      --card-bg: rgba(255,255,255,0.8);
-      --table-header: #eef1f7;
+      --stripe-primary: #635bff;
+      --stripe-dark: #1a1f36;
+      --stripe-light-bg: #f6f9fc;
+      --card-border: #e3e8ee;
+      --badge-trial: #00bcd4;
+      --badge-active: #28c76f;
+      --badge-expired: #ffa726;
+      --badge-suspended: #ef5350;
     }
 
     body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-light);
+      font-family: 'Inter', sans-serif;
+      background: var(--stripe-light-bg);
       margin: 0;
       padding: 0;
+      color: var(--stripe-dark);
     }
 
-    /* Premium Header */
+    /* HEADER */
     .dashboard-title {
-      font-size: 2.4rem;
+      font-size: 2.1rem;
       font-weight: 700;
       text-align: center;
-      background: var(--gradient);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      padding-top: 40px;
-      margin-bottom: 20px;
+      margin-top: 40px;
+      color: var(--stripe-dark);
+      letter-spacing: -0.5px;
     }
 
-    /* Glassmorphism Container */
-    .glass-box {
-      max-width: 1100px;
-      margin: auto;
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 35px;
-      border-radius: 20px;
-      box-shadow: 0 20px 35px rgba(0,0,0,0.08);
-      border: 1px solid rgba(255,255,255,0.35);
+    /* MAIN CARD */
+    .main-card {
+      background: #ffffff;
+      max-width: 1150px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.07);
     }
 
-    /* Table Styling */
+    /* TABLE */
     .table-container {
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
-      border: 1px solid #e0e6f0;
-    }
-
-    table {
-      margin: 0 !important;
-      background: white;
+      border: 1px solid var(--card-border);
     }
 
     thead {
-      background: var(--table-header);
+      background: #f1f4f9;
     }
 
     thead th {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      color: #4a4f60;
       font-weight: 600;
-      padding: 12px;
+      font-size: 0.85rem;
+      padding: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #3b4256;
     }
 
     tbody td {
+      padding: 14px;
       font-size: 0.92rem;
-      padding: 14px 12px;
-      color: #2b2f3a;
+      color: #2a2f45;
     }
 
     tbody tr:hover {
-      background: #f7f9fc;
+      background: #f9fbff;
       transition: 0.25s;
     }
 
-    /* Status Badges */
+    /* BADGES */
     .badge-status {
       padding: 6px 12px;
-      border-radius: 50px;
+      border-radius: 6px;
+      font-size: 0.75rem;
       font-weight: 600;
-      font-size: 0.78rem;
+      color: white;
     }
 
-    /* Premium Buttons */
+    .trial { background: var(--badge-trial); }
+    .active { background: var(--badge-active); }
+    .expired { background: var(--badge-expired); color: black !important; }
+    .suspended { background: var(--badge-suspended); }
+
+    /* BUTTONS */
     .action-btn {
-      border-radius: 10px !important;
-      font-size: 0.82rem;
-      padding: 7px 12px !important;
+      padding: 6px 12px !important;
+      border-radius: 6px !important;
+      font-size: 0.82rem !important;
       font-weight: 600;
+      border: none;
     }
 
-    .btn-success { background: #28c76f !important; border: none; }
-    .btn-primary { background: #5b6dff !important; border: none; }
-    .btn-danger { background: #ff4961 !important; border: none; }
-    .btn-warning { background: #ffb400 !important; border: none; color: black; }
+    .btn-success { background: var(--badge-active) !important; }
+    .btn-primary { background: var(--stripe-primary) !important; }
+    .btn-danger { background: var(--badge-suspended) !important; }
+    .btn-warning { background: var(--badge-expired) !important; color: #1a1f36 !important; }
+
   </style>
 </head>
 
@@ -113,10 +117,10 @@
 
   <h2 class="dashboard-title">Superadmin Client Management</h2>
 
-  <div class="glass-box">
+  <div class="main-card">
 
-    <div class="table-container mt-3">
-      <table class="table align-middle">
+    <div class="table-container">
+      <table class="table align-middle mb-0">
         <thead>
           <tr>
             <th>Business</th>
@@ -132,6 +136,7 @@
         <tbody id="clientTable"></tbody>
       </table>
     </div>
+
   </div>
 
   <script>
@@ -142,11 +147,7 @@
       table.innerHTML = "";
 
       data.forEach(client => {
-        let badgeClass = "";
-        if (client.subscription_status === "trial") badgeClass = "bg-info";
-        if (client.subscription_status === "active") badgeClass = "bg-success";
-        if (client.subscription_status === "expired") badgeClass = "bg-warning text-dark";
-        if (client.subscription_status === "suspended") badgeClass = "bg-danger";
+        const statusClass = client.subscription_status;
 
         table.innerHTML += `
           <tr>
@@ -156,7 +157,7 @@
             <td>${client.phone || "-"}</td>
 
             <td>
-              <span class="badge badge-status ${badgeClass}">
+              <span class="badge-status ${statusClass}">
                 ${client.subscription_status.toUpperCase()}
               </span>
             </td>
@@ -165,23 +166,25 @@
             <td>${client.is_active ? "Active" : "Inactive"}</td>
 
             <td>
+
               ${
-                client.subscription_status === "trial" || client.subscription_status === "expired"
-                ? `<button class="btn btn-success btn-sm action-btn" onclick="activate(${client.business_id})">Activate</button>`
+                ["trial", "expired"].includes(client.subscription_status)
+                ? `<button class="btn btn-success action-btn" onclick="activate(${client.business_id})">Activate</button>`
                 : ``
               }
 
               ${
                 client.subscription_status === "active"
-                ? `<button class="btn btn-primary btn-sm action-btn" onclick="renew(${client.business_id})">Renew +30 Days</button>`
+                ? `<button class="btn btn-primary action-btn" onclick="renew(${client.business_id})">Renew 30 Days</button>`
                 : ``
               }
 
               ${
                 client.subscription_status !== "suspended"
-                ? `<button class="btn btn-danger btn-sm action-btn" onclick="suspend(${client.business_id})">Suspend</button>`
-                : `<button class="btn btn-warning btn-sm action-btn" onclick="reactivate(${client.business_id})">Reactivate</button>`
+                ? `<button class="btn btn-danger action-btn" onclick="suspend(${client.business_id})">Suspend</button>`
+                : `<button class="btn btn-warning action-btn" onclick="reactivate(${client.business_id})">Reactivate</button>`
               }
+
             </td>
 
           </tr>
@@ -193,17 +196,14 @@
       await fetch(`/superadmin/activate/${id}`, { method: "POST" });
       loadClients();
     }
-
     async function renew(id) {
       await fetch(`/superadmin/renew/${id}`, { method: "POST" });
       loadClients();
     }
-
     async function suspend(id) {
       await fetch(`/superadmin/suspend/${id}`, { method: "POST" });
       loadClients();
     }
-
     async function reactivate(id) {
       await fetch(`/superadmin/reactivate/${id}`, { method: "POST" });
       loadClients();
