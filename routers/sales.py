@@ -135,8 +135,8 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
 # =======================================================================
 # 🧾 ORDER-WISE SALES REPORT
 # =======================================================================
-@router.get("/get_sales")
-def get_sales(request: Request, db: Session = Depends(get_db)):
+@router.get("/get_sales_items")
+def get_sales_items(request: Request, db: Session = Depends(get_db)):
 
     user = verify_token(request)
     if not user:
@@ -144,32 +144,30 @@ def get_sales(request: Request, db: Session = Depends(get_db)):
 
     business_id = user["business_id"]
 
-    orders = db.query(models.Order).filter(
-        models.Order.business_id == business_id
-    ).order_by(models.Order.id.desc()).all()
+    sales_items = (
+        db.query(models.Sales, models.Order, models.Product)
+        .join(models.Order, models.Sales.order_id == models.Order.id)
+        .join(models.Product, models.Sales.product_id == models.Product.id)
+        .filter(models.Order.business_id == business_id)
+        .order_by(models.Sales.id.desc())
+        .all()
+    )
 
-    final_output = []
+    output = []
 
-    for order in orders:
-        order_items = []
-
-        for sale in order.sales:  # FIXED
-            order_items.append({
-                "product_name": sale.product.name,
-                "quantity": sale.quantity,
-                "subtotal": sale.total_price
-            })
-
-        final_output.append({
+    for sale, order, product in sales_items:
+        output.append({
             "order_code": order.order_code,
             "date": order.created_at,
             "client_name": order.client_name,
             "sales_person": order.sales_person,
-            "total_amount": order.total_amount,
-            "items": order_items
+            "product_name": product.name,
+            "quantity": sale.quantity,
+            "subtotal": sale.total_price,
+            "buying_price": product.buying_price or 0   # ✅ ADD COST PRICE
         })
 
-    return final_output
+    return output
 
 
 # =======================================================================
