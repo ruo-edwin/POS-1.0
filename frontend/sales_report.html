@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Report | SmartPOS</title>
 
-  <!-- Inter font (Stripe style) -->
+  <!-- Inter font -->
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
   <style>
     :root {
-      --bg-body: #eef2f7;              
-      --bg-card: #ffffff;              
+      --bg-body: #eef2f7;
+      --bg-card: #ffffff;
       --border-subtle: rgba(0, 0, 0, 0.08);
 
       --accent: #4f46e5;
@@ -45,7 +45,7 @@
 
     .container { width: 100%; max-width: 1280px; }
 
-    /* ---------------- HEADER ---------------- */
+    /* HEADER */
     .page-header {
       display: flex;
       align-items: center;
@@ -54,12 +54,9 @@
       margin-bottom: 20px;
     }
 
-    .page-title { display: flex; flex-direction: column; gap: 4px; }
-
     .page-title h1 {
       margin: 0;
       font-size: 1.8rem;
-      letter-spacing: -0.03em;
       background: linear-gradient(120deg, #1f2937, #6366f1);
       background-clip: text;
       -webkit-background-clip: text;
@@ -67,17 +64,6 @@
     }
 
     .page-title span { font-size: 0.9rem; color: var(--text-muted); }
-
-    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-    .header-actions a {
-      text-decoration: none;
-      padding: 7px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
-      background: #ffffff;
-    }
 
     .header-actions button {
       border: none;
@@ -87,10 +73,9 @@
       color: white;
       font-weight: 500;
       cursor: pointer;
-      box-shadow: 0 12px 30px rgba(100, 85, 236, 0.3);
     }
 
-    /* ---------------- FILTERS ---------------- */
+    /* FILTERS */
     .filters {
       background: #ffffff;
       border-radius: var(--radius-lg);
@@ -111,50 +96,14 @@
       gap: 4px;
     }
 
-    .filter-label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    .filters input,
-    .filters select {
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
-      background: #ffffff;
-      color: var(--text-main);
-      font-size: 0.85rem;
-    }
-
-    .filter-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-    }
-
     .filter-actions button {
       padding: 8px 14px;
       border-radius: 999px;
       cursor: pointer;
-      border: 1px solid rgba(0,0,0,0.1);
-      background: #ffffff;
+      background: #fff;
     }
 
-    .filter-actions button.primary {
-      border: none;
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .filter-actions button.export {
-      border-color: #60a5fa;
-      color: #1e40af;
-      background: #e0f2fe;
-    }
-
-    /* ---------------- DASHBOARD CARDS ---------------- */
+    /* DASHBOARD */
     .info-dashboard {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -168,16 +117,6 @@
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-soft);
       border: 1px solid var(--border-subtle);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: var(--text-muted);
     }
 
     .card h2 {
@@ -186,9 +125,7 @@
       font-weight: 600;
     }
 
-    .card-sub { font-size: 0.75rem; color: var(--text-muted); }
-
-    /* ---------------- TABLE ---------------- */
+    /* TABLE */
     .table-container {
       border-radius: var(--radius-lg);
       border: 1px solid var(--border-subtle);
@@ -197,79 +134,27 @@
       overflow: hidden;
     }
 
-    .table-scroll { overflow-x: auto; }
-
     table {
       width: 100%;
-      min-width: 920px;
       border-collapse: collapse;
-      font-size: 0.86rem;
+      min-width: 900px;
     }
 
-    th {
-      background: var(--table-header);
-      padding: 12px;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    td {
+    th, td {
       padding: 12px;
       border-bottom: 1px solid rgba(0,0,0,0.06);
       white-space: nowrap;
     }
 
-    tr:hover {
-      background: #f9fafb;
-    }
-
-    .chip {
-      padding: 4px 10px;
-      background: var(--chip-bg);
-      border: 1px solid var(--chip-border);
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-    }
-
     .amount.pos { color: #16a34a; }
-    .amount.neg { color: var(--danger); }
+    .amount.neg { color: #dc2626; }
 
-    /* ---------------- PAGINATION ---------------- */
+    /* PAGINATION */
     .pagination {
       padding: 14px;
       display: flex;
-      gap: 10px;
-      align-items: center;
       justify-content: flex-end;
-      background: #ffffff;
-      border-top: 1px solid var(--border-subtle);
-    }
-
-    .pagination span { color: var(--text-muted); font-size: 0.8rem; }
-
-    .pagination button {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.1);
-      background: #ffffff;
-      cursor: pointer;
-    }
-
-    .pagination button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    /* ---------------- RESPONSIVE ---------------- */
-    @media (max-width: 900px) {
-      .info-dashboard { grid-template-columns: repeat(2,1fr); }
-    }
-
-    @media (max-width: 700px) {
-      .info-dashboard { grid-template-columns: 1fr; }
-      .page-header { flex-direction: column; align-items: flex-start; }
+      gap: 10px;
     }
   </style>
 </head>
@@ -283,73 +168,64 @@
       <h1>Sales Report</h1>
       <span>Track item-level performance across all orders</span>
     </div>
-
-    <div class="header-actions">
-      <a href="/auth/dashboard">← Back to dashboard</a>
-      <button onclick="exportToExcel()">⬇ Export Excel</button>
-    </div>
   </div>
 
   <!-- FILTERS -->
   <div class="filters">
-
     <div class="filter-group">
-      <span class="filter-label">From</span>
+      <span>From</span>
       <input type="date" id="startDate">
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">To</span>
+      <span>To</span>
       <input type="date" id="endDate">
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">Order Code</span>
-      <input type="text" id="orderFilter" placeholder="ORD-00001">
+      <span>Order</span>
+      <input type="text" id="orderFilter">
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">Client</span>
-      <input type="text" id="clientFilter" placeholder="Client name">
+      <span>Client</span>
+      <input type="text" id="clientFilter">
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">Sales Person</span>
-      <input type="text" id="salesFilter" placeholder="Sales person">
+      <span>Sales Person</span>
+      <input type="text" id="salesFilter">
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">Product</span>
-      <select id="productFilter"><option value="">All products</option></select>
+      <span>Product</span>
+      <select id="productFilter">
+        <option value="">All products</option>
+      </select>
     </div>
 
     <div class="filter-actions">
-      <button class="primary" onclick="applyFilters()">Filter</button>
+      <button onclick="applyFilters()">Filter</button>
       <button onclick="resetFilters()">Reset</button>
-      <button class="export" onclick="exportToExcel()">Export</button>
     </div>
-
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- DASHBOARD CARDS -->
   <div class="info-dashboard">
 
     <div class="card">
-      <div class="card-header"><span>Total Items Sold</span><span class="card-badge">Volume</span></div>
+      <h3>Total Items Sold</h3>
       <h2 id="totalQty">0</h2>
-      <div class="card-sub">Sum of all quantities in this view</div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span>Total Revenue</span><span class="card-badge">Gross</span></div>
+      <h3>Total Revenue</h3>
       <h2 id="totalRevenue">0</h2>
-      <div class="card-sub">Subtotal (Ksh)</div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span>Total Profit</span><span class="card-badge">Net</span></div>
+      <h3>Total Profit</h3>
       <h2 id="totalProfit">0</h2>
-      <div class="card-sub">Profit from buying price</div>
     </div>
 
   </div>
@@ -374,60 +250,52 @@
       </table>
     </div>
 
-    <!-- PAGINATION -->
     <div class="pagination">
       <span id="pageInfo">Page 1</span>
       <button id="prevBtn" onclick="prevPage()">Prev</button>
       <button id="nextBtn" onclick="nextPage()">Next</button>
     </div>
   </div>
-
-  <a class="back-link" href="/auth/dashboard">← Back to Home</a>
-
 </div>
 
-<!-- Excel Export -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 <script>
-  const baseURL = "https://pos-10-production.up.railway.app";
-  let allItems = [];
-  let filteredItems = [];
-  let currentPage = 1;
-  const pageSize = 25;
+const baseURL = "https://pos-10-production.up.railway.app";
+let allItems = [];
+let filteredItems = [];
+let currentPage = 1;
+const pageSize = 25;
 
-  async function loadSales() {
+async function loadSales() {
     const res = await fetch(`${baseURL}/sales/get_sales_items`, { credentials: "include" });
     allItems = await res.json();
     filteredItems = allItems.slice();
     loadProductFilter();
     renderTable();
-  }
+}
 
-  function loadProductFilter() {
+function loadProductFilter() {
     const select = document.getElementById("productFilter");
     const products = [...new Set(allItems.map(i => i.product_name))];
     products.forEach(p => {
-      const op = document.createElement("option");
-      op.value = p;
-      op.textContent = p;
-      select.appendChild(op);
+        const op = document.createElement("option");
+        op.value = p;
+        op.textContent = p;
+        select.appendChild(op);
     });
-  }
+}
 
-  function applyFilters() {
+function applyFilters() {
     const sDate = startDate.value;
     const eDate = endDate.value;
-    const order = orderFilter.value.trim().toLowerCase();
-    const client = clientFilter.value.trim().toLowerCase();
-    const sales = salesFilter.value.trim().toLowerCase();
+    const order = orderFilter.value.toLowerCase();
+    const client = clientFilter.value.toLowerCase();
+    const sales = salesFilter.value.toLowerCase();
     const product = productFilter.value;
 
     let data = allItems.slice();
 
     if (sDate) data = data.filter(i => new Date(i.date) >= new Date(sDate));
     if (eDate) data = data.filter(i => new Date(i.date) <= new Date(eDate + "T23:59:59"));
-
     if (order) data = data.filter(i => (i.order_code || "").toLowerCase().includes(order));
     if (client) data = data.filter(i => (i.client_name || "").toLowerCase().includes(client));
     if (sales) data = data.filter(i => (i.sales_person || "").toLowerCase().includes(sales));
@@ -435,11 +303,10 @@
 
     filteredItems = data;
     currentPage = 1;
-
     renderTable();
-  }
+}
 
-  function resetFilters() {
+function resetFilters() {
     startDate.value = "";
     endDate.value = "";
     orderFilter.value = "";
@@ -450,79 +317,71 @@
     filteredItems = allItems.slice();
     currentPage = 1;
     renderTable();
-  }
+}
 
-  function renderTable() {
+function renderTable() {
     const tbody = document.querySelector("#salesTable tbody");
     tbody.innerHTML = "";
 
     const start = (currentPage - 1) * pageSize;
     const paginated = filteredItems.slice(start, start + pageSize);
 
-    let totalQty = 0;
-    let totalRevenue = 0;
-    let totalProfit = 0;
+    let qtySum = 0;
+    let revenueSum = 0;
+    let profitSum = 0;
 
     paginated.forEach(i => {
-      const qty = Number(i.quantity) || 0;
-      const subtotal = Number(i.subtotal) || 0;
-      const buyingPrice = Number(i.buying_price) || 0;
-      const profit = subtotal - (buyingPrice * qty);
+        const qty = Number(i.quantity) || 0;
+        const subtotal = Number(i.subtotal) || 0;
+        const buyingPrice = Number(i.buying_price) || 0;
+        const profit = subtotal - (buyingPrice * qty);
 
-      const profitClass = profit >= 0 ? "pos" : "neg";
+        qtySum += qty;
+        revenueSum += subtotal;
+        profitSum += profit;
 
-      const row = `
+        const row = `
         <tr>
-          <td>${new Date(i.date).toLocaleString()}</td>
-          <td><span class="chip">${i.order_code || "-"}</span></td>
-          <td>${i.client_name || "-"}</td>
-          <td>${i.sales_person || "-"}</td>
-          <td>${i.product_name}</td>
-          <td>${qty}</td>
-          <td>${subtotal.toFixed(2)}</td>
-          <td class="amount ${profitClass}">${profit.toFixed(2)}</td>
+            <td>${new Date(i.date).toLocaleString()}</td>
+            <td>${i.order_code || "-"}</td>
+            <td>${i.client_name || "-"}</td>
+            <td>${i.sales_person || "-"}</td>
+            <td>${i.product_name}</td>
+            <td>${qty}</td>
+            <td>${subtotal.toFixed(2)}</td>
+            <td class="amount ${profit >= 0 ? "pos" : "neg"}">${profit.toFixed(2)}</td>
         </tr>
-      `;
-
-      tbody.innerHTML += row;
-
-      totalQty += qty;
-      totalRevenue += subtotal;
-      totalProfit += profit;
+        `;
+        tbody.innerHTML += row;
     });
 
-    totalQty.innerText = totalQty.toLocaleString();
-    totalRevenue.innerText = totalRevenue.toLocaleString();
-    totalProfit.innerText = totalProfit.toLocaleString();
+    // Update dashboard cards
+    document.getElementById("totalQty").innerText = qtySum.toLocaleString();
+    document.getElementById("totalRevenue").innerText = revenueSum.toLocaleString();
+    document.getElementById("totalProfit").innerText = profitSum.toLocaleString();
 
     const totalPages = Math.ceil(filteredItems.length / pageSize);
     document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
     prevBtn.disabled = currentPage === 1;
     nextBtn.disabled = currentPage === totalPages;
-  }
+}
 
-  function nextPage() {
+function nextPage() {
     const totalPages = Math.ceil(filteredItems.length / pageSize);
     if (currentPage < totalPages) {
-      currentPage++;
-      renderTable();
+        currentPage++;
+        renderTable();
     }
-  }
+}
 
-  function prevPage() {
+function prevPage() {
     if (currentPage > 1) {
-      currentPage--;
-      renderTable();
+        currentPage--;
+        renderTable();
     }
-  }
+}
 
-  function exportToExcel() {
-    const table = document.getElementById("salesTable");
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Sales Report" });
-    XLSX.writeFile(wb, "Sales_Report.xlsx");
-  }
-
-  loadSales();
+loadSales();
 </script>
 
 </body>
