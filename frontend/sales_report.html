@@ -5,156 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Report | SmartPOS</title>
 
-  <!-- Inter font -->
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
   <style>
     :root {
-      --bg-body: #eef2f7;
-      --bg-card: #ffffff;
-      --border-subtle: rgba(0, 0, 0, 0.08);
-
+      --bg: #eef2f7;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --card-bg: #fff;
+      --border: rgba(0,0,0,0.1);
       --accent: #4f46e5;
-      --accent-soft: rgba(79, 70, 229, 0.08);
-      --accent-strong: #6366f1;
-
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-
-      --table-header: #f3f4f6;
-      --chip-bg: #f3f4f6;
-      --chip-border: rgba(0, 0, 0, 0.15);
-
-      --danger: #dc2626;
-
-      --shadow-soft: 0 10px 35px rgba(0, 0, 0, 0.08);
-      --radius-lg: 18px;
+      --radius: 18px;
+      --shadow: 0 10px 35px rgba(0,0,0,0.08);
     }
 
-    * { box-sizing: border-box; }
-
     body {
+      font-family: "Inter", sans-serif;
       margin: 0;
-      padding: 24px 16px 40px;
-      font-family: "Inter", system-ui;
-      background: linear-gradient(135deg, #f7f9fc 0%, #e3e7f0 40%, #d8dcee 100%);
-      color: var(--text-main);
+      padding: 24px;
+      background: var(--bg);
       display: flex;
       justify-content: center;
+      color: var(--text);
     }
 
     .container { width: 100%; max-width: 1280px; }
 
     /* HEADER */
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+    .page-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
 
     .page-title h1 {
       margin: 0;
-      font-size: 1.8rem;
+      font-size: 2rem;
       background: linear-gradient(120deg, #1f2937, #6366f1);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
     }
 
-    .page-title span { font-size: 0.9rem; color: var(--text-muted); }
-
-    .header-actions button {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 16px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: white;
-      font-weight: 500;
-      cursor: pointer;
-    }
+    .page-title span { font-size: .9rem; color: var(--muted); }
 
     /* FILTERS */
     .filters {
-      background: #ffffff;
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
-      border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-soft);
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       display: flex;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
-    .filter-group {
-      flex: 1;
-      min-width: 160px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    .filter-group { flex: 1; min-width: 160px; display: flex; flex-direction: column; }
 
-    .filter-actions button {
-      padding: 8px 14px;
+    input, select {
+      padding: 8px 12px;
       border-radius: 999px;
-      cursor: pointer;
-      background: #fff;
+      border: 1px solid var(--border);
+      font-size: .85rem;
     }
+
+    button {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .primary { background: var(--accent); color: white; }
 
     /* DASHBOARD */
     .info-dashboard {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3,1fr);
       gap: 16px;
       margin-bottom: 24px;
     }
 
     .card {
-      background: #ffffff;
+      background: var(--card-bg);
       padding: 20px;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-soft);
-      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    .card h2 {
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: 600;
-    }
+    .card h2 { margin: 0; font-size: 1.6rem; }
 
     /* TABLE */
     .table-container {
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-subtle);
-      background: #ffffff;
-      box-shadow: var(--shadow-soft);
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
       overflow: hidden;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 900px;
+    .table-scroll {
+      max-height: 500px;
+      overflow-y: auto;
     }
+
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
 
     th, td {
       padding: 12px;
-      border-bottom: 1px solid rgba(0,0,0,0.06);
+      border-bottom: 1px solid #f0f0f0;
       white-space: nowrap;
     }
 
-    .amount.pos { color: #16a34a; }
-    .amount.neg { color: #dc2626; }
+    .amount.pos { color: green; }
+    .amount.neg { color: red; }
 
     /* PAGINATION */
     .pagination {
-      padding: 14px;
       display: flex;
       justify-content: flex-end;
       gap: 10px;
+      padding: 12px;
+    }
+
+    /* SKELETON LOADING */
+    .skeleton {
+      background: linear-gradient(90deg, #e0e0e0 25%, #f4f4f4 50%, #e0e0e0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card { height: 70px; }
+
+    .skeleton-row {
+      height: 18px;
+      margin: 8px 0;
     }
   </style>
 </head>
@@ -166,84 +154,53 @@
   <div class="page-header">
     <div class="page-title">
       <h1>Sales Report</h1>
-      <span>Track item-level performance across all orders</span>
+      <span>Track item-level performance across orders</span>
     </div>
   </div>
 
   <!-- FILTERS -->
   <div class="filters">
-    <div class="filter-group">
-      <span>From</span>
-      <input type="date" id="startDate">
-    </div>
+    <div class="filter-group"><span>From</span><input type="date" id="startDate"></div>
+    <div class="filter-group"><span>To</span><input type="date" id="endDate"></div>
+    <div class="filter-group"><span>Order</span><input type="text" id="orderFilter"></div>
+    <div class="filter-group"><span>Client</span><input type="text" id="clientFilter"></div>
+    <div class="filter-group"><span>Sales</span><input type="text" id="salesFilter"></div>
+    <div class="filter-group"><span>Product</span><select id="productFilter"><option value="">All</option></select></div>
 
-    <div class="filter-group">
-      <span>To</span>
-      <input type="date" id="endDate">
-    </div>
-
-    <div class="filter-group">
-      <span>Order</span>
-      <input type="text" id="orderFilter">
-    </div>
-
-    <div class="filter-group">
-      <span>Client</span>
-      <input type="text" id="clientFilter">
-    </div>
-
-    <div class="filter-group">
-      <span>Sales Person</span>
-      <input type="text" id="salesFilter">
-    </div>
-
-    <div class="filter-group">
-      <span>Product</span>
-      <select id="productFilter">
-        <option value="">All products</option>
-      </select>
-    </div>
-
-    <div class="filter-actions">
-      <button onclick="applyFilters()">Filter</button>
-      <button onclick="resetFilters()">Reset</button>
-    </div>
+    <button class="primary" onclick="applyFilters()">Filter</button>
+    <button onclick="resetFilters()">Reset</button>
   </div>
 
   <!-- DASHBOARD CARDS -->
-  <div class="info-dashboard">
+  <div class="info-dashboard" id="dashboardSkeleton">
+    <div class="card skeleton skeleton-card"></div>
+    <div class="card skeleton skeleton-card"></div>
+    <div class="card skeleton skeleton-card"></div>
+  </div>
 
-    <div class="card">
-      <h3>Total Items Sold</h3>
-      <h2 id="totalQty">0</h2>
-    </div>
-
-    <div class="card">
-      <h3>Total Revenue</h3>
-      <h2 id="totalRevenue">0</h2>
-    </div>
-
-    <div class="card">
-      <h3>Total Profit</h3>
-      <h2 id="totalProfit">0</h2>
-    </div>
-
+  <div class="info-dashboard" id="dashboardContent" style="display:none;">
+    <div class="card"><h3>Items Sold</h3><h2 id="totalQty">0</h2></div>
+    <div class="card"><h3>Revenue</h3><h2 id="totalRevenue">0</h2></div>
+    <div class="card"><h3>Profit</h3><h2 id="totalProfit">0</h2></div>
   </div>
 
   <!-- TABLE -->
   <div class="table-container">
-    <div class="table-scroll">
+
+    <div class="table-scroll" id="tableSkeleton">
+      <div class="skeleton-row skeleton"></div>
+      <div class="skeleton-row skeleton"></div>
+      <div class="skeleton-row skeleton"></div>
+      <div class="skeleton-row skeleton"></div>
+      <div class="skeleton-row skeleton"></div>
+      <div class="skeleton-row skeleton"></div>
+    </div>
+
+    <div class="table-scroll" id="tableContent" style="display:none;">
       <table id="salesTable">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Order</th>
-            <th>Client</th>
-            <th>Sales Person</th>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Subtotal</th>
-            <th>Profit</th>
+            <th>Date</th><th>Order</th><th>Client</th><th>Sales</th><th>Product</th><th>Qty</th><th>Subtotal</th><th>Profit</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -252,9 +209,10 @@
 
     <div class="pagination">
       <span id="pageInfo">Page 1</span>
-      <button id="prevBtn" onclick="prevPage()">Prev</button>
-      <button id="nextBtn" onclick="nextPage()">Next</button>
+      <button onclick="prevPage()">Prev</button>
+      <button onclick="nextPage()">Next</button>
     </div>
+
   </div>
 </div>
 
@@ -265,14 +223,33 @@ let filteredItems = [];
 let currentPage = 1;
 const pageSize = 25;
 
+/* ---------------------------------------------------------
+   LOADING SKELETON HANDLING
+----------------------------------------------------------*/
+function showLoadedUI() {
+  document.getElementById("dashboardSkeleton").style.display = "none";
+  document.getElementById("tableSkeleton").style.display = "none";
+
+  document.getElementById("dashboardContent").style.display = "grid";
+  document.getElementById("tableContent").style.display = "block";
+}
+
+/* ---------------------------------------------------------
+   LOAD DATA
+----------------------------------------------------------*/
 async function loadSales() {
     const res = await fetch(`${baseURL}/sales/get_sales_items`, { credentials: "include" });
     allItems = await res.json();
     filteredItems = allItems.slice();
+
     loadProductFilter();
     renderTable();
+    showLoadedUI();
 }
 
+/* ---------------------------------------------------------
+   LOAD PRODUCTS IN FILTER
+----------------------------------------------------------*/
 function loadProductFilter() {
     const select = document.getElementById("productFilter");
     const products = [...new Set(allItems.map(i => i.product_name))];
@@ -284,6 +261,9 @@ function loadProductFilter() {
     });
 }
 
+/* ---------------------------------------------------------
+   FILTERING
+----------------------------------------------------------*/
 function applyFilters() {
     const sDate = startDate.value;
     const eDate = endDate.value;
@@ -296,9 +276,9 @@ function applyFilters() {
 
     if (sDate) data = data.filter(i => new Date(i.date) >= new Date(sDate));
     if (eDate) data = data.filter(i => new Date(i.date) <= new Date(eDate + "T23:59:59"));
-    if (order) data = data.filter(i => (i.order_code || "").toLowerCase().includes(order));
-    if (client) data = data.filter(i => (i.client_name || "").toLowerCase().includes(client));
-    if (sales) data = data.filter(i => (i.sales_person || "").toLowerCase().includes(sales));
+    if (order) data = data.filter(i => (i.order_code||"").toLowerCase().includes(order));
+    if (client) data = data.filter(i => (i.client_name||"").toLowerCase().includes(client));
+    if (sales) data = data.filter(i => (i.sales_person||"").toLowerCase().includes(sales));
     if (product) data = data.filter(i => i.product_name === product);
 
     filteredItems = data;
@@ -319,29 +299,34 @@ function resetFilters() {
     renderTable();
 }
 
+/* ---------------------------------------------------------
+   VIRTUALIZED TABLE RENDERING
+----------------------------------------------------------*/
 function renderTable() {
     const tbody = document.querySelector("#salesTable tbody");
     tbody.innerHTML = "";
 
     const start = (currentPage - 1) * pageSize;
-    const paginated = filteredItems.slice(start, start + pageSize);
+    const end = start + pageSize;
 
-    let qtySum = 0;
-    let revenueSum = 0;
-    let profitSum = 0;
+    const rows = filteredItems.slice(start, end);
 
-    paginated.forEach(i => {
+    let qtySum = 0, revenueSum = 0, profitSum = 0;
+
+    const fragment = document.createDocumentFragment();
+
+    rows.forEach(i => {
         const qty = Number(i.quantity) || 0;
         const subtotal = Number(i.subtotal) || 0;
         const buyingPrice = Number(i.buying_price) || 0;
-        const profit = subtotal - (buyingPrice * qty);
+        const profit = subtotal - buyingPrice * qty;
 
         qtySum += qty;
         revenueSum += subtotal;
         profitSum += profit;
 
-        const row = `
-        <tr>
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
             <td>${new Date(i.date).toLocaleString()}</td>
             <td>${i.order_code || "-"}</td>
             <td>${i.client_name || "-"}</td>
@@ -349,36 +334,31 @@ function renderTable() {
             <td>${i.product_name}</td>
             <td>${qty}</td>
             <td>${subtotal.toFixed(2)}</td>
-            <td class="amount ${profit >= 0 ? "pos" : "neg"}">${profit.toFixed(2)}</td>
-        </tr>
+            <td class="amount ${profit>=0?"pos":"neg"}">${profit.toFixed(2)}</td>
         `;
-        tbody.innerHTML += row;
+        fragment.appendChild(tr);
     });
 
-    // Update dashboard cards
+    tbody.appendChild(fragment);
+
     document.getElementById("totalQty").innerText = qtySum.toLocaleString();
     document.getElementById("totalRevenue").innerText = revenueSum.toLocaleString();
     document.getElementById("totalProfit").innerText = profitSum.toLocaleString();
 
     const totalPages = Math.ceil(filteredItems.length / pageSize);
-    document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+    document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPages}`;
 }
 
+/* ---------------------------------------------------------
+   PAGINATION
+----------------------------------------------------------*/
 function nextPage() {
-    const totalPages = Math.ceil(filteredItems.length / pageSize);
-    if (currentPage < totalPages) {
-        currentPage++;
-        renderTable();
-    }
+  const totalPages = Math.ceil(filteredItems.length / pageSize);
+  if (currentPage < totalPages) { currentPage++; renderTable(); }
 }
 
 function prevPage() {
-    if (currentPage > 1) {
-        currentPage--;
-        renderTable();
-    }
+  if (currentPage > 1) { currentPage--; renderTable(); }
 }
 
 loadSales();
