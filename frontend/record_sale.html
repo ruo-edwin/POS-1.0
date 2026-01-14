@@ -84,7 +84,7 @@
       border-bottom: 1px solid #e5e7eb;
     }
 
-    td input, td select {
+    td input {
       width: 100%;
       padding: 10px;
       border-radius: 10px;
@@ -93,20 +93,6 @@
     }
 
     td input[readonly] { background: #f3f4f6; }
-
-    /* ✅ Product search styling (ONLY new CSS) */
-    .product-cell {
-      position: relative;
-    }
-
-    .product-search {
-      width: 100%;
-      margin-bottom: 6px;
-      padding: 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      font-size: 0.85rem;
-    }
 
     .btn-row { text-align: center; margin-top: 22px; }
 
@@ -195,6 +181,7 @@
 
 </div>
 
+<!-- Payment popup -->
 <div id="confirmPopup" class="popup-overlay">
   <div class="popup-box">
     <p id="popupText"></p>
@@ -210,6 +197,9 @@
   </div>
 </div>
 
+<!-- Shared searchable product list -->
+<datalist id="productList"></datalist>
+
 <script>
 const baseURL = "https://pos-10-production.up.railway.app";
 let allProducts = [];
@@ -218,18 +208,19 @@ let mpesa = 0, cash = 0;
 async function loadProducts() {
   const res = await fetch(`${baseURL}/products/`, { credentials: "include" });
   allProducts = await res.json();
+
+  productList.innerHTML = allProducts
+    .map(p => `<option value="${p.name}"></option>`)
+    .join("");
+
   addRow();
 }
 
 function addRow() {
   const row = document.createElement("tr");
   row.innerHTML = `
-    <td class="product-cell">
-      <input type="text" class="product-search" placeholder="Search product…" oninput="filterProducts(this)">
-      <select onchange="updateProduct(this)">
-        <option value="">Select product</option>
-        ${allProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join("")}
-      </select>
+    <td>
+      <input list="productList" placeholder="Search product…" oninput="updateProduct(this)">
     </td>
     <td><input class="price" readonly></td>
     <td><input class="stock" readonly></td>
@@ -240,21 +231,13 @@ function addRow() {
   salesBody.appendChild(row);
 }
 
-/* ✅ Product search logic (ONLY new JS) */
-function filterProducts(input) {
-  const term = input.value.toLowerCase();
-  const select = input.nextElementSibling;
-
-  Array.from(select.options).forEach((opt, i) => {
-    if (i === 0) return;
-    opt.hidden = !opt.text.toLowerCase().includes(term);
-  });
-}
-
-function updateProduct(sel) {
-  const p = allProducts.find(x => x.id == sel.value);
+function updateProduct(input) {
+  const p = allProducts.find(
+    x => x.name.toLowerCase() === input.value.toLowerCase()
+  );
   if (!p) return;
-  const r = sel.closest("tr");
+
+  const r = input.closest("tr");
   r.querySelector(".price").value = p.price;
   r.querySelector(".stock").value = p.quantity;
 }
@@ -277,10 +260,10 @@ function updateGrandTotal() {
 function submitSale() {
   const items = [];
   document.querySelectorAll("#salesBody tr").forEach(r => {
-    const id = r.querySelector("select").value;
+    const name = r.querySelector("input[list]").value;
     const q = +r.querySelector(".qty").value;
-    const p = allProducts.find(x => x.id == id);
-    if (id && q > 0) items.push({ product_name: p.name, quantity: q });
+    const p = allProducts.find(x => x.name === name);
+    if (p && q > 0) items.push({ product_name: p.name, quantity: q });
   });
 
   if (!items.length) return alert("Add at least one product");
