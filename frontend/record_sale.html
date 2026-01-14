@@ -94,6 +94,20 @@
 
     td input[readonly] { background: #f3f4f6; }
 
+    /* ✅ Product search styling (ONLY new CSS) */
+    .product-cell {
+      position: relative;
+    }
+
+    .product-search {
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.85rem;
+    }
+
     .btn-row { text-align: center; margin-top: 22px; }
 
     button {
@@ -210,10 +224,13 @@ async function loadProducts() {
 function addRow() {
   const row = document.createElement("tr");
   row.innerHTML = `
-    <td><select onchange="updateProduct(this)">
-      <option value="">Select</option>
-      ${allProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join("")}
-    </select></td>
+    <td class="product-cell">
+      <input type="text" class="product-search" placeholder="Search product…" oninput="filterProducts(this)">
+      <select onchange="updateProduct(this)">
+        <option value="">Select product</option>
+        ${allProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join("")}
+      </select>
+    </td>
     <td><input class="price" readonly></td>
     <td><input class="stock" readonly></td>
     <td><input class="qty" type="number" min="1" oninput="updateTotal(this)"></td>
@@ -221,6 +238,17 @@ function addRow() {
     <td><button onclick="this.closest('tr').remove();updateGrandTotal()">🗑</button></td>
   `;
   salesBody.appendChild(row);
+}
+
+/* ✅ Product search logic (ONLY new JS) */
+function filterProducts(input) {
+  const term = input.value.toLowerCase();
+  const select = input.nextElementSibling;
+
+  Array.from(select.options).forEach((opt, i) => {
+    if (i === 0) return;
+    opt.hidden = !opt.text.toLowerCase().includes(term);
+  });
 }
 
 function updateProduct(sel) {
