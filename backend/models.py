@@ -1,7 +1,7 @@
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime, ForeignKey, Boolean, func, UniqueConstraint, Numeric
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy import event
 from backend.db import Base
 from datetime import datetime
@@ -19,7 +19,14 @@ class Product(Base):
     buying_price = Column(Float, nullable=True)
     quantity = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+     
+    @validates("price")
+    def validate_price(self, key, value):
+        if self.buying_price is not None and value < self.buying_price:
+            raise ValueError("Selling price cannot be below buying price")
+        return value
 
+        
     sales = relationship("Sales", back_populates="product")
     business = relationship("Business", back_populates="products")
 

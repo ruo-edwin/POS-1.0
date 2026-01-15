@@ -47,6 +47,7 @@ async def sales_report_page(request: Request):
 class SaleItem(BaseModel):
     product_name: str
     quantity: int
+    selling_price: float   # ✅ REQUIRED
 
 
 class SaleRequest(BaseModel):
@@ -56,7 +57,7 @@ class SaleRequest(BaseModel):
 
 
 # =======================================================================
-# 🚀 RECORD SALE — CREATE ORDER & ITEMS
+# 🚀 RECORD SALE
 # =======================================================================
 @router.post("/record_sale/")
 def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(get_db)):
@@ -72,7 +73,6 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     next_number = 1 if not last_order else last_order[0] + 1
     order_code = f"ORD-{next_number:05d}"
 
-    # Create order
     new_order = models.Order(
         order_code=order_code,
         business_id=business_id,
@@ -85,9 +85,7 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     db.refresh(new_order)
 
     total_amount = 0
-    output_items = []
 
-    # Process items
     for item in sale_data.items:
 
         product = db.query(models.Product).filter(
@@ -101,23 +99,24 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
         if product.quantity < item.quantity:
             raise HTTPException(status_code=400, detail=f"Not enough stock for '{item.product_name}'")
 
-        subtotal = product.price * item.quantity
-        product.quantity -= item.quantity
+        # ✅ PROTECT AGAINST SELLING BELOW BUYING PRICE
+        if product.buying_price is not None and item.selling_price < product.buying_price:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Selling price for '{product.name}' cannot be below buying price"
+            )
+
+        subtotal = item.selling_price * item.quantity
         total_amount += subtotal
+        product.quantity -= item.quantity
 
         sale_row = models.Sales(
             order_id=new_order.id,
             product_id=product.id,
             quantity=item.quantity,
-            total_price=subtotal
+            total_price=subtotal   # ✅ CORRECT VALUE STORED
         )
         db.add(sale_row)
-
-        output_items.append({
-            "product": product.name,
-            "quantity": item.quantity,
-            "subtotal": subtotal
-        })
 
     new_order.total_amount = total_amount
     db.commit()
@@ -125,15 +124,12 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     return {
         "message": "Order recorded successfully!",
         "order_code": order_code,
-        "client_name": new_order.client_name,
-        "sales_person": new_order.sales_person,
-        "total_amount": total_amount,
-        "items": output_items
+        "total_amount": total_amount
     }
 
 
 # =======================================================================
-# 🧾 ORDER-WISE SALES REPORT
+# 🧾 SALES REPORT (CORRECT)
 # =======================================================================
 @router.get("/get_sales_items")
 def get_sales_items(request: Request, db: Session = Depends(get_db)):
@@ -163,45 +159,8 @@ def get_sales_items(request: Request, db: Session = Depends(get_db)):
             "sales_person": order.sales_person,
             "product_name": product.name,
             "quantity": sale.quantity,
-            "subtotal": sale.total_price,
-            "buying_price": product.buying_price or 0   # ✅ ADD COST PRICE
-        })
-
-    return output
-
-
-# =======================================================================
-# 📌 ITEM-WISE SALES REPORT (Flat list)
-# =======================================================================
-@router.get("/get_sales_items")
-def get_sales_items(request: Request, db: Session = Depends(get_db)):
-
-    user = verify_token(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    business_id = user["business_id"]
-
-    sales_items = (
-        db.query(models.Sales, models.Order, models.Product)
-        .join(models.Order, models.Sales.order_id == models.Order.id)
-        .join(models.Product, models.Sales.product_id == models.Product.id)
-        .filter(models.Order.business_id == business_id)
-        .order_by(models.Sales.id.desc())
-        .all()
-    )
-
-    output = []
-
-    for sale, order, product in sales_items:
-        output.append({
-            "order_code": order.order_code,
-            "date": order.created_at,
-            "client_name": order.client_name,
-            "sales_person": order.sales_person,
-            "product_name": product.name,
-            "quantity": sale.quantity,
-            "subtotal": sale.total_price
+            "subtotal": sale.total_price,     # ✅ ALWAYS CORRECT
+            "buying_price": product.buying_price or 0
         })
 
     return output
