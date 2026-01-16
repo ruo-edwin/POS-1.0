@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Request
-from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
+import pytz
 
 from backend.db import SessionLocal
 from backend.auth_utils import verify_token
@@ -12,6 +13,8 @@ from backend.config import templates
 
 router = APIRouter(prefix="/superadmin", tags=["superadmin"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+NAIROBI_TZ = pytz.timezone("Africa/Nairobi")
 
 
 # ----------------------------------------------------
@@ -33,7 +36,10 @@ def require_superadmin(request: Request, db: Session):
     if not token_data:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    user = db.query(models.User).filter(models.User.id == token_data["user_id"]).first()
+    user = db.query(models.User).filter(
+        models.User.id == token_data["user_id"]
+    ).first()
+
     if not user or user.role != "superadmin":
         raise HTTPException(status_code=403, detail="Only superadmin allowed")
 
@@ -46,7 +52,10 @@ def require_superadmin(request: Request, db: Session):
 @router.get("/admin_panel", response_class=HTMLResponse)
 def admin_panel_page(request: Request, db: Session = Depends(get_db)):
     require_superadmin(request, db)
-    return templates.TemplateResponse("super_admin.html", {"request": request})
+    return templates.TemplateResponse(
+        "super_admin.html",
+        {"request": request}
+    )
 
 
 # ----------------------------------------------------
@@ -58,17 +67,23 @@ def create_superadmin(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    existing = db.query(models.User).filter(models.User.role == "superadmin").first()
+    existing = db.query(models.User).filter(
+        models.User.role == "superadmin"
+    ).first()
+
     if existing:
-        raise HTTPException(status_code=400, detail="Superadmin already exists!")
+        raise HTTPException(
+            status_code=400,
+            detail="Superadmin already exists!"
+        )
 
     new_superadmin = models.User(
-        business_id=None,      # Superadmin is not tied to a business
+        business_id=None,
         username=username,
         password_hash=pwd_context.hash(password),
         role="superadmin",
         is_active=1,
-         last_login=datetime.utcnow()
+        last_login=datetime.utcnow()
     )
 
     db.add(new_superadmin)
@@ -78,7 +93,7 @@ def create_superadmin(
 
 
 # ----------------------------------------------------
-# 1️⃣ GET ALL CLIENTS + SUBSCRIPTIONS
+# 1️⃣ GET ALL CLIENTS + SUBSCRIPTIONS + LAST LOGIN
 # ----------------------------------------------------
 @router.get("/get_all_clients")
 def get_all_clients(request: Request, db: Session = Depends(get_db)):
@@ -92,16 +107,29 @@ def get_all_clients(request: Request, db: Session = Depends(get_db)):
             models.Subscription.business_id == biz.id
         ).first()
 
+        owner = db.query(models.User).filter(
+            models.User.business_id == biz.id,
+            models.User.role != "superadmin"
+        ).first()
+
         if subscription:
             days_left = (subscription.end_date - datetime.utcnow()).days
         else:
             days_left = None
 
+        # Convert last_login UTC → Nairobi time
+        last_login_local = None
+        if owner and owner.last_login:
+            last_login_local = owner.last_login.replace(
+                tzinfo=pytz.utc
+            ).astimezone(NAIROBI_TZ)
+
         output.append({
             "business_id": biz.id,
             "business_name": biz.business_name,
-            "username": biz.username,
+            "username": owner.username if owner else None,
             "phone": biz.phone,
+            "last_login": last_login_local.isoformat() if last_login_local else None,
             "subscription_status": subscription.status if subscription else "none",
             "days_left": days_left,
             "is_active": subscription.is_active if subscription else False
@@ -111,10 +139,14 @@ def get_all_clients(request: Request, db: Session = Depends(get_db)):
 
 
 # ----------------------------------------------------
-# 2️⃣ ACTIVATE SUBSCRIPTION (After Trial or Expired)
+# 2️⃣ ACTIVATE SUBSCRIPTION
 # ----------------------------------------------------
 @router.post("/activate/{business_id}")
-def activate_subscription(business_id: int, request: Request, db: Session = Depends(get_db)):
+def activate_subscription(
+    business_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     require_superadmin(request, db)
 
     subscription = db.query(models.Subscription).filter(
@@ -138,7 +170,11 @@ def activate_subscription(business_id: int, request: Request, db: Session = Depe
 # 3️⃣ RENEW +30 DAYS
 # ----------------------------------------------------
 @router.post("/renew/{business_id}")
-def renew_subscription(business_id: int, request: Request, db: Session = Depends(get_db)):
+def renew_subscription(
+    business_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     require_superadmin(request, db)
 
     subscription = db.query(models.Subscription).filter(
@@ -161,7 +197,11 @@ def renew_subscription(business_id: int, request: Request, db: Session = Depends
 # 4️⃣ SUSPEND BUSINESS
 # ----------------------------------------------------
 @router.post("/suspend/{business_id}")
-def suspend_account(business_id: int, request: Request, db: Session = Depends(get_db)):
+def suspend_account(
+    business_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     require_superadmin(request, db)
 
     subscription = db.query(models.Subscription).filter(
@@ -183,7 +223,11 @@ def suspend_account(business_id: int, request: Request, db: Session = Depends(ge
 # 5️⃣ REACTIVATE BUSINESS
 # ----------------------------------------------------
 @router.post("/reactivate/{business_id}")
-def reactivate_account(business_id: int, request: Request, db: Session = Depends(get_db)):
+def reactivate_account(
+    business_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     require_superadmin(request, db)
 
     subscription = db.query(models.Subscription).filter(
