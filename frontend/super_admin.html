@@ -112,7 +112,6 @@
   <h2 class="dashboard-title">Superadmin Client Management</h2>
 
   <div class="main-card">
-
     <div class="table-container">
       <table class="table align-middle mb-0">
         <thead>
@@ -131,14 +130,19 @@
         <tbody id="clientTable"></tbody>
       </table>
     </div>
-
   </div>
 
   <script>
     function formatLastLogin(timestamp) {
-      if (!timestamp) return "Never";
-      const date = new Date(timestamp);
-      return date.toLocaleString(); // auto formats date & time
+      if (!timestamp) return "—";
+      const d = new Date(timestamp);
+      return d.toLocaleString("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
     }
 
     async function loadClients() {
@@ -194,14 +198,17 @@
       await fetch(`/superadmin/activate/${id}`, { method: "POST" });
       loadClients();
     }
+
     async function renew(id) {
       await fetch(`/superadmin/renew/${id}`, { method: "POST" });
       loadClients();
     }
+
     async function suspend(id) {
       await fetch(`/superadmin/suspend/${id}`, { method: "POST" });
       loadClients();
     }
+
     async function reactivate(id) {
       await fetch(`/superadmin/reactivate/${id}`, { method: "POST" });
       loadClients();
