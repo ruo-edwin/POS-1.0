@@ -30,7 +30,6 @@
       color: var(--stripe-dark);
     }
 
-    /* HEADER */
     .dashboard-title {
       font-size: 2.1rem;
       font-weight: 700;
@@ -40,7 +39,6 @@
       letter-spacing: -0.5px;
     }
 
-    /* MAIN CARD */
     .main-card {
       background: #ffffff;
       max-width: 1150px;
@@ -51,7 +49,6 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.07);
     }
 
-    /* TABLE */
     .table-container {
       border-radius: 14px;
       overflow: hidden;
@@ -82,7 +79,6 @@
       transition: 0.25s;
     }
 
-    /* BADGES */
     .badge-status {
       padding: 6px 12px;
       border-radius: 6px;
@@ -96,7 +92,6 @@
     .expired { background: var(--badge-expired); color: black !important; }
     .suspended { background: var(--badge-suspended); }
 
-    /* BUTTONS */
     .action-btn {
       padding: 6px 12px !important;
       border-radius: 6px !important;
@@ -109,7 +104,6 @@
     .btn-primary { background: var(--stripe-primary) !important; }
     .btn-danger { background: var(--badge-suspended) !important; }
     .btn-warning { background: var(--badge-expired) !important; color: #1a1f36 !important; }
-
   </style>
 </head>
 
@@ -126,6 +120,7 @@
             <th>Business</th>
             <th>Username</th>
             <th>Phone</th>
+            <th>Last Login</th>
             <th>Subscription</th>
             <th>Days Left</th>
             <th>Status</th>
@@ -140,6 +135,12 @@
   </div>
 
   <script>
+    function formatLastLogin(timestamp) {
+      if (!timestamp) return "Never";
+      const date = new Date(timestamp);
+      return date.toLocaleString(); // auto formats date & time
+    }
+
     async function loadClients() {
       const response = await fetch("/superadmin/get_all_clients");
       const data = await response.json();
@@ -151,10 +152,10 @@
 
         table.innerHTML += `
           <tr>
-
             <td>${client.business_name}</td>
             <td>${client.username}</td>
             <td>${client.phone || "-"}</td>
+            <td>${formatLastLogin(client.last_login)}</td>
 
             <td>
               <span class="badge-status ${statusClass}">
@@ -166,7 +167,6 @@
             <td>${client.is_active ? "Active" : "Inactive"}</td>
 
             <td>
-
               ${
                 ["trial", "expired"].includes(client.subscription_status)
                 ? `<button class="btn btn-success action-btn" onclick="activate(${client.business_id})">Activate</button>`
@@ -184,9 +184,7 @@
                 ? `<button class="btn btn-danger action-btn" onclick="suspend(${client.business_id})">Suspend</button>`
                 : `<button class="btn btn-warning action-btn" onclick="reactivate(${client.business_id})">Reactivate</button>`
               }
-
             </td>
-
           </tr>
         `;
       });
