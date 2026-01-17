@@ -1,7 +1,7 @@
 {
   "name": "SmartPOS",
   "short_name": "SmartPOS",
-  "start_url": "/login",
+  "start_url": "/auth/login",
   "display": "standalone",
   "background_color": "#f6f9fc",
   "theme_color": "#635bff",
