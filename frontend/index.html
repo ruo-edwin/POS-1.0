@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- PWA -->
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#635bff">
+
+<!-- iOS support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SmartPOS">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
   <title>Dashboard | SmartPOS</title>
 
   <!-- Inter Font -->
@@ -192,6 +202,13 @@
   </div>
 
   <footer>© 2025 SmartPOS – Simplifying Inventory & Sales Management</footer>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/static/service-worker.js")
+      .then(() => console.log("Service Worker registered"))
+      .catch(err => console.error("SW registration failed:", err));
+  }
+  </script>
 
 </body>
 </html>

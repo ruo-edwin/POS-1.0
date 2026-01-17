@@ -6,9 +6,11 @@ import backend.models  # Ensure models are imported
 from routers import auth, product, sales, superadmin
 from backend.auth_utils import SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-
+# ✅ Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 # ✅ HTTPS redirect middleware
 @app.middleware("http")
 async def enforce_https(request: Request, call_next):
