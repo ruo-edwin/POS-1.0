@@ -81,3 +81,12 @@ app.include_router(push.router)
 @app.get("/")
 def root():
     return {"message": "✅ SmartPOS API is running"}
+from fastapi.responses import FileResponse
+
+@app.get("/service-worker.js")
+def sw():
+    return FileResponse(
+        "static/service-worker.js",
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/"}  # allow scope for whole site
+    )
