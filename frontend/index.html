@@ -8,9 +8,11 @@
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#635bff">
 
-  <!-- Fix Chrome warning + iOS support -->
-  <meta name="mobile-web-app-capable" content="yes">
+  <!-- iOS support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- ✅ Fix Chrome warning -->
+  <meta name="mobile-web-app-capable" content="yes">
+
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SmartPOS">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
@@ -172,11 +174,17 @@
       overflow: hidden;
     }
 
-    .modal-header, .modal-footer {
-      border-color: rgba(0,0,0,0.08) !important;
+    .modal-header {
+      border-bottom: 1px solid rgba(0,0,0,0.08) !important;
     }
 
-    .modal-title { font-weight: 700; }
+    .modal-title {
+      font-weight: 700;
+    }
+
+    .modal-footer {
+      border-top: 1px solid rgba(0,0,0,0.08) !important;
+    }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--accent-strong)) !important;
@@ -227,7 +235,7 @@
 
   <footer>© 2025 SmartPOS – Simplifying Inventory & Sales Management</footer>
 
-  <!-- Notifications POPUP -->
+  <!-- POPUP -->
   <div class="modal fade" id="notifyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -247,13 +255,13 @@
 
         <div class="modal-footer">
           <button class="btn btn-light" data-bs-dismiss="modal">Not now</button>
-          <button class="btn btn-primary" id="enableNotifBtn">Enable</button>
+          <button class="btn btn-primary" onclick="enableNotificationsFromModal()">Enable</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS (required for modal) -->
+  <!-- Bootstrap JS FIRST -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
@@ -264,7 +272,7 @@
         .catch(err => console.error("SW registration failed:", err));
     }
 
-    // Fix Chrome focus warning
+    // Blur focused element before modal hides (stops aria warning)
     const notifyModalEl = document.getElementById("notifyModal");
     if (notifyModalEl) {
       notifyModalEl.addEventListener("hide.bs.modal", () => {
@@ -282,14 +290,23 @@
     }
 
     async function shouldShowNotifyModal() {
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+      console.log("[PUSH] permission:", Notification.permission);
 
-      // Ensure SW is ready (this was the main timing issue)
+      if (!("serviceWorker" in navigator)) {
+        console.log("[PUSH] No serviceWorker");
+        return false;
+      }
+      if (!("PushManager" in window)) {
+        console.log("[PUSH] No PushManager (push not supported)");
+        return false;
+      }
+
       const reg = await navigator.serviceWorker.ready;
 
       const sub = await reg.pushManager.getSubscription();
-      if (sub) return false;
+      console.log("[PUSH] existing subscription:", sub);
 
+      if (sub) return false;
       if (Notification.permission === "denied") return false;
 
       return true;
@@ -298,67 +315,79 @@
     async function showNotifyModalIfNeeded() {
       try {
         const show = await shouldShowNotifyModal();
+        console.log("[PUSH] should show modal:", show);
+
         if (!show) return;
 
-        const modal = new bootstrap.Modal(document.getElementById("notifyModal"));
+        const modalEl = document.getElementById("notifyModal");
+        if (!modalEl) {
+          console.log("[PUSH] modal element missing!");
+          return;
+        }
+
+        const modal = new bootstrap.Modal(modalEl);
         modal.show();
+        console.log("[PUSH] modal.show() called ✅");
       } catch (e) {
-        console.error("Notify modal error:", e);
+        console.error("[PUSH] showNotifyModalIfNeeded failed:", e);
       }
     }
 
     async function enableNotificationsFromModal() {
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        alert("Notifications permission denied.");
-        return;
-      }
+      try {
+        const permission = await Notification.requestPermission();
+        console.log("[PUSH] requestPermission result:", permission);
 
-      const reg = await navigator.serviceWorker.ready;
+        if (permission !== "granted") {
+          alert("Notifications permission denied.");
+          return;
+        }
 
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) {
-        bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
-        return;
-      }
+        const reg = await navigator.serviceWorker.ready;
 
-      const keyRes = await fetch("/push/vapid_public_key");
-      const keyOut = await keyRes.json().catch(() => ({}));
-      const publicKey = keyOut.publicKey;
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) {
+          bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
+          return;
+        }
 
-      if (!keyRes.ok || !publicKey) {
-        alert("Failed to load push key. Please try again.");
-        return;
-      }
+        const keyRes = await fetch("/push/vapid_public_key");
+        const keyOut = await keyRes.json().catch(() => ({}));
+        const publicKey = keyOut.publicKey;
 
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey)
-      });
+        if (!keyRes.ok || !publicKey) {
+          alert("Failed to load push key. Please try again.");
+          return;
+        }
 
-      const res = await fetch("/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sub)
-      });
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey)
+        });
 
-      if (res.ok) {
-        bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
-        alert("Notifications enabled ✅");
-      } else {
-        const errTxt = await res.text().catch(() => "");
-        alert("Failed to enable notifications. " + errTxt);
+        const res = await fetch("/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sub)
+        });
+
+        if (res.ok) {
+          bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
+          alert("Notifications enabled ✅");
+        } else {
+          const txt = await res.text().catch(() => "");
+          console.log("[PUSH] subscribe API failed:", res.status, txt);
+          alert("Failed to enable notifications.");
+        }
+      } catch (e) {
+        console.error("[PUSH] enableNotificationsFromModal failed:", e);
+        alert("Failed to enable notifications.");
       }
     }
 
-    // Hook button
-    document.getElementById("enableNotifBtn").addEventListener("click", enableNotificationsFromModal);
-
-    // ✅ Run AFTER page load (fixes “no popup” issue)
+    // ✅ IMPORTANT: run after full load (prevents “no popup”)
     window.addEventListener("load", () => {
-      setTimeout(() => {
-        showNotifyModalIfNeeded();
-      }, 600);
+      setTimeout(showNotifyModalIfNeeded, 400);
     });
   </script>
 
