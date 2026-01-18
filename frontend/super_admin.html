@@ -242,6 +242,13 @@
     .btn-danger { background: var(--badge-suspended) !important; }
     .btn-warning { background: var(--badge-expired) !important; color: #111827 !important; }
 
+    /* Modal small polish */
+    .modal-content {
+      border-radius: 16px !important;
+      border: 1px solid rgba(17,24,39,0.10) !important;
+      box-shadow: 0 20px 55px rgba(0,0,0,0.18) !important;
+    }
+
     /* RESPONSIVE */
     @media (max-width: 900px) {
       .topbar {
@@ -289,7 +296,7 @@
               <th>Subscription</th>
               <th>Days Left</th>
               <th>Status</th>
-              <th style="width: 260px;">Actions</th>
+              <th style="width: 320px;">Actions</th>
             </tr>
           </thead>
 
@@ -299,6 +306,49 @@
     </div>
 
   </div>
+
+  <!-- Send Reminder Modal -->
+  <div class="modal fade" id="reminderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Send Reminder</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="remBizId">
+
+          <div class="mb-2">
+            <label class="form-label">Business</label>
+            <input class="form-control" id="remBizName" disabled>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Title</label>
+            <input class="form-control" id="remTitle" value="SmartPOS Reminder">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Message</label>
+            <textarea class="form-control" id="remMessage" rows="3" placeholder="Type your message..."></textarea>
+          </div>
+
+          <div class="small text-muted">
+            This will send a push notification to all subscribed devices for this business.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light action-btn" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary action-btn" onclick="sendReminder()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (required for modal) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
     function formatLastLogin(timestamp) {
@@ -311,6 +361,51 @@
         hour: "2-digit",
         minute: "2-digit"
       });
+    }
+
+    function escapeQuotes(str) {
+      return String(str || "").replace(/'/g, "\\'");
+    }
+
+    let reminderModal;
+
+    function openReminderModal(businessId, businessName) {
+      document.getElementById("remBizId").value = businessId;
+      document.getElementById("remBizName").value = businessName || "-";
+      document.getElementById("remTitle").value = "SmartPOS Reminder";
+      document.getElementById("remMessage").value = "";
+
+      if (!reminderModal) {
+        reminderModal = new bootstrap.Modal(document.getElementById("reminderModal"));
+      }
+      reminderModal.show();
+    }
+
+    async function sendReminder() {
+      const businessId = document.getElementById("remBizId").value;
+      const title = document.getElementById("remTitle").value.trim();
+      const message = document.getElementById("remMessage").value.trim();
+
+      if (!title || !message) {
+        alert("Title and message are required.");
+        return;
+      }
+
+      const res = await fetch(`/superadmin/push_reminder/${businessId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, message })
+      });
+
+      const out = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        alert(out.detail || "Failed to send reminder.");
+        return;
+      }
+
+      reminderModal.hide();
+      alert(`Reminder sent to ${out.sent || 0} device(s).`);
     }
 
     async function loadClients() {
@@ -339,6 +434,11 @@
             <td>${client.is_active ? "Active" : "Inactive"}</td>
 
             <td>
+              <button class="btn btn-primary action-btn"
+                onclick="openReminderModal(${client.business_id}, '${escapeQuotes(client.business_name)}')">
+                Send Reminder
+              </button>
+
               ${
                 ["trial", "expired"].includes(client.subscription_status)
                 ? `<button class="btn btn-success action-btn" onclick="activate(${client.business_id})">Activate</button>`

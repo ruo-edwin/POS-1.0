@@ -114,3 +114,16 @@ class Order(Base):
 
     business = relationship("Business", back_populates="orders")
     sales = relationship("Sales", back_populates="order")
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    business_id = Column(Integer, nullable=True, index=True)
+
+    endpoint = Column(Text, nullable=False)
+    p256dh = Column(String(255), nullable=False)
+    auth = Column(String(255), nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 from backend.db import engine, Base
 import backend.models  # Ensure models are imported
-from routers import auth, product, sales, superadmin
+from routers import auth, product, sales, superadmin, push
 from backend.auth_utils import SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 from fastapi.staticfiles import StaticFiles
@@ -77,6 +77,7 @@ app.include_router(auth.router)
 app.include_router(product.router)
 app.include_router(sales.router)
 app.include_router(superadmin.router)
+app.include_router(push.router)
 @app.get("/")
 def root():
     return {"message": "✅ SmartPOS API is running"}

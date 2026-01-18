@@ -202,12 +202,113 @@
   </div>
 
   <footer>© 2025 SmartPOS – Simplifying Inventory & Sales Management</footer>
+  <div class="modal fade" id="notifyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:14px;">
+      <div class="modal-header">
+        <h5 class="modal-title">Enable Notifications</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-2">Get reminders like:</p>
+        <ul class="mb-0">
+          <li>No sales recorded today</li>
+          <li>Low stock alerts</li>
+          <li>Daily sales summary</li>
+        </ul>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Not now</button>
+        <button class="btn btn-primary" onclick="enableNotificationsFromModal()">Enable</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <script>
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/static/service-worker.js")
       .then(() => console.log("Service Worker registered"))
       .catch(err => console.error("SW registration failed:", err));
-  }
+   }
+  
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+    }
+
+    async function shouldShowNotifyModal() {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) return false; // already subscribed
+
+      // If user already denied permission, don’t keep annoying them
+      if (Notification.permission === "denied") return false;
+
+      return true;
+    }
+
+    async function showNotifyModalIfNeeded() {
+      const show = await shouldShowNotifyModal();
+      if (!show) return;
+
+      const modalEl = document.getElementById("notifyModal");
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+
+    async function enableNotificationsFromModal() {
+      // Ask permission only when they click Enable (not on page load)
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        alert("Notifications permission denied.");
+        return;
+      }
+
+      const reg = await navigator.serviceWorker.ready;
+
+      // If already subscribed, close modal
+      const existing = await reg.pushManager.getSubscription();
+      if (existing) {
+        bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
+        return;
+      }
+
+      const keyRes = await fetch("/push/vapid_public_key");
+      const { publicKey } = await keyRes.json();
+
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
+      });
+
+      const res = await fetch("/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sub)
+      });
+
+      if (res.ok) {
+        bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
+        alert("Notifications enabled ✅");
+      } else {
+        alert("Failed to enable notifications.");
+      }
+    }
+
+    // ✅ Call this after page loads (after login page redirects to dashboard)
+    showNotifyModalIfNeeded();
+
+   src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+
   </script>
 
 </body>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Request
+from fastapi import APIRouter, Depends, HTTPException, Form, Request,Body
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -9,6 +9,8 @@ from backend.db import SessionLocal
 from backend.auth_utils import verify_token
 from backend import models
 from backend.config import templates
+from pywebpush import webpush, WebPushException
+import os, json
 
 
 router = APIRouter(prefix="/superadmin", tags=["superadmin"])
@@ -243,3 +245,42 @@ def reactivate_account(
 
     db.commit()
     return {"message": "Business reactivated"}
+
+@router.post("/push_reminder/{business_id}")
+def push_reminder(business_id: int, request: Request, payload: dict = Body(...), db: Session = Depends(get_db)):
+    require_superadmin(request, db)
+
+    title = (payload.get("title") or "").strip()
+    message = (payload.get("message") or "").strip()
+    if not title or not message:
+        raise HTTPException(status_code=400, detail="Title and message are required")
+
+    subs = db.query(models.PushSubscription).filter(
+        models.PushSubscription.business_id == business_id
+    ).all()
+
+    if not subs:
+        return {"message": "No subscribed devices for this business", "sent": 0}
+
+    vapid_private = os.getenv("VAPID_PRIVATE_KEY")
+    vapid_sub = os.getenv("VAPID_CLAIMS_SUB", "mailto:admin@smartpos.local")
+    if not vapid_private:
+        raise HTTPException(status_code=500, detail="VAPID_PRIVATE_KEY not set")
+
+    sent = 0
+    for sub in subs:
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": sub.endpoint,
+                    "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
+                },
+                data=json.dumps({"title": title, "body": message, "url": "/"}),
+                vapid_private_key=vapid_private,
+                vapid_claims={"sub": vapid_sub}
+            )
+            sent += 1
+        except WebPushException:
+            pass
+
+    return {"message": "Reminder sent", "sent": sent}
