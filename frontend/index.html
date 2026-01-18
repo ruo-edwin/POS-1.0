@@ -8,7 +8,8 @@
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#635bff">
 
-  <!-- iOS support -->
+  <!-- Fix Chrome warning + iOS support -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SmartPOS">
@@ -55,7 +56,6 @@
       min-height: 100vh;
     }
 
-    /* MAIN CONTAINER */
     .dashboard-container {
       background: var(--bg-card);
       width: 100%;
@@ -73,7 +73,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* HEADER */
     h1 {
       margin: 0 0 10px;
       font-size: 1.9rem;
@@ -96,7 +95,6 @@
       line-height: 1.5;
     }
 
-    /* SUPERADMIN BUTTON */
     #superadminBtn {
       display: block;
       text-decoration: none;
@@ -114,7 +112,6 @@
       filter: brightness(1.05);
     }
 
-    /* MENU BUTTONS */
     .menu {
       display: flex;
       flex-direction: column;
@@ -142,7 +139,6 @@
       filter: brightness(1.07);
     }
 
-    /* LOGOUT */
     .logout-btn {
       margin-top: 28px;
       width: 100%;
@@ -169,7 +165,6 @@
       color: var(--text-muted);
     }
 
-    /* Modal polish to match your theme */
     .modal-content {
       border-radius: 18px !important;
       border: 1px solid rgba(0,0,0,0.10) !important;
@@ -177,17 +172,11 @@
       overflow: hidden;
     }
 
-    .modal-header {
-      border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+    .modal-header, .modal-footer {
+      border-color: rgba(0,0,0,0.08) !important;
     }
 
-    .modal-title {
-      font-weight: 700;
-    }
-
-    .modal-footer {
-      border-top: 1px solid rgba(0,0,0,0.08) !important;
-    }
+    .modal-title { font-weight: 700; }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--accent-strong)) !important;
@@ -220,12 +209,10 @@
       Last login: {{ last_login }}
     </div>
 
-    <!-- SUPERADMIN BUTTON -->
     {% if role == "superadmin" %}
     <a id="superadminBtn" href="/superadmin/admin_panel">🔐 Superadmin Panel</a>
     {% endif %}
 
-    <!-- MENU -->
     <div class="menu">
       <a href="/sales/recordsale">💰 Sell Products</a>
       <a href="/products/addproduct">➕ Add New Product</a>
@@ -233,7 +220,6 @@
       <a href="/sales/salesreport">📊 Sales Reports</a>
     </div>
 
-    <!-- LOGOUT -->
     <form action="/auth/logout" method="get">
       <button type="submit" class="logout-btn">🚪 Logout</button>
     </form>
@@ -241,7 +227,7 @@
 
   <footer>© 2025 SmartPOS – Simplifying Inventory & Sales Management</footer>
 
-  <!-- Notifications POPUP (no button on page) -->
+  <!-- Notifications POPUP -->
   <div class="modal fade" id="notifyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -261,7 +247,7 @@
 
         <div class="modal-footer">
           <button class="btn btn-light" data-bs-dismiss="modal">Not now</button>
-          <button class="btn btn-primary" onclick="enableNotificationsFromModal()">Enable</button>
+          <button class="btn btn-primary" id="enableNotifBtn">Enable</button>
         </div>
       </div>
     </div>
@@ -278,7 +264,7 @@
         .catch(err => console.error("SW registration failed:", err));
     }
 
-    // Fix Chrome complaint: blur focused element before modal hides
+    // Fix Chrome focus warning
     const notifyModalEl = document.getElementById("notifyModal");
     if (notifyModalEl) {
       notifyModalEl.addEventListener("hide.bs.modal", () => {
@@ -298,9 +284,11 @@
     async function shouldShowNotifyModal() {
       if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
 
+      // Ensure SW is ready (this was the main timing issue)
       const reg = await navigator.serviceWorker.ready;
+
       const sub = await reg.pushManager.getSubscription();
-      if (sub) return false; // already subscribed
+      if (sub) return false;
 
       if (Notification.permission === "denied") return false;
 
@@ -308,12 +296,15 @@
     }
 
     async function showNotifyModalIfNeeded() {
-      const show = await shouldShowNotifyModal();
-      if (!show) return;
+      try {
+        const show = await shouldShowNotifyModal();
+        if (!show) return;
 
-      const modalEl = document.getElementById("notifyModal");
-      const modal = new bootstrap.Modal(modalEl);
-      modal.show();
+        const modal = new bootstrap.Modal(document.getElementById("notifyModal"));
+        modal.show();
+      } catch (e) {
+        console.error("Notify modal error:", e);
+      }
     }
 
     async function enableNotificationsFromModal() {
@@ -327,7 +318,6 @@
 
       const existing = await reg.pushManager.getSubscription();
       if (existing) {
-        if (document.activeElement) document.activeElement.blur();
         bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
         return;
       }
@@ -353,16 +343,23 @@
       });
 
       if (res.ok) {
-        if (document.activeElement) document.activeElement.blur();
         bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
         alert("Notifications enabled ✅");
       } else {
-        alert("Failed to enable notifications.");
+        const errTxt = await res.text().catch(() => "");
+        alert("Failed to enable notifications. " + errTxt);
       }
     }
 
-    // Show popup automatically if not subscribed
-    showNotifyModalIfNeeded();
+    // Hook button
+    document.getElementById("enableNotifBtn").addEventListener("click", enableNotificationsFromModal);
+
+    // ✅ Run AFTER page load (fixes “no popup” issue)
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        showNotifyModalIfNeeded();
+      }, 600);
+    });
   </script>
 
 </body>
