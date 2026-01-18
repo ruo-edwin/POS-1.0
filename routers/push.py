@@ -1,30 +1,3 @@
-import os
-from fastapi import APIRouter, Depends, HTTPException, Request, Body
-from sqlalchemy.orm import Session
-
-from backend.db import SessionLocal
-from backend.auth_utils import verify_token
-from backend import models
-
-router = APIRouter(prefix="/push", tags=["push"])
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@router.get("/vapid_public_key")
-def vapid_public_key():
-    public_key = os.getenv("VAPID_PUBLIC_KEY")
-    if not public_key:
-        raise HTTPException(status_code=500, detail="VAPID_PUBLIC_KEY not set")
-    return {"publicKey": public_key}
-
-
 @router.post("/subscribe")
 def subscribe(request: Request, payload: dict = Body(...), db: Session = Depends(get_db)):
     token_data = verify_token(request)
@@ -35,6 +8,9 @@ def subscribe(request: Request, payload: dict = Body(...), db: Session = Depends
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    if not user.business_id:
+        raise HTTPException(status_code=400, detail="User has no business_id (cannot subscribe)")
+
     endpoint = payload.get("endpoint")
     keys = payload.get("keys") or {}
     p256dh = keys.get("p256dh")
@@ -43,14 +19,18 @@ def subscribe(request: Request, payload: dict = Body(...), db: Session = Depends
     if not endpoint or not p256dh or not auth:
         raise HTTPException(status_code=400, detail="Invalid subscription payload")
 
-    # Prevent duplicates (same device endpoint)
-    exists = db.query(models.PushSubscription).filter(
-        models.PushSubscription.user_id == user.id,
+    # ✅ UPSERT by endpoint (same device should update, not get stuck)
+    existing = db.query(models.PushSubscription).filter(
         models.PushSubscription.endpoint == endpoint
     ).first()
 
-    if exists:
-        return {"message": "Already subscribed"}
+    if existing:
+        existing.user_id = user.id
+        existing.business_id = user.business_id
+        existing.p256dh = p256dh
+        existing.auth = auth
+        db.commit()
+        return {"message": "Updated subscription"}
 
     sub = models.PushSubscription(
         user_id=user.id,
@@ -62,5 +42,5 @@ def subscribe(request: Request, payload: dict = Body(...), db: Session = Depends
 
     db.add(sub)
     db.commit()
-
     return {"message": "Subscribed"}
+

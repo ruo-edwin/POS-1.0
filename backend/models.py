@@ -120,7 +120,7 @@ class PushSubscription(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False, index=True)
-    business_id = Column(Integer, nullable=True, index=True)
+    business_id = Column(Integer, nullable=False, index=True)
 
     endpoint = Column(Text, nullable=False)
     p256dh = Column(String(255), nullable=False)
