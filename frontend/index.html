@@ -8,7 +8,7 @@
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#635bff">
 
-  <!-- iOS support -->
+  <!-- iOS + Chrome support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <!-- ✅ Fix Chrome warning -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -265,10 +265,10 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // Register Service Worker
+    // Register Service Worker (this MUST match where you serve the file)
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js")
-        .then(() => console.log("Service Worker registered"))
+        .then(() => console.log("Service Worker registered ✅"))
         .catch(err => console.error("SW registration failed:", err));
     }
 
@@ -351,11 +351,14 @@
           return;
         }
 
-        const keyRes = await fetch("/push/vapid_public_key");
+        // ✅ include cookies/session (most common cause of “saved 0 devices”)
+        const keyRes = await fetch("/push/vapid_public_key", { credentials: "include" });
         const keyOut = await keyRes.json().catch(() => ({}));
         const publicKey = keyOut.publicKey;
 
         if (!keyRes.ok || !publicKey) {
+          const t = await keyRes.text().catch(() => "");
+          console.log("[PUSH] vapid key failed:", keyRes.status, t);
           alert("Failed to load push key. Please try again.");
           return;
         }
@@ -367,6 +370,7 @@
 
         const res = await fetch("/push/subscribe", {
           method: "POST",
+          credentials: "include", // ✅ IMPORTANT
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(sub)
         });
@@ -377,7 +381,7 @@
         } else {
           const txt = await res.text().catch(() => "");
           console.log("[PUSH] subscribe API failed:", res.status, txt);
-          alert("Failed to enable notifications.");
+          alert(`Failed to enable notifications. (${res.status})`);
         }
       } catch (e) {
         console.error("[PUSH] enableNotificationsFromModal failed:", e);
@@ -385,7 +389,7 @@
       }
     }
 
-    // ✅ IMPORTANT: run after full load (prevents “no popup”)
+    // Run after full load (prevents “no popup”)
     window.addEventListener("load", () => {
       setTimeout(showNotifyModalIfNeeded, 400);
     });
