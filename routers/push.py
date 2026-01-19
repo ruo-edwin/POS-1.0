@@ -17,12 +17,23 @@ def get_db():
         db.close()
 
 
+def b64_to_b64url(s: str) -> str:
+    """
+    Convert standard base64 to base64url (no padding).
+    Browser Push API expects base64url for the applicationServerKey conversion.
+    """
+    return s.replace("+", "-").replace("/", "_").rstrip("=")
+
+
 @router.get("/vapid_public_key")
 def vapid_public_key():
     public_key = os.getenv("VAPID_PUBLIC_KEY")
     if not public_key:
         raise HTTPException(status_code=500, detail="VAPID_PUBLIC_KEY not set")
-    return {"publicKey": public_key}
+
+    # ✅ FIX: return base64url (no = padding) so atob() doesn't throw InvalidCharacterError
+    public_key = public_key.strip()
+    return {"publicKey": b64_to_b64url(public_key)}
 
 
 @router.post("/subscribe")
