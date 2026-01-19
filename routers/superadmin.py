@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Request,Body
+from fastapi import APIRouter, Depends, HTTPException, Form, Request, Body
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -246,8 +246,17 @@ def reactivate_account(
     db.commit()
     return {"message": "Business reactivated"}
 
+
+# ----------------------------------------------------
+# 6️⃣ SEND MANUAL PUSH REMINDER
+# ----------------------------------------------------
 @router.post("/push_reminder/{business_id}")
-def push_reminder(business_id: int, request: Request, payload: dict = Body(...), db: Session = Depends(get_db)):
+def push_reminder(
+    business_id: int,
+    request: Request,
+    payload: dict = Body(...),
+    db: Session = Depends(get_db)
+):
     require_superadmin(request, db)
 
     title = (payload.get("title") or "").strip()
@@ -260,14 +269,19 @@ def push_reminder(business_id: int, request: Request, payload: dict = Body(...),
     ).all()
 
     if not subs:
-        return {"message": "No subscribed devices for this business", "sent": 0}
+        return {"message": "No subscribed devices for this business", "sent": 0, "failed": 0, "deleted": 0}
 
-    vapid_private = os.getenv("VAPID_PRIVATE_KEY")
-    vapid_sub = os.getenv("VAPID_CLAIMS_SUB", "mailto:admin@smartpos.local")
-    if not vapid_private:
-        raise HTTPException(status_code=500, detail="VAPID_PRIVATE_KEY not set")
+    # ✅ IMPORTANT: use PEM key (with BEGIN/END lines)
+    vapid_private_pem = os.getenv("VAPID_PRIVATE_KEY_PEM")
+    vapid_sub = os.getenv("VAPID_SUB", "mailto:admin@smartpos.local")
+
+    if not vapid_private_pem:
+        raise HTTPException(status_code=500, detail="VAPID_PRIVATE_KEY_PEM not set")
 
     sent = 0
+    failed = 0
+    deleted = 0
+
     for sub in subs:
         try:
             webpush(
@@ -276,11 +290,27 @@ def push_reminder(business_id: int, request: Request, payload: dict = Body(...),
                     "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
                 },
                 data=json.dumps({"title": title, "body": message, "url": "/"}),
-                vapid_private_key=vapid_private,
+                vapid_private_key=vapid_private_pem,
                 vapid_claims={"sub": vapid_sub}
             )
             sent += 1
-        except WebPushException:
-            pass
 
-    return {"message": "Reminder sent", "sent": sent}
+        except WebPushException as ex:
+            failed += 1
+
+            # ✅ Remove dead subscriptions so “sent” becomes accurate over time
+            status_code = None
+            try:
+                if ex.response is not None:
+                    status_code = ex.response.status_code
+            except Exception:
+                status_code = None
+
+            if status_code in (404, 410):
+                db.delete(sub)
+                deleted += 1
+
+    if deleted:
+        db.commit()
+
+    return {"message": "Reminder processed", "sent": sent, "failed": failed, "deleted": deleted}

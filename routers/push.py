@@ -17,23 +17,29 @@ def get_db():
         db.close()
 
 
-def b64_to_b64url(s: str) -> str:
-    """
-    Convert standard base64 to base64url (no padding).
-    Browser Push API expects base64url for the applicationServerKey conversion.
-    """
-    return s.replace("+", "-").replace("/", "_").rstrip("=")
-
-
 @router.get("/vapid_public_key")
 def vapid_public_key():
-    public_key = os.getenv("VAPID_PUBLIC_KEY")
+    """
+    Return the VAPID public key for the browser Push API.
+    IMPORTANT: This must be the 'B...' base64url key (no padding).
+    """
+    public_key = os.getenv("VAPID_PUBLIC_KEY", "").strip()
+
     if not public_key:
         raise HTTPException(status_code=500, detail="VAPID_PUBLIC_KEY not set")
 
-    # ✅ FIX: return base64url (no = padding) so atob() doesn't throw InvalidCharacterError
-    public_key = public_key.strip()
-    return {"publicKey": b64_to_b64url(public_key)}
+    # Safety: remove whitespace/newlines if pasted badly
+    public_key = "".join(public_key.split())
+
+    # Basic sanity check: browser key almost always starts with "B"
+    # (Not strict, but helps catch the 'M...' PEM/DER mistake)
+    if public_key.startswith("M") or "BEGIN" in public_key:
+        raise HTTPException(
+            status_code=500,
+            detail="VAPID_PUBLIC_KEY is wrong format. It must be a browser 'B...' key (base64url), not PEM/DER."
+        )
+
+    return {"publicKey": public_key}
 
 
 @router.post("/subscribe")
@@ -57,7 +63,7 @@ def subscribe(request: Request, payload: dict = Body(...), db: Session = Depends
     if not endpoint or not p256dh or not auth:
         raise HTTPException(status_code=400, detail="Invalid subscription payload")
 
-    # ✅ UPSERT by endpoint (same device updates instead of getting stuck)
+    # ✅ UPSERT by endpoint (same device updates if they re-subscribe)
     existing = db.query(models.PushSubscription).filter(
         models.PushSubscription.endpoint == endpoint
     ).first()
