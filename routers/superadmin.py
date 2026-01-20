@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import pytz
-
+from pathlib import Path
 from backend.db import SessionLocal
 from backend.auth_utils import verify_token
 from backend import models
@@ -250,6 +250,7 @@ def reactivate_account(
 # ----------------------------------------------------
 # 6️⃣ SEND MANUAL PUSH REMINDER
 # ----------------------------------------------------
+
 @router.post("/push_reminder/{business_id}")
 def push_reminder(
     business_id: int,
@@ -271,12 +272,17 @@ def push_reminder(
     if not subs:
         return {"message": "No subscribed devices for this business", "sent": 0, "failed": 0, "deleted": 0}
 
-    # ✅ IMPORTANT: use PEM key (with BEGIN/END lines)
+    # ✅ IMPORTANT: use PEM key (with BEGIN/END lines) from Railway env var
     vapid_private_pem = os.getenv("VAPID_PRIVATE_KEY_PEM")
     vapid_sub = os.getenv("VAPID_SUB", "mailto:admin@smartpos.local")
 
     if not vapid_private_pem:
         raise HTTPException(status_code=500, detail="VAPID_PRIVATE_KEY_PEM not set")
+
+    # ✅ Railway-safe: write PEM to a temp file, then pass the FILE PATH to pywebpush
+    pem_text = vapid_private_pem.replace("\\n", "\n").strip()
+    pem_path = Path(f"/tmp/vapid_private_{business_id}.pem")
+    pem_path.write_text(pem_text, encoding="utf-8")
 
     sent = 0
     failed = 0
@@ -290,7 +296,7 @@ def push_reminder(
                     "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
                 },
                 data=json.dumps({"title": title, "body": message, "url": "/"}),
-                vapid_private_key=vapid_private_pem,
+                vapid_private_key=str(pem_path),  # ✅ pass file path, not PEM text
                 vapid_claims={"sub": vapid_sub}
             )
             sent += 1
