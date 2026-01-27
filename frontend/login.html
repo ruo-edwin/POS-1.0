@@ -169,6 +169,8 @@
       localStorage.removeItem("just_registered"); // fire once only
     }
   </script>
-
+  <script>
+  if (window.fbq) fbq('track', 'CompleteRegistration');
+</script>
 </body>
 </html>
