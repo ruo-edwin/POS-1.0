@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Request, Body
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import pytz
@@ -95,46 +96,91 @@ def create_superadmin(
 
 
 # ----------------------------------------------------
-# 1️⃣ GET ALL CLIENTS + SUBSCRIPTIONS + LAST LOGIN
+# 1️⃣ GET ALL CLIENTS + SUBSCRIPTIONS + LAST LOGIN + ✅ NEW METRICS
+#    ✅ Adds:
+#      - products_count
+#      - last_sale_date (from orders)
+#      - total_revenue (sum of orders.total_amount)
+#    ✅ Also avoids N+1 queries by using one aggregated query
 # ----------------------------------------------------
 @router.get("/get_all_clients")
 def get_all_clients(request: Request, db: Session = Depends(get_db)):
     require_superadmin(request, db)
 
-    businesses = db.query(models.Business).all()
+    rows = (
+        db.query(
+            models.Business.id.label("business_id"),
+            models.Business.business_name,
+            models.Business.phone,
+
+            # owner
+            models.User.username.label("username"),
+            models.User.last_login.label("last_login_utc"),
+
+            # subscription
+            models.Subscription.status.label("subscription_status"),
+            models.Subscription.is_active.label("is_active"),
+            models.Subscription.end_date.label("end_date"),
+
+            # ✅ NEW metrics
+            func.count(func.distinct(models.Product.id)).label("products_count"),
+            func.max(models.Order.created_at).label("last_sale_date_utc"),
+            func.coalesce(func.sum(models.Order.total_amount), 0).label("total_revenue"),
+        )
+        .outerjoin(models.Subscription, models.Subscription.business_id == models.Business.id)
+        .outerjoin(
+            models.User,
+            (models.User.business_id == models.Business.id) & (models.User.role != "superadmin")
+        )
+        .outerjoin(models.Product, models.Product.business_id == models.Business.id)
+        .outerjoin(models.Order, models.Order.business_id == models.Business.id)
+        .group_by(
+            models.Business.id,
+            models.Business.business_name,
+            models.Business.phone,
+            models.User.username,
+            models.User.last_login,
+            models.Subscription.status,
+            models.Subscription.is_active,
+            models.Subscription.end_date,
+        )
+        .all()
+    )
+
     output = []
+    now_utc = datetime.utcnow()
 
-    for biz in businesses:
-        subscription = db.query(models.Subscription).filter(
-            models.Subscription.business_id == biz.id
-        ).first()
+    for r in rows:
+        # Days left
+        days_left = None
+        if r.end_date:
+            days_left = (r.end_date - now_utc).days
 
-        owner = db.query(models.User).filter(
-            models.User.business_id == biz.id,
-            models.User.role != "superadmin"
-        ).first()
-
-        if subscription:
-            days_left = (subscription.end_date - datetime.utcnow()).days
-        else:
-            days_left = None
-
-        # Convert last_login UTC → Nairobi time
+        # last login UTC -> Nairobi time
         last_login_local = None
-        if owner and owner.last_login:
-            last_login_local = owner.last_login.replace(
-                tzinfo=pytz.utc
-            ).astimezone(NAIROBI_TZ)
+        if r.last_login_utc:
+            last_login_local = r.last_login_utc.replace(tzinfo=pytz.utc).astimezone(NAIROBI_TZ)
+
+        # ✅ last sale UTC -> Nairobi time
+        last_sale_local = None
+        if r.last_sale_date_utc:
+            last_sale_local = r.last_sale_date_utc.replace(tzinfo=pytz.utc).astimezone(NAIROBI_TZ)
 
         output.append({
-            "business_id": biz.id,
-            "business_name": biz.business_name,
-            "username": owner.username if owner else None,
-            "phone": biz.phone,
+            "business_id": r.business_id,
+            "business_name": r.business_name,
+            "username": r.username,
+            "phone": r.phone,
+
             "last_login": last_login_local.isoformat() if last_login_local else None,
-            "subscription_status": subscription.status if subscription else "none",
+            "subscription_status": r.subscription_status if r.subscription_status else "none",
             "days_left": days_left,
-            "is_active": subscription.is_active if subscription else False
+            "is_active": bool(r.is_active) if r.is_active is not None else False,
+
+            # ✅ NEW fields (for your super admin table)
+            "products_count": int(r.products_count or 0),
+            "last_sale_date": last_sale_local.isoformat() if last_sale_local else None,
+            "total_revenue": float(r.total_revenue or 0),
         })
 
     return output
@@ -250,7 +296,6 @@ def reactivate_account(
 # ----------------------------------------------------
 # 6️⃣ SEND MANUAL PUSH REMINDER
 # ----------------------------------------------------
-
 @router.post("/push_reminder/{business_id}")
 def push_reminder(
     business_id: int,
@@ -272,14 +317,12 @@ def push_reminder(
     if not subs:
         return {"message": "No subscribed devices for this business", "sent": 0, "failed": 0, "deleted": 0}
 
-    # ✅ IMPORTANT: use PEM key (with BEGIN/END lines) from Railway env var
     vapid_private_pem = os.getenv("VAPID_PRIVATE_KEY_PEM")
     vapid_sub = os.getenv("VAPID_SUB", "mailto:admin@smartpos.local")
 
     if not vapid_private_pem:
         raise HTTPException(status_code=500, detail="VAPID_PRIVATE_KEY_PEM not set")
 
-    # ✅ Railway-safe: write PEM to a temp file, then pass the FILE PATH to pywebpush
     pem_text = vapid_private_pem.replace("\\n", "\n").strip()
     pem_path = Path(f"/tmp/vapid_private_{business_id}.pem")
     pem_path.write_text(pem_text, encoding="utf-8")
@@ -296,7 +339,7 @@ def push_reminder(
                     "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
                 },
                 data=json.dumps({"title": title, "body": message, "url": "/"}),
-                vapid_private_key=str(pem_path),  # ✅ pass file path, not PEM text
+                vapid_private_key=str(pem_path),
                 vapid_claims={"sub": vapid_sub}
             )
             sent += 1
@@ -304,7 +347,6 @@ def push_reminder(
         except WebPushException as ex:
             failed += 1
 
-            # ✅ Remove dead subscriptions so “sent” becomes accurate over time
             status_code = None
             try:
                 if ex.response is not None:
