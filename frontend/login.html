@@ -163,14 +163,16 @@
     }
   </script>
     <script>
-    const justRegistered = localStorage.getItem("just_registered");
-    if (justRegistered === "1" && window.fbq) {
-      fbq('track', 'CompleteRegistration');
-      localStorage.removeItem("just_registered"); // fire once only
-    }
-  </script>
-  <script>
-  if (window.fbq) fbq('track', 'CompleteRegistration');
-</script>
+        const url = new URL(window.location.href);
+        if (url.searchParams.get("new") === "1" && window.fbq) {
+          fbq('track', 'CompleteRegistration');
+
+          // remove param so it won't count again on refresh/later
+          url.searchParams.delete("new");
+          const cleanUrl = url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "");
+          window.history.replaceState({}, "", cleanUrl);
+        }
+      </script>
+
 </body>
 </html>
