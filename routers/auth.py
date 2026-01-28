@@ -145,7 +145,7 @@ def register_business(
 
         response = JSONResponse(content={
             "message": "✅ Account created successfully! Redirecting to dashboard...",
-            "redirect": "/auth/dashboard"
+            "redirect": "/auth/dashboard?new=1"
         })
 
         response.set_cookie(

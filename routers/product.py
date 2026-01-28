@@ -5,7 +5,7 @@ from backend.db import SessionLocal
 from backend import models
 from backend.config import templates
 from backend.auth_utils import verify_token
-
+from backend.onboarding_utils import record_onboarding_event
 # ✅ Define base URL for production (Railway)
 BASE_URL = "https://pos-10-production.up.railway.app"
 
@@ -22,8 +22,16 @@ async def add_product_page(request: Request):
     return templates.TemplateResponse("add_product.html", {"request": request})
 
 @router.get("/viewstocks", response_class=HTMLResponse)
-async def view_stocks_page(request: Request):
+async def view_stocks_page(
+    request: Request,
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    # ✅ STEP 2: mark that they opened the stock page at least once
+    record_onboarding_event(db, current_user["business_id"], "view_stock")
+
     return templates.TemplateResponse("view_stock.html", {"request": request})
+
 
 
 # ---------------- DB DEPENDENCY ----------------

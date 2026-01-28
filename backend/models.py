@@ -127,3 +127,15 @@ class PushSubscription(Base):
     auth = Column(String(255), nullable=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class OnboardingEvent(Base):
+    __tablename__ = "onboarding_events"
+
+    id = Column(Integer, primary_key=True)
+    business_id = Column(Integer, ForeignKey("business.id"), index=True)
+    event = Column(String(50), index=True)  # e.g. view_stock, view_report
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("business_id", "event", name="uq_onboarding_event"),
+    )

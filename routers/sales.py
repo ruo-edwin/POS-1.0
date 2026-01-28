@@ -9,7 +9,7 @@ from backend.db import SessionLocal
 from backend import models
 from backend.config import templates
 from backend.auth_utils import verify_token
-
+from backend.onboarding_utils import record_onboarding_event
 
 router = APIRouter(
     prefix="/sales",
@@ -36,8 +36,16 @@ async def record_sale_page(request: Request):
     return templates.TemplateResponse("record_sale.html", {"request": request})
 
 
+
 @router.get("/salesreport", response_class=HTMLResponse)
-async def sales_report_page(request: Request):
+async def sales_report_page(
+    request: Request,
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    # mark that they opened the sales report page at least once
+    record_onboarding_event(db, current_user["business_id"], "view_report")
+
     return templates.TemplateResponse("sales_report.html", {"request": request})
 
 
