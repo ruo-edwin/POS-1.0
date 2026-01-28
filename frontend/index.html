@@ -58,10 +58,7 @@
       --shadow-soft: 0 18px 40px rgba(0,0,0,0.08);
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: "Inter", system-ui, sans-serif;
-    }
+    * { box-sizing: border-box; font-family: "Inter", system-ui, sans-serif; }
 
     body {
       margin: 0;
@@ -100,11 +97,7 @@
       color: transparent;
     }
 
-    .biz-name {
-      color: var(--text-muted);
-      font-size: 1rem;
-      margin-bottom: 12px;
-    }
+    .biz-name { color: var(--text-muted); font-size: 1rem; margin-bottom: 12px; }
 
     .user-info {
       font-size: 0.92rem;
@@ -125,10 +118,7 @@
       box-shadow: 0 8px 16px rgba(251, 140, 0, 0.3);
       transition: 0.2s;
     }
-    #superadminBtn:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.05);
-    }
+    #superadminBtn:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
     /* ✅ Onboarding container */
     .onboarding-card {
@@ -140,19 +130,55 @@
       box-shadow: 0 12px 26px rgba(0,0,0,0.06);
       margin: 10px 0 18px;
       position: relative;
+      overflow: hidden;
     }
 
-    /* ✅ Glow only for 0/4 */
+    /* ✅ BRIGHT + SHINY glow for first-time */
     .onboarding-card.glow {
       box-shadow:
-        0 12px 26px rgba(0,0,0,0.06),
-        0 0 0 3px rgba(99, 102, 241, 0.18),
-        0 0 35px rgba(99, 102, 241, 0.25);
-      animation: pulseGlow 1.6s ease-in-out infinite;
+        0 18px 34px rgba(0,0,0,0.10),
+        0 0 0 3px rgba(99,102,241,0.30),
+        0 0 55px rgba(99,102,241,0.55),
+        0 0 95px rgba(99,102,241,0.35);
+      animation: pulseGlow 1.35s ease-in-out infinite;
     }
+
+    .onboarding-card.glow::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 18px;
+      background: conic-gradient(
+        from 180deg,
+        rgba(99,102,241,0.00),
+        rgba(99,102,241,0.55),
+        rgba(255,255,255,0.30),
+        rgba(99,102,241,0.55),
+        rgba(99,102,241,0.00)
+      );
+      filter: blur(12px);
+      opacity: 0.75;
+      animation: shineSpin 2.2s linear infinite;
+      pointer-events: none;
+    }
+
+    .onboarding-card.glow::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.40), rgba(255,255,255,0.00) 55%);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
     @keyframes pulseGlow {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-2px); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes shineSpin {
+      to { transform: rotate(360deg); }
     }
 
     /* ✅ Collapsed header row */
@@ -163,6 +189,8 @@
       gap: 12px;
       cursor: pointer;
       user-select: none;
+      position: relative;
+      z-index: 1; /* sit above shine */
     }
 
     .onboarding-left {
@@ -190,15 +218,14 @@
       text-overflow: ellipsis;
     }
 
-    /* ✅ tiny "Start here" badge */
     .micro-badge {
       font-size: 0.7rem;
       font-weight: 900;
       padding: 2px 8px;
       border-radius: 999px;
-      background: rgba(99,102,241,0.12);
+      background: rgba(99,102,241,0.14);
       color: var(--accent);
-      border: 1px solid rgba(99,102,241,0.18);
+      border: 1px solid rgba(99,102,241,0.22);
       flex: 0 0 auto;
     }
 
@@ -248,22 +275,17 @@
     }
     .collapse-pill:hover { transform: translateY(-1px); }
 
-    /* ✅ Expanded body */
     .onboarding-body {
       display: none;
       margin-top: 12px;
       padding-top: 12px;
       border-top: 1px solid rgba(0,0,0,0.06);
+      position: relative;
+      z-index: 1;
     }
-    .onboarding-card.expanded .onboarding-body {
-      display: block;
-    }
+    .onboarding-card.expanded .onboarding-body { display: block; }
 
-    .steps {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .steps { display: flex; flex-direction: column; gap: 10px; }
 
     .step {
       display: flex;
@@ -276,12 +298,7 @@
       border: 1px solid rgba(0,0,0,0.06);
     }
 
-    .step-left {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      min-width: 0;
-    }
+    .step-left { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
 
     .step-icon {
       width: 26px;
@@ -332,12 +349,10 @@
       background: rgba(16, 185, 129, 0.06);
       border-color: rgba(16, 185, 129, 0.18);
     }
-
     .step.done .step-icon {
       background: rgba(16, 185, 129, 0.14);
       color: #059669;
     }
-
     .step.done .step-action {
       opacity: 0.75;
       pointer-events: none;
@@ -365,10 +380,7 @@
       transition: 0.25s ease;
     }
 
-    .menu a:hover {
-      transform: translateY(-3px);
-      filter: brightness(1.07);
-    }
+    .menu a:hover { transform: translateY(-3px); filter: brightness(1.07); }
 
     .logout-btn {
       margin-top: 28px;
@@ -384,17 +396,9 @@
       box-shadow: 0 5px 14px rgba(239, 68, 68, 0.25);
       transition: 0.25s;
     }
+    .logout-btn:hover { background: #dc2626; transform: translateY(-2px); }
 
-    .logout-btn:hover {
-      background: #dc2626;
-      transform: translateY(-2px);
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
+    footer { margin-top: 30px; font-size: 0.85rem; color: var(--text-muted); }
 
     /* Modal styling untouched */
     .modal-content {
@@ -567,13 +571,21 @@
       const completed = Object.values(stepsObj || {}).filter(Boolean).length;
       const pct = Number.isFinite(progress) ? progress : Math.round((completed / 4) * 100);
 
+      // ✅ Hide the whole section if complete
+      if (pct >= 100) {
+        cardEl.style.display = "none";
+        return;
+      } else {
+        cardEl.style.display = "block";
+      }
+
       barEl.style.width = `${pct}%`;
       miniEl.textContent = `${pct}% • ${completed}/4`;
 
-      // ✅ Always start COLLAPSED, even first-time user
+      // ✅ Always start collapsed by default
       setExpanded(false);
 
-      // ✅ Only first-time user gets glow + badge
+      // ✅ Glow only for first-time (0/4)
       if (completed === 0) {
         cardEl.classList.add("glow");
         startHereBadge.style.display = "inline-block";
@@ -582,7 +594,6 @@
         startHereBadge.style.display = "none";
       }
 
-      // Build steps (only shown when expanded)
       stepsEl.innerHTML = "";
       ONBOARDING_STEP_DEFS.forEach(def => {
         const done = !!(stepsObj && stepsObj[def.key]);
@@ -616,7 +627,6 @@
       }
     }
 
-    // Toggle expand/collapse (user controlled)
     (function hookCollapseToggle() {
       const header = document.getElementById("onboardingHeader");
       const card = document.getElementById("onboardingCard");
@@ -625,16 +635,7 @@
       header.addEventListener("click", () => {
         const expanded = card.classList.contains("expanded");
         setExpanded(!expanded);
-
-        // Optional: remember user preference
-        try { localStorage.setItem("onboarding_expanded", (!expanded) ? "1" : "0"); } catch(e){}
       });
-
-      // Optional: restore preference
-      try {
-        const pref = localStorage.getItem("onboarding_expanded");
-        if (pref === "1") setExpanded(true);
-      } catch(e){}
     })();
 
     // Blur focused element before modal hides
@@ -689,7 +690,6 @@
         }
 
         const reg = await navigator.serviceWorker.ready;
-
         const existing = await reg.pushManager.getSubscription();
         if (existing) {
           bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
