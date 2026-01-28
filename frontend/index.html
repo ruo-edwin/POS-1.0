@@ -133,101 +133,65 @@
       filter: brightness(1.05);
     }
 
-    /* ✅ Collapsible onboarding card (Option 1) */
+    /* ✅ Onboarding card (Stripe-like) */
     .onboarding-card {
+      position: relative;
       text-align: left;
       border: 1px solid var(--border-soft);
       border-radius: 16px;
-      padding: 14px;
+      padding: 16px;
       background: rgba(79, 70, 229, 0.04);
       box-shadow: 0 12px 26px rgba(0,0,0,0.06);
       margin: 10px 0 18px;
+      overflow: hidden;
     }
 
-    .onboarding-header {
+    .onboarding-top {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      gap: 12px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .onboarding-left {
-      min-width: 0;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     .onboarding-title {
       margin: 0;
-      font-size: 0.98rem;
-      font-weight: 800;
+      font-size: 1rem;
+      font-weight: 700;
       color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .onboarding-mini {
-      margin: 4px 0 0;
-      font-size: 0.83rem;
-      color: var(--text-muted);
-      line-height: 1.3;
-    }
-
-    .onboarding-right {
-      text-align: right;
-      flex: 0 0 auto;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 10px;
     }
 
-    .pill {
-      font-size: 0.78rem;
+    .onboarding-sub {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* ✅ Micro “Start here” badge */
+    .micro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
       font-weight: 800;
+      letter-spacing: 0.2px;
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(79, 70, 229, 0.10);
+      background: rgba(99, 102, 241, 0.14);
       color: var(--accent);
-      border: 1px solid rgba(79, 70, 229, 0.18);
+      border: 1px solid rgba(99, 102, 241, 0.22);
+      line-height: 1;
+      user-select: none;
       white-space: nowrap;
     }
 
-    .onboarding-toggle {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.08);
-      background: rgba(255,255,255,0.85);
-      display: grid;
-      place-items: center;
-      transition: 0.2s;
-    }
-
-    .onboarding-toggle:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.02);
-    }
-
-    .chev {
+    .micro-badge span {
       display: inline-block;
-      transition: transform 0.2s ease;
-      font-weight: 900;
-      color: var(--text-main);
-      line-height: 1;
-    }
-
-    .expanded .chev {
-      transform: rotate(180deg);
-    }
-
-    .onboarding-body {
-      margin-top: 12px;
-      display: none; /* collapsed by default */
-    }
-
-    .expanded .onboarding-body {
-      display: block;
+      transform: translateY(-0.5px);
     }
 
     .progress-wrap { margin-top: 10px; }
@@ -270,9 +234,9 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding: 10px;
+      padding: 10px 10px;
       border-radius: 14px;
-      background: rgba(255,255,255,0.78);
+      background: rgba(255,255,255,0.75);
       border: 1px solid rgba(0,0,0,0.06);
     }
 
@@ -318,7 +282,7 @@
     .step-action {
       text-decoration: none;
       font-size: 0.85rem;
-      font-weight: 800;
+      font-weight: 700;
       padding: 8px 12px;
       border-radius: 999px;
       border: 1px solid rgba(0,0,0,0.08);
@@ -326,7 +290,6 @@
       color: var(--text-main);
       transition: 0.2s;
       flex: 0 0 auto;
-      white-space: nowrap;
     }
 
     .step-action:hover {
@@ -349,31 +312,44 @@
       pointer-events: none;
     }
 
-    .onboarding-cta-row {
-      margin-top: 12px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
+    /* === Onboarding Attention Glow (First-time users only) === */
+    .onboarding-glow {
+      position: relative;
+      animation: onboardingPulse 2.4s ease-in-out infinite;
+      border: 1px solid rgba(99, 102, 241, 0.45) !important;
     }
 
-    .onboarding-cta {
-      border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 0.86rem;
-      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.22);
-      cursor: pointer;
-      transition: 0.2s;
-      width: 100%;
+    /* Soft animated glow */
+    .onboarding-glow::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 18px;
+      background: linear-gradient(
+        120deg,
+        rgba(99, 102, 241, 0.25),
+        rgba(79, 70, 229, 0.12),
+        rgba(99, 102, 241, 0.25)
+      );
+      filter: blur(14px);
+      opacity: 0.8;
+      z-index: -1;
     }
 
-    .onboarding-cta:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.06);
+    /* Pulse animation */
+    @keyframes onboardingPulse {
+      0% {
+        box-shadow: 0 0 0 rgba(99, 102, 241, 0.35);
+        transform: translateY(0);
+      }
+      50% {
+        box-shadow: 0 0 28px rgba(99, 102, 241, 0.55);
+        transform: translateY(-1px);
+      }
+      100% {
+        box-shadow: 0 0 0 rgba(99, 102, 241, 0.35);
+        transform: translateY(0);
+      }
     }
 
     .menu {
@@ -483,42 +459,36 @@
     <a id="superadminBtn" href="/superadmin/admin_panel">🔐 Superadmin Panel</a>
     {% endif %}
 
-    <!-- ✅ Collapsible Onboarding checklist (Option 1) -->
+    <!-- ✅ Onboarding checklist -->
     <div class="onboarding-card" id="onboardingCard">
-      <div class="onboarding-header" id="onboardingHeader" role="button" aria-expanded="false">
-        <div class="onboarding-left">
+      <div class="onboarding-top">
+        <div>
           <p class="onboarding-title">
-            🚀 Getting started
-            <span class="pill" id="onboardingPill">0% complete</span>
+            🚀 Getting Started
+            <span class="micro-badge" id="startHereBadge" style="display:none;">
+              <span>👋 Start here</span>
+            </span>
           </p>
-          <p class="onboarding-mini" id="onboardingMini">Continue setup to start tracking sales smoothly.</p>
+          <p class="onboarding-sub">Follow these steps to set up SmartPOS and start tracking sales smoothly.</p>
         </div>
-
-        <div class="onboarding-right">
-          <div class="onboarding-toggle" aria-hidden="true" title="Expand">
-            <span class="chev">▾</span>
-          </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800; color: var(--text-main); font-size:0.95rem;" id="onboardingPct">0%</div>
+          <div style="font-size:0.78rem; color: var(--text-muted);">complete</div>
         </div>
       </div>
 
-      <div class="onboarding-body" id="onboardingBody">
-        <div class="progress-wrap">
-          <div class="progress-meta">
-            <span id="onboardingLabel">Loading progress…</span>
-            <span id="onboardingCount">0/4</span>
-          </div>
-          <div class="progress-bar-outer">
-            <div class="progress-bar-inner" id="onboardingBar"></div>
-          </div>
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="onboardingLabel">Loading progress…</span>
+          <span id="onboardingCount">0/4</span>
         </div>
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="onboardingBar"></div>
+        </div>
+      </div>
 
-        <div class="steps" id="onboardingSteps">
-          <!-- Filled by JS -->
-        </div>
-
-        <div class="onboarding-cta-row">
-          <button class="onboarding-cta" id="continueSetupBtn" type="button">Continue setup</button>
-        </div>
+      <div class="steps" id="onboardingSteps">
+        <!-- Filled by JS -->
       </div>
     </div>
 
@@ -571,12 +541,15 @@
       try {
         const params = new URLSearchParams(window.location.search);
         const isNew = params.get("new") === "1" || params.get("registered") === "1";
+
+        // session guard: avoid duplicates in this browser session
         const alreadyFired = sessionStorage.getItem("cr_fired") === "1";
 
         if (isNew && !alreadyFired && typeof fbq === "function") {
           fbq('track', 'CompleteRegistration');
           sessionStorage.setItem("cr_fired", "1");
 
+          // remove query string so refresh doesn't re-trigger
           params.delete("new");
           params.delete("registered");
           const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : "");
@@ -594,70 +567,77 @@
         .catch(err => console.error("SW registration failed:", err));
     }
 
-    // ✅ Collapsible behavior (Option 1)
-    const onboardingCard = document.getElementById("onboardingCard");
-    const onboardingHeader = document.getElementById("onboardingHeader");
-    const onboardingBody = document.getElementById("onboardingBody");
-    const continueSetupBtn = document.getElementById("continueSetupBtn");
-
-    function setExpanded(expanded) {
-      if (!onboardingCard || !onboardingHeader) return;
-      onboardingCard.classList.toggle("expanded", expanded);
-      onboardingHeader.setAttribute("aria-expanded", expanded ? "true" : "false");
-    }
-
-    function toggleExpanded() {
-      const isExpanded = onboardingCard.classList.contains("expanded");
-      setExpanded(!isExpanded);
-    }
-
-    if (onboardingHeader) onboardingHeader.addEventListener("click", toggleExpanded);
-
-    // ✅ Build onboarding steps
+    // ✅ Build onboarding steps (Stripe-style)
     const ONBOARDING_STEP_DEFS = [
-      { key: "add_product",  icon: "1", name: "Add your first product", desc: "Create a product so you can sell and track stock.", href: "/products/addproduct", cta: "Add" },
-      { key: "update_stock", icon: "2", name: "Update / check stock",  desc: "Confirm quantities and prices in your stock list.", href: "/products/viewstocks", cta: "Open" },
-      { key: "sell_product", icon: "3", name: "Record a sale",         desc: "Sell products to generate sales data.", href: "/sales/recordsale", cta: "Sell" },
-      { key: "view_report",  icon: "4", name: "View sales report",     desc: "See sales history and performance insights.", href: "/sales/salesreport", cta: "View" }
-    ];
-
-    function firstIncompleteStep(stepsObj) {
-      for (const def of ONBOARDING_STEP_DEFS) {
-        if (!stepsObj || !stepsObj[def.key]) return def;
+      {
+        key: "add_product",
+        icon: "1",
+        name: "Add your first product",
+        desc: "Create a product so you can sell and track stock.",
+        href: "/products/addproduct",
+        cta: "Add"
+      },
+      {
+        key: "update_stock",
+        icon: "2",
+        name: "Update / check stock",
+        desc: "Confirm quantities and prices in your stock list.",
+        href: "/products/viewstocks",
+        cta: "Open"
+      },
+      {
+        key: "sell_product",
+        icon: "3",
+        name: "Record a sale",
+        desc: "Sell products to generate sales data.",
+        href: "/sales/recordsale",
+        cta: "Sell"
+      },
+      {
+        key: "view_report",
+        icon: "4",
+        name: "View sales report",
+        desc: "See sales history and performance insights.",
+        href: "/sales/salesreport",
+        cta: "View"
       }
-      return null;
-    }
+    ];
 
     function renderOnboarding(stepsObj, progress) {
       const stepsEl = document.getElementById("onboardingSteps");
+      const pctEl = document.getElementById("onboardingPct");
       const barEl = document.getElementById("onboardingBar");
       const labelEl = document.getElementById("onboardingLabel");
       const countEl = document.getElementById("onboardingCount");
-      const pillEl = document.getElementById("onboardingPill");
-      const miniEl = document.getElementById("onboardingMini");
-      const chevEl = onboardingCard?.querySelector(".chev");
+      const cardEl = document.getElementById("onboardingCard");
+      const badgeEl = document.getElementById("startHereBadge");
 
       const completed = Object.values(stepsObj || {}).filter(Boolean).length;
       const pct = Number.isFinite(progress) ? progress : Math.round((completed / 4) * 100);
 
-      if (pillEl) pillEl.textContent = `${pct}% complete`;
-      if (barEl) barEl.style.width = `${pct}%`;
-      if (countEl) countEl.textContent = `${completed}/4`;
+      pctEl.textContent = `${pct}%`;
+      barEl.style.width = `${pct}%`;
+      countEl.textContent = `${completed}/4`;
 
-      if (pct === 100) {
-        if (labelEl) labelEl.textContent = "Setup complete ✅ You’re ready to go.";
-        if (miniEl) miniEl.textContent = "Nice — SmartPOS setup is complete.";
-        // auto-collapse when done
-        setExpanded(false);
-      } else if (completed === 0) {
-        if (labelEl) labelEl.textContent = "Start here — finish setup in minutes.";
-        if (miniEl) miniEl.textContent = "Continue setup to start tracking sales smoothly.";
+      /* ✅ Glow + micro badge logic */
+      if (completed === 0 || pct < 50) {
+        cardEl.classList.add("onboarding-glow");
       } else {
-        if (labelEl) labelEl.textContent = "Keep going — you’re almost there.";
-        if (miniEl) miniEl.textContent = "Continue setup to finish the remaining steps.";
+        cardEl.classList.remove("onboarding-glow");
       }
 
-      if (!stepsEl) return;
+      if (badgeEl) {
+        badgeEl.style.display = (completed === 0) ? "inline-flex" : "none";
+      }
+
+      if (pct === 100) {
+        labelEl.textContent = "Setup complete ✅ You’re ready to go.";
+      } else if (completed === 0) {
+        labelEl.textContent = "Start here — finish setup in minutes.";
+      } else {
+        labelEl.textContent = "Keep going — you’re almost there.";
+      }
+
       stepsEl.innerHTML = "";
 
       ONBOARDING_STEP_DEFS.forEach(def => {
@@ -679,18 +659,6 @@
 
         stepsEl.appendChild(div);
       });
-
-      // Continue setup button goes to the next incomplete step
-      const next = firstIncompleteStep(stepsObj);
-      if (continueSetupBtn) {
-        if (next) {
-          continueSetupBtn.textContent = `Continue setup → ${next.name}`;
-          continueSetupBtn.onclick = () => { window.location.href = next.href; };
-        } else {
-          continueSetupBtn.textContent = "Setup complete ✅";
-          continueSetupBtn.onclick = null;
-        }
-      }
     }
 
     async function loadOnboardingStatus() {
@@ -699,31 +667,12 @@
         if (!res.ok) throw new Error("status " + res.status);
         const data = await res.json();
         renderOnboarding(data.steps || {}, data.progress);
-
-        // Keep it collapsed by default unless user already expanded before
-        const saved = localStorage.getItem("onboarding_expanded") === "1";
-        const pct = Number.isFinite(data.progress) ? data.progress : 0;
-        if (pct !== 100) setExpanded(saved);
-
       } catch (e) {
         console.log("[ONBOARDING] failed:", e);
         renderOnboarding({}, 0);
         const labelEl = document.getElementById("onboardingLabel");
         if (labelEl) labelEl.textContent = "Setup guide (refresh if not loading).";
-        setExpanded(false);
       }
-    }
-
-    // Persist expand/collapse state
-    function persistExpandedState() {
-      const isExpanded = onboardingCard.classList.contains("expanded");
-      localStorage.setItem("onboarding_expanded", isExpanded ? "1" : "0");
-    }
-
-    if (onboardingHeader) {
-      onboardingHeader.addEventListener("click", () => {
-        setTimeout(persistExpandedState, 0);
-      });
     }
 
     // Blur focused element before modal hides (stops aria warning)
@@ -746,11 +695,20 @@
     async function shouldShowNotifyModal() {
       console.log("[PUSH] permission:", Notification.permission);
 
-      if (!("serviceWorker" in navigator)) return false;
-      if (!("PushManager" in window)) return false;
+      if (!("serviceWorker" in navigator)) {
+        console.log("[PUSH] No serviceWorker");
+        return false;
+      }
+      if (!("PushManager" in window)) {
+        console.log("[PUSH] No PushManager (push not supported)");
+        return false;
+      }
 
       const reg = await navigator.serviceWorker.ready;
+
       const sub = await reg.pushManager.getSubscription();
+      console.log("[PUSH] existing subscription:", sub);
+
       if (sub) return false;
       if (Notification.permission === "denied") return false;
 
@@ -760,13 +718,19 @@
     async function showNotifyModalIfNeeded() {
       try {
         const show = await shouldShowNotifyModal();
+        console.log("[PUSH] should show modal:", show);
+
         if (!show) return;
 
         const modalEl = document.getElementById("notifyModal");
-        if (!modalEl) return;
+        if (!modalEl) {
+          console.log("[PUSH] modal element missing!");
+          return;
+        }
 
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
+        console.log("[PUSH] modal.show() called ✅");
       } catch (e) {
         console.error("[PUSH] showNotifyModalIfNeeded failed:", e);
       }
@@ -775,23 +739,29 @@
     async function enableNotificationsFromModal() {
       try {
         const permission = await Notification.requestPermission();
+        console.log("[PUSH] requestPermission result:", permission);
+
         if (permission !== "granted") {
           alert("Notifications permission denied.");
           return;
         }
 
         const reg = await navigator.serviceWorker.ready;
+
         const existing = await reg.pushManager.getSubscription();
         if (existing) {
           bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
           return;
         }
 
+        // ✅ include cookies/session (most common cause of “saved 0 devices”)
         const keyRes = await fetch("/push/vapid_public_key", { credentials: "include" });
         const keyOut = await keyRes.json().catch(() => ({}));
         const publicKey = keyOut.publicKey;
 
         if (!keyRes.ok || !publicKey) {
+          const t = await keyRes.text().catch(() => "");
+          console.log("[PUSH] vapid key failed:", keyRes.status, t);
           alert("Failed to load push key. Please try again.");
           return;
         }
@@ -803,7 +773,7 @@
 
         const res = await fetch("/push/subscribe", {
           method: "POST",
-          credentials: "include",
+          credentials: "include", // ✅ IMPORTANT
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(sub)
         });
@@ -812,6 +782,8 @@
           bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
           alert("Notifications enabled ✅");
         } else {
+          const txt = await res.text().catch(() => "");
+          console.log("[PUSH] subscribe API failed:", res.status, txt);
           alert(`Failed to enable notifications. (${res.status})`);
         }
       } catch (e) {
