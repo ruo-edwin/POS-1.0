@@ -6,11 +6,18 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from backend import models
 from backend.db import SessionLocal
-from backend.auth_utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM, verify_token
+from backend.auth_utils import (
+    create_access_token,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    SECRET_KEY,
+    ALGORITHM,
+    verify_token
+)
 from backend.config import templates
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def get_db():
     db = SessionLocal()
@@ -33,12 +40,10 @@ def get_dashboard(request: Request, db: Session = Depends(get_db)):
     except JWTError:
         return RedirectResponse(url="/auth/login")
 
-    # Fetch user details from DB
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         return RedirectResponse(url="/auth/login")
 
-    # Fetch business name (superadmin has no business)
     business_name = user.business.business_name if user.business_id else "Superadmin"
 
     return templates.TemplateResponse(
@@ -65,7 +70,7 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
-# ✅ Register: Business + Admin + Subscription
+# ✅ Register: Business + Admin + Subscription + AUTO LOGIN
 @router.post("/register_form")
 def register_business(
     business_name: str = Form(...),
@@ -84,6 +89,7 @@ def register_business(
         if db.query(models.User).filter(models.User.username == username).first():
             raise HTTPException(status_code=400, detail="Username already taken")
 
+        # Create business
         new_business = models.Business(
             business_name=business_name,
             username=username,
@@ -98,6 +104,7 @@ def register_business(
         new_business.business_code = f"RP{new_business.id}"
         db.commit()
 
+        # Create admin user
         admin_user = models.User(
             business_id=new_business.id,
             username=username,
@@ -110,6 +117,7 @@ def register_business(
         db.commit()
         db.refresh(admin_user)
 
+        # Create trial subscription
         trial_end = datetime.utcnow() + timedelta(days=7)
         new_subscription = models.Subscription(
             business_id=new_business.id,
@@ -123,7 +131,33 @@ def register_business(
         db.add(new_subscription)
         db.commit()
 
-        return {"message": "✅ Business, admin user & subscription created successfully!"}
+        # ✅ AUTO LOGIN TOKEN (NEW)
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={
+                "user_id": admin_user.id,
+                "username": admin_user.username,
+                "business_id": admin_user.business_id,
+                "role": admin_user.role
+            },
+            expires_delta=access_token_expires
+        )
+
+        response = JSONResponse(content={
+            "message": "✅ Account created successfully! Redirecting to dashboard...",
+            "redirect": "/auth/dashboard"
+        })
+
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
+
+        return response
 
     except Exception as e:
         db.rollback()
@@ -166,9 +200,8 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
                 max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
             )
             return response
-        # ⭐⭐⭐ END OF SUPERADMIN BYPASS ⭐⭐⭐
+        # ⭐⭐⭐ END SUPERADMIN ⭐⭐⭐
 
-        # 🔥 Normal users → subscription needed
         subscription = db.query(models.Subscription).filter(
             models.Subscription.business_id == user.business_id
         ).first()
@@ -179,27 +212,20 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
         now = datetime.utcnow()
 
         if subscription.status == "suspended":
-            raise HTTPException(status_code=403, detail="Your account is suspended. Please contact support.")
+            raise HTTPException(status_code=403, detail="Your account is suspended.")
 
         if subscription.status == "trial" and subscription.end_date < now:
             subscription.status = "expired"
             subscription.is_active = False
             db.commit()
-            raise HTTPException(
-                status_code=403,
-                detail="Your 7 day trial has expired. Please make payment of balance to continue."
-            )
+            raise HTTPException(status_code=403, detail="Your trial has expired.")
 
         if subscription.status == "active" and subscription.end_date < now:
             subscription.status = "expired"
             subscription.is_active = False
             db.commit()
-            raise HTTPException(
-                status_code=403,
-                detail="Your subscription has expired. Please renew to continue."
-            )
+            raise HTTPException(status_code=403, detail="Your subscription has expired.")
 
-        # Update user login
         user.is_active = 1
         user.last_login = datetime.utcnow()
         db.commit()
@@ -234,6 +260,6 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
 # ✅ Logout
 @router.get("/logout")
 def logout_user():
-    response = RedirectResponse(url="https://pos-10-production.up.railway.app/auth/login")
+    response = RedirectResponse(url="/auth/login")
     response.delete_cookie("access_token")
     return response

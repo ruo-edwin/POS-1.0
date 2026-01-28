@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- PWA -->
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#635bff">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#635bff">
 
-<!-- iOS support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SmartPOS">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <!-- iOS support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SmartPOS">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
   <title>SmartPOS Registration</title>
 
@@ -228,16 +228,18 @@
       try {
         const response = await fetch("https://pos-10-production.up.railway.app/auth/register_form", {
           method: "POST",
-          body: formData
+          body: formData,
+          credentials: "include" // ✅ IMPORTANT: allows cookie from backend to be saved
         });
 
         const result = await response.json();
 
         if (!response.ok) {
-          alert("❌ Error: " + result.detail);
+          alert("❌ Error: " + (result.detail || "Registration failed"));
         } else {
-          alert("✅ " + result.message);
-          window.location.href = "https://pos-10-production.up.railway.app/auth/login?new=1";
+          alert(result.message || "✅ Account created!");
+          // ✅ Go straight to dashboard (auto-login)
+          window.location.href = "https://pos-10-production.up.railway.app" + (result.redirect || "/auth/dashboard");
         }
       } catch (error) {
         console.error("Error:", error);
@@ -248,14 +250,12 @@
     function showLogin() {
       alert("Switch to login view (You’ll replace this with your login form).");
     }
-   
+
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/static/service-worker.js")
         .then(() => console.log("Service Worker registered"))
         .catch(err => console.error("SW registration failed:", err));
     }
-
- 
   </script>
 </body>
 </html>
