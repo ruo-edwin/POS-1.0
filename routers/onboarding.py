@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from backend.db import SessionLocal
 from backend import models
@@ -25,29 +24,38 @@ def onboarding_status(
     if not business_id:
         raise HTTPException(status_code=400, detail="No business_id in token")
 
-    # Step 1: at least 1 product
-    has_product = db.query(models.Product).filter(models.Product.business_id == business_id).first() is not None
+    # -----------------------------
+    # Reality checks (DB truth)
+    # -----------------------------
+    has_product = db.query(models.Product).filter(
+        models.Product.business_id == business_id
+    ).first() is not None
 
-    # Step 2: stock page opened at least once
+    has_sale = db.query(models.Order).filter(
+        models.Order.business_id == business_id
+    ).first() is not None
+
+    # -----------------------------
+    # Event checks (onboarding logs)
+    # -----------------------------
     viewed_stock = db.query(models.OnboardingEvent).filter(
         models.OnboardingEvent.business_id == business_id,
         models.OnboardingEvent.event == "view_stock"
     ).first() is not None
 
-    # Step 3: at least 1 order (meaning a sale happened)
-    has_sale = db.query(models.Order).filter(models.Order.business_id == business_id).first() is not None
-
-    # Step 4: report page opened at least once
     viewed_report = db.query(models.OnboardingEvent).filter(
         models.OnboardingEvent.business_id == business_id,
         models.OnboardingEvent.event == "view_report"
     ).first() is not None
 
+    # ✅ Fallback logic for old users:
+    # If they already have products, treat stock as "done"
+    # If they already have sales/orders, treat report as "done"
     steps = {
         "add_product": has_product,
-        "update_stock": viewed_stock,
+        "update_stock": viewed_stock or has_product,
         "sell_product": has_sale,
-        "view_report": viewed_report
+        "view_report": viewed_report or has_sale
     }
 
     completed = sum(1 for v in steps.values() if v)
