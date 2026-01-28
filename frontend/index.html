@@ -143,6 +143,7 @@
       animation: pulseGlow 1.35s ease-in-out infinite;
     }
 
+    /* ✅ Removed spinning animation here (no more shineSpin) */
     .onboarding-card.glow::before {
       content: "";
       position: absolute;
@@ -158,7 +159,7 @@
       );
       filter: blur(12px);
       opacity: 0.75;
-      animation: shineSpin 2.2s linear infinite;
+      /* animation: shineSpin 2.2s linear infinite; ❌ removed */
       pointer-events: none;
     }
 
@@ -177,9 +178,7 @@
       50% { transform: translateY(-3px); }
     }
 
-    @keyframes shineSpin {
-      to { transform: rotate(360deg); }
-    }
+    /* (shineSpin keyframes removed entirely) */
 
     /* ✅ Collapsed header row */
     .onboarding-header {
@@ -190,7 +189,7 @@
       cursor: pointer;
       user-select: none;
       position: relative;
-      z-index: 1; /* sit above shine */
+      z-index: 1;
     }
 
     .onboarding-left {
