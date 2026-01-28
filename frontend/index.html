@@ -10,9 +10,7 @@
 
   <!-- iOS + Chrome support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <!-- ✅ Fix Chrome warning -->
   <meta name="mobile-web-app-capable" content="yes">
-
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SmartPOS">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
@@ -49,7 +47,6 @@
       --accent: #4f46e5;
       --accent-strong: #6366f1;
 
-      --bg-light: #eef2f7;
       --bg-card: #ffffff;
 
       --text-main: #1f2937;
@@ -112,7 +109,7 @@
     .user-info {
       font-size: 0.92rem;
       color: var(--text-muted);
-      margin-bottom: 22px;
+      margin-bottom: 18px;
       line-height: 1.5;
     }
 
@@ -133,76 +130,83 @@
       filter: brightness(1.05);
     }
 
-    /* ✅ Onboarding card (Stripe-like) */
+    /* ✅ Onboarding container */
     .onboarding-card {
-      position: relative;
       text-align: left;
       border: 1px solid var(--border-soft);
       border-radius: 16px;
-      padding: 16px;
+      padding: 14px;
       background: rgba(79, 70, 229, 0.04);
       box-shadow: 0 12px 26px rgba(0,0,0,0.06);
       margin: 10px 0 18px;
-      overflow: hidden;
+      position: relative;
     }
 
-    .onboarding-top {
+    /* ✅ Glow only for 0/4 */
+    .onboarding-card.glow {
+      box-shadow:
+        0 12px 26px rgba(0,0,0,0.06),
+        0 0 0 3px rgba(99, 102, 241, 0.18),
+        0 0 35px rgba(99, 102, 241, 0.25);
+      animation: pulseGlow 1.6s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    /* ✅ Collapsed header row */
+    .onboarding-header {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .onboarding-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .onboarding-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
     }
 
     .onboarding-title {
       margin: 0;
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 0.98rem;
+      font-weight: 900;
       color: var(--text-main);
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .onboarding-sub {
-      margin: 4px 0 0;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
-
-    /* ✅ Micro “Start here” badge */
-    .micro-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(99, 102, 241, 0.14);
-      color: var(--accent);
-      border: 1px solid rgba(99, 102, 241, 0.22);
-      line-height: 1;
-      user-select: none;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .micro-badge span {
-      display: inline-block;
-      transform: translateY(-0.5px);
+    /* ✅ tiny "Start here" badge */
+    .micro-badge {
+      font-size: 0.7rem;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(99,102,241,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.18);
+      flex: 0 0 auto;
     }
 
-    .progress-wrap { margin-top: 10px; }
-
-    .progress-meta {
+    .progress-line {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
+      gap: 10px;
+      min-width: 0;
     }
 
     .progress-bar-outer {
@@ -212,6 +216,7 @@
       background: rgba(0,0,0,0.06);
       overflow: hidden;
       border: 1px solid rgba(0,0,0,0.05);
+      flex: 1;
     }
 
     .progress-bar-inner {
@@ -222,8 +227,39 @@
       transition: width 0.4s ease;
     }
 
+    .progress-mini {
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    .collapse-pill {
+      font-size: 0.75rem;
+      font-weight: 900;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(79,70,229,0.10);
+      color: var(--accent);
+      border: 1px solid rgba(79,70,229,0.18);
+      white-space: nowrap;
+      transition: 0.2s;
+      flex: 0 0 auto;
+    }
+    .collapse-pill:hover { transform: translateY(-1px); }
+
+    /* ✅ Expanded body */
+    .onboarding-body {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    .onboarding-card.expanded .onboarding-body {
+      display: block;
+    }
+
     .steps {
-      margin-top: 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -282,7 +318,7 @@
     .step-action {
       text-decoration: none;
       font-size: 0.85rem;
-      font-weight: 700;
+      font-weight: 800;
       padding: 8px 12px;
       border-radius: 999px;
       border: 1px solid rgba(0,0,0,0.08);
@@ -290,11 +326,6 @@
       color: var(--text-main);
       transition: 0.2s;
       flex: 0 0 auto;
-    }
-
-    .step-action:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.02);
     }
 
     .step.done {
@@ -310,46 +341,6 @@
     .step.done .step-action {
       opacity: 0.75;
       pointer-events: none;
-    }
-
-    /* === Onboarding Attention Glow (First-time users only) === */
-    .onboarding-glow {
-      position: relative;
-      animation: onboardingPulse 2.4s ease-in-out infinite;
-      border: 1px solid rgba(99, 102, 241, 0.45) !important;
-    }
-
-    /* Soft animated glow */
-    .onboarding-glow::after {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      border-radius: 18px;
-      background: linear-gradient(
-        120deg,
-        rgba(99, 102, 241, 0.25),
-        rgba(79, 70, 229, 0.12),
-        rgba(99, 102, 241, 0.25)
-      );
-      filter: blur(14px);
-      opacity: 0.8;
-      z-index: -1;
-    }
-
-    /* Pulse animation */
-    @keyframes onboardingPulse {
-      0% {
-        box-shadow: 0 0 0 rgba(99, 102, 241, 0.35);
-        transform: translateY(0);
-      }
-      50% {
-        box-shadow: 0 0 28px rgba(99, 102, 241, 0.55);
-        transform: translateY(-1px);
-      }
-      100% {
-        box-shadow: 0 0 0 rgba(99, 102, 241, 0.35);
-        transform: translateY(0);
-      }
     }
 
     .menu {
@@ -405,25 +396,16 @@
       color: var(--text-muted);
     }
 
+    /* Modal styling untouched */
     .modal-content {
       border-radius: 18px !important;
       border: 1px solid rgba(0,0,0,0.10) !important;
       box-shadow: 0 18px 40px rgba(0,0,0,0.14) !important;
       overflow: hidden;
     }
-
-    .modal-header {
-      border-bottom: 1px solid rgba(0,0,0,0.08) !important;
-    }
-
-    .modal-title {
-      font-weight: 700;
-    }
-
-    .modal-footer {
-      border-top: 1px solid rgba(0,0,0,0.08) !important;
-    }
-
+    .modal-header { border-bottom: 1px solid rgba(0,0,0,0.08) !important; }
+    .modal-title { font-weight: 700; }
+    .modal-footer { border-top: 1px solid rgba(0,0,0,0.08) !important; }
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--accent-strong)) !important;
       border: none !important;
@@ -432,7 +414,6 @@
       padding: 10px 16px !important;
       box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
     }
-
     .btn-light {
       border-radius: 999px !important;
       padding: 10px 16px !important;
@@ -459,36 +440,28 @@
     <a id="superadminBtn" href="/superadmin/admin_panel">🔐 Superadmin Panel</a>
     {% endif %}
 
-    <!-- ✅ Onboarding checklist -->
+    <!-- ✅ Collapsible onboarding -->
     <div class="onboarding-card" id="onboardingCard">
-      <div class="onboarding-top">
-        <div>
-          <p class="onboarding-title">
-            🚀 Getting Started
-            <span class="micro-badge" id="startHereBadge" style="display:none;">
-              <span>👋 Start here</span>
-            </span>
-          </p>
-          <p class="onboarding-sub">Follow these steps to set up SmartPOS and start tracking sales smoothly.</p>
+      <div class="onboarding-header" id="onboardingHeader">
+        <div class="onboarding-left">
+          <div class="onboarding-title-row">
+            <p class="onboarding-title">🚀 Getting Started</p>
+            <span class="micro-badge" id="startHereBadge" style="display:none;">Start here</span>
+          </div>
+
+          <div class="progress-line">
+            <div class="progress-bar-outer">
+              <div class="progress-bar-inner" id="onboardingBar"></div>
+            </div>
+            <div class="progress-mini" id="onboardingMini">0% • 0/4</div>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-weight:800; color: var(--text-main); font-size:0.95rem;" id="onboardingPct">0%</div>
-          <div style="font-size:0.78rem; color: var(--text-muted);">complete</div>
-        </div>
+
+        <div class="collapse-pill" id="collapsePill">Open</div>
       </div>
 
-      <div class="progress-wrap">
-        <div class="progress-meta">
-          <span id="onboardingLabel">Loading progress…</span>
-          <span id="onboardingCount">0/4</span>
-        </div>
-        <div class="progress-bar-outer">
-          <div class="progress-bar-inner" id="onboardingBar"></div>
-        </div>
-      </div>
-
-      <div class="steps" id="onboardingSteps">
-        <!-- Filled by JS -->
+      <div class="onboarding-body" id="onboardingBody">
+        <div class="steps" id="onboardingSteps"></div>
       </div>
     </div>
 
@@ -536,20 +509,17 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // ✅ Fire CompleteRegistration ONLY ONCE (after signup), using URL flag + sessionStorage guard
+    // ✅ Fire CompleteRegistration ONLY ONCE (after signup)
     (function fireCompleteRegistrationOnce() {
       try {
         const params = new URLSearchParams(window.location.search);
         const isNew = params.get("new") === "1" || params.get("registered") === "1";
-
-        // session guard: avoid duplicates in this browser session
         const alreadyFired = sessionStorage.getItem("cr_fired") === "1";
 
         if (isNew && !alreadyFired && typeof fbq === "function") {
           fbq('track', 'CompleteRegistration');
           sessionStorage.setItem("cr_fired", "1");
 
-          // remove query string so refresh doesn't re-trigger
           params.delete("new");
           params.delete("registered");
           const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : "");
@@ -560,86 +530,60 @@
       }
     })();
 
-    // Register Service Worker (this MUST match where you serve the file)
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js")
         .then(() => console.log("Service Worker registered ✅"))
         .catch(err => console.error("SW registration failed:", err));
     }
 
-    // ✅ Build onboarding steps (Stripe-style)
     const ONBOARDING_STEP_DEFS = [
-      {
-        key: "add_product",
-        icon: "1",
-        name: "Add your first product",
-        desc: "Create a product so you can sell and track stock.",
-        href: "/products/addproduct",
-        cta: "Add"
-      },
-      {
-        key: "update_stock",
-        icon: "2",
-        name: "Update / check stock",
-        desc: "Confirm quantities and prices in your stock list.",
-        href: "/products/viewstocks",
-        cta: "Open"
-      },
-      {
-        key: "sell_product",
-        icon: "3",
-        name: "Record a sale",
-        desc: "Sell products to generate sales data.",
-        href: "/sales/recordsale",
-        cta: "Sell"
-      },
-      {
-        key: "view_report",
-        icon: "4",
-        name: "View sales report",
-        desc: "See sales history and performance insights.",
-        href: "/sales/salesreport",
-        cta: "View"
-      }
+      { key: "add_product",  icon: "1", name: "Add your first product", desc: "Create a product so you can sell and track stock.", href: "/products/addproduct", cta: "Add" },
+      { key: "update_stock", icon: "2", name: "Update / check stock",   desc: "Confirm quantities and prices in your stock list.", href: "/products/viewstocks", cta: "Open" },
+      { key: "sell_product", icon: "3", name: "Record a sale",          desc: "Sell products to generate sales data.", href: "/sales/recordsale", cta: "Sell" },
+      { key: "view_report",  icon: "4", name: "View sales report",      desc: "See sales history and performance insights.", href: "/sales/salesreport", cta: "View" }
     ];
 
+    function setExpanded(expanded) {
+      const card = document.getElementById("onboardingCard");
+      const pill = document.getElementById("collapsePill");
+      if (!card || !pill) return;
+
+      if (expanded) {
+        card.classList.add("expanded");
+        pill.textContent = "Hide";
+      } else {
+        card.classList.remove("expanded");
+        pill.textContent = "Open";
+      }
+    }
+
     function renderOnboarding(stepsObj, progress) {
-      const stepsEl = document.getElementById("onboardingSteps");
-      const pctEl = document.getElementById("onboardingPct");
-      const barEl = document.getElementById("onboardingBar");
-      const labelEl = document.getElementById("onboardingLabel");
-      const countEl = document.getElementById("onboardingCount");
       const cardEl = document.getElementById("onboardingCard");
-      const badgeEl = document.getElementById("startHereBadge");
+      const barEl = document.getElementById("onboardingBar");
+      const miniEl = document.getElementById("onboardingMini");
+      const stepsEl = document.getElementById("onboardingSteps");
+      const startHereBadge = document.getElementById("startHereBadge");
 
       const completed = Object.values(stepsObj || {}).filter(Boolean).length;
       const pct = Number.isFinite(progress) ? progress : Math.round((completed / 4) * 100);
 
-      pctEl.textContent = `${pct}%`;
       barEl.style.width = `${pct}%`;
-      countEl.textContent = `${completed}/4`;
+      miniEl.textContent = `${pct}% • ${completed}/4`;
 
-      /* ✅ Glow + micro badge logic */
-      if (completed === 0 || pct < 50) {
-        cardEl.classList.add("onboarding-glow");
+      // ✅ Always start COLLAPSED, even first-time user
+      setExpanded(false);
+
+      // ✅ Only first-time user gets glow + badge
+      if (completed === 0) {
+        cardEl.classList.add("glow");
+        startHereBadge.style.display = "inline-block";
       } else {
-        cardEl.classList.remove("onboarding-glow");
+        cardEl.classList.remove("glow");
+        startHereBadge.style.display = "none";
       }
 
-      if (badgeEl) {
-        badgeEl.style.display = (completed === 0) ? "inline-flex" : "none";
-      }
-
-      if (pct === 100) {
-        labelEl.textContent = "Setup complete ✅ You’re ready to go.";
-      } else if (completed === 0) {
-        labelEl.textContent = "Start here — finish setup in minutes.";
-      } else {
-        labelEl.textContent = "Keep going — you’re almost there.";
-      }
-
+      // Build steps (only shown when expanded)
       stepsEl.innerHTML = "";
-
       ONBOARDING_STEP_DEFS.forEach(def => {
         const done = !!(stepsObj && stepsObj[def.key]);
 
@@ -656,7 +600,6 @@
           </div>
           <a class="step-action" href="${def.href}">${done ? "Done" : def.cta}</a>
         `;
-
         stepsEl.appendChild(div);
       });
     }
@@ -670,12 +613,31 @@
       } catch (e) {
         console.log("[ONBOARDING] failed:", e);
         renderOnboarding({}, 0);
-        const labelEl = document.getElementById("onboardingLabel");
-        if (labelEl) labelEl.textContent = "Setup guide (refresh if not loading).";
       }
     }
 
-    // Blur focused element before modal hides (stops aria warning)
+    // Toggle expand/collapse (user controlled)
+    (function hookCollapseToggle() {
+      const header = document.getElementById("onboardingHeader");
+      const card = document.getElementById("onboardingCard");
+      if (!header || !card) return;
+
+      header.addEventListener("click", () => {
+        const expanded = card.classList.contains("expanded");
+        setExpanded(!expanded);
+
+        // Optional: remember user preference
+        try { localStorage.setItem("onboarding_expanded", (!expanded) ? "1" : "0"); } catch(e){}
+      });
+
+      // Optional: restore preference
+      try {
+        const pref = localStorage.getItem("onboarding_expanded");
+        if (pref === "1") setExpanded(true);
+      } catch(e){}
+    })();
+
+    // Blur focused element before modal hides
     const notifyModalEl = document.getElementById("notifyModal");
     if (notifyModalEl) {
       notifyModalEl.addEventListener("hide.bs.modal", () => {
@@ -693,44 +655,26 @@
     }
 
     async function shouldShowNotifyModal() {
-      console.log("[PUSH] permission:", Notification.permission);
-
-      if (!("serviceWorker" in navigator)) {
-        console.log("[PUSH] No serviceWorker");
-        return false;
-      }
-      if (!("PushManager" in window)) {
-        console.log("[PUSH] No PushManager (push not supported)");
-        return false;
-      }
+      if (!("serviceWorker" in navigator)) return false;
+      if (!("PushManager" in window)) return false;
 
       const reg = await navigator.serviceWorker.ready;
-
       const sub = await reg.pushManager.getSubscription();
-      console.log("[PUSH] existing subscription:", sub);
-
       if (sub) return false;
       if (Notification.permission === "denied") return false;
-
       return true;
     }
 
     async function showNotifyModalIfNeeded() {
       try {
         const show = await shouldShowNotifyModal();
-        console.log("[PUSH] should show modal:", show);
-
         if (!show) return;
 
         const modalEl = document.getElementById("notifyModal");
-        if (!modalEl) {
-          console.log("[PUSH] modal element missing!");
-          return;
-        }
+        if (!modalEl) return;
 
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
-        console.log("[PUSH] modal.show() called ✅");
       } catch (e) {
         console.error("[PUSH] showNotifyModalIfNeeded failed:", e);
       }
@@ -739,8 +683,6 @@
     async function enableNotificationsFromModal() {
       try {
         const permission = await Notification.requestPermission();
-        console.log("[PUSH] requestPermission result:", permission);
-
         if (permission !== "granted") {
           alert("Notifications permission denied.");
           return;
@@ -754,14 +696,11 @@
           return;
         }
 
-        // ✅ include cookies/session (most common cause of “saved 0 devices”)
         const keyRes = await fetch("/push/vapid_public_key", { credentials: "include" });
         const keyOut = await keyRes.json().catch(() => ({}));
         const publicKey = keyOut.publicKey;
 
         if (!keyRes.ok || !publicKey) {
-          const t = await keyRes.text().catch(() => "");
-          console.log("[PUSH] vapid key failed:", keyRes.status, t);
           alert("Failed to load push key. Please try again.");
           return;
         }
@@ -773,7 +712,7 @@
 
         const res = await fetch("/push/subscribe", {
           method: "POST",
-          credentials: "include", // ✅ IMPORTANT
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(sub)
         });
@@ -782,8 +721,6 @@
           bootstrap.Modal.getInstance(document.getElementById("notifyModal"))?.hide();
           alert("Notifications enabled ✅");
         } else {
-          const txt = await res.text().catch(() => "");
-          console.log("[PUSH] subscribe API failed:", res.status, txt);
           alert(`Failed to enable notifications. (${res.status})`);
         }
       } catch (e) {
@@ -792,7 +729,6 @@
       }
     }
 
-    // Load onboarding + push modal after full load
     window.addEventListener("load", () => {
       loadOnboardingStatus();
       setTimeout(showNotifyModalIfNeeded, 400);
