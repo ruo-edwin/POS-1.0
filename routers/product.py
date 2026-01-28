@@ -15,6 +15,17 @@ router = APIRouter(
     dependencies=[Depends(verify_token)]
 )
 
+
+
+# ---------------- DB DEPENDENCY ----------------
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 # ---------------- HTML ROUTES ----------------
 
 @router.get("/addproduct", response_class=HTMLResponse)
@@ -31,18 +42,6 @@ async def view_stocks_page(
     record_onboarding_event(db, current_user["business_id"], "view_stock")
 
     return templates.TemplateResponse("view_stock.html", {"request": request})
-
-
-
-# ---------------- DB DEPENDENCY ----------------
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 # ---------------- ADD PRODUCT ----------------
 
