@@ -130,55 +130,29 @@
       box-shadow: 0 12px 26px rgba(0,0,0,0.06);
       margin: 10px 0 18px;
       position: relative;
-      overflow: hidden;
     }
 
-    /* ✅ BRIGHT + SHINY glow for first-time */
+    /* ✅ Border-only glow (first-time only) */
     .onboarding-card.glow {
+      border: 2px solid rgba(99, 102, 241, 0.75);
       box-shadow:
-        0 18px 34px rgba(0,0,0,0.10),
-        0 0 0 3px rgba(99,102,241,0.30),
-        0 0 55px rgba(99,102,241,0.55),
-        0 0 95px rgba(99,102,241,0.35);
-      animation: pulseGlow 1.35s ease-in-out infinite;
+        0 0 0 3px rgba(99, 102, 241, 0.18),
+        0 0 18px rgba(99, 102, 241, 0.28);
+      animation: borderPulse 1.6s ease-in-out infinite;
     }
 
-    /* ✅ Removed spinning animation here (no more shineSpin) */
-    .onboarding-card.glow::before {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      border-radius: 18px;
-      background: conic-gradient(
-        from 180deg,
-        rgba(99,102,241,0.00),
-        rgba(99,102,241,0.55),
-        rgba(255,255,255,0.30),
-        rgba(99,102,241,0.55),
-        rgba(99,102,241,0.00)
-      );
-      filter: blur(12px);
-      opacity: 0.75;
-      /* animation: shineSpin 2.2s linear infinite; ❌ removed */
-      pointer-events: none;
+    @keyframes borderPulse {
+      0%, 100% {
+        box-shadow:
+          0 0 0 3px rgba(99, 102, 241, 0.18),
+          0 0 18px rgba(99, 102, 241, 0.28);
+      }
+      50% {
+        box-shadow:
+          0 0 0 4px rgba(99, 102, 241, 0.25),
+          0 0 26px rgba(99, 102, 241, 0.38);
+      }
     }
-
-    .onboarding-card.glow::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 16px;
-      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.40), rgba(255,255,255,0.00) 55%);
-      opacity: 0.55;
-      pointer-events: none;
-    }
-
-    @keyframes pulseGlow {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-3px); }
-    }
-
-    /* (shineSpin keyframes removed entirely) */
 
     /* ✅ Collapsed header row */
     .onboarding-header {
@@ -188,8 +162,6 @@
       gap: 12px;
       cursor: pointer;
       user-select: none;
-      position: relative;
-      z-index: 1;
     }
 
     .onboarding-left {
@@ -279,8 +251,6 @@
       margin-top: 12px;
       padding-top: 12px;
       border-top: 1px solid rgba(0,0,0,0.06);
-      position: relative;
-      z-index: 1;
     }
     .onboarding-card.expanded .onboarding-body { display: block; }
 
@@ -584,7 +554,7 @@
       // ✅ Always start collapsed by default
       setExpanded(false);
 
-      // ✅ Glow only for first-time (0/4)
+      // ✅ Border glow only for first-time (0/4)
       if (completed === 0) {
         cardEl.classList.add("glow");
         startHereBadge.style.display = "inline-block";
