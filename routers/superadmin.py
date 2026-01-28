@@ -338,7 +338,7 @@ def push_reminder(
                     "endpoint": sub.endpoint,
                     "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
                 },
-                data=json.dumps({"title": title, "body": message, "url": "/"}),
+                data=json.dumps({"title": title, "body": message, "url": "/dashboard"}),
                 vapid_private_key=str(pem_path),
                 vapid_claims={"sub": vapid_sub}
             )
