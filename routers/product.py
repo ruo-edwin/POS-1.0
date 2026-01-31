@@ -6,6 +6,7 @@ from backend import models
 from backend.config import templates
 from backend.auth_utils import verify_token
 from backend.onboarding_utils import record_onboarding_event
+
 # ✅ Define base URL for production (Railway)
 BASE_URL = "https://pos-10-production.up.railway.app"
 
@@ -14,8 +15,6 @@ router = APIRouter(
     tags=["products"],
     dependencies=[Depends(verify_token)]
 )
-
-
 
 # ---------------- DB DEPENDENCY ----------------
 
@@ -30,7 +29,9 @@ def get_db():
 
 @router.get("/addproduct", response_class=HTMLResponse)
 async def add_product_page(request: Request):
-    return templates.TemplateResponse("add_product.html", {"request": request})
+    # ✅ capture onboarding source so the template (or redirects) can use it
+    source = request.query_params.get("source")  # "onboarding" or None
+    return templates.TemplateResponse("add_product.html", {"request": request, "source": source})
 
 @router.get("/viewstocks", response_class=HTMLResponse)
 async def view_stocks_page(
@@ -38,15 +39,14 @@ async def view_stocks_page(
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
-    # ✅ STEP 2: mark that they opened the stock page at least once
-    record_onboarding_event(db, current_user["business_id"], "view_stock")
-
+    # ✅ Stock page still exists, but we are NOT tracking it as an onboarding step anymore
     return templates.TemplateResponse("view_stock.html", {"request": request})
 
 # ---------------- ADD PRODUCT ----------------
 
 @router.post("/add_product")
 def add_product(
+    request: Request,  # ✅ add request so we can read ?source=onboarding
     name: str = Form(...),
     price: float = Form(...),
     buying_price: float = Form(...),
@@ -65,11 +65,21 @@ def add_product(
         db.add(new_product)
         db.commit()
         db.refresh(new_product)
+
+        # ✅ mark onboarding event (safe because of unique constraint)
+        record_onboarding_event(db, current_user["business_id"], "add_product")
+
+        # ✅ If they came from onboarding flow, redirect straight to record sale
+        source = request.query_params.get("source")
+        if source == "onboarding":
+            return RedirectResponse(url=f"{BASE_URL}/sales/recordsale?source=onboarding", status_code=303)
+
+        # ✅ normal API behavior stays the same
         return {"message": f"✅ Product '{name}' added successfully!", "product": new_product.id}
+
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
-
 
 # ---------------- GET ALL PRODUCTS ----------------
 
@@ -86,7 +96,6 @@ def get_products(current_use: dict = Depends(verify_token), db: Session = Depend
     products = db.query(models.Product).filter(models.Product.business_id == business_id).all()
     print("✅ Found products:", products)
     return products
-
 
 # ---------------- UPDATE STOCK ----------------
 
@@ -108,9 +117,8 @@ def update_stock(
     # Update fields
     product.quantity = data.get("quantity", product.quantity)
     product.price = data.get("price", product.price)
-    product.buying_price = data.get("buying_price", product.buying_price)   # ← ADD THIS
+    product.buying_price = data.get("buying_price", product.buying_price)
 
     db.commit()
     db.refresh(product)
     return {"message": "✅ Product updated successfully", "product": product.name}
-

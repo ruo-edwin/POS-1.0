@@ -149,7 +149,7 @@
     <input type="number" step="0.01" id="buying_price" placeholder="Buying Price" required>
     <input type="number" step="0.01" id="price" placeholder="Selling Price" required>
 
-    <button type="submit" class="submit-btn">Add Product</button>
+    <button type="submit" class="submit-btn" id="submitBtn">Add Product</button>
   </form>
 
   <p id="message"></p>
@@ -157,6 +157,18 @@
   <a class="back-link" href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
 
   <script>
+    const BASE_URL = "https://pos-10-production.up.railway.app";
+
+    // ✅ Detect onboarding mode from URL
+    const params = new URLSearchParams(window.location.search);
+    const isOnboarding = params.get("source") === "onboarding";
+
+    // ✅ Change button text in onboarding mode
+    const submitBtn = document.getElementById("submitBtn");
+    if (isOnboarding && submitBtn) {
+      submitBtn.textContent = "Save & Record First Sale";
+    }
+
     document.getElementById('productForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
@@ -174,12 +186,30 @@
       formData.append('buying_price', buying_price);
 
       try {
-        const response = await fetch('https://pos-10-production.up.railway.app/products/add_product', {
+        // ✅ Include source=onboarding in the POST so backend can redirect
+        const postUrl = isOnboarding
+          ? `${BASE_URL}/products/add_product?source=onboarding`
+          : `${BASE_URL}/products/add_product`;
+
+        const response = await fetch(postUrl, {
           method: 'POST',
           credentials: 'include',
-          body: formData
+          body: formData,
+          redirect: "follow"
         });
 
+        // ✅ Onboarding mode: backend may redirect (303) to record sale page
+        if (isOnboarding) {
+          if (response.redirected) {
+            window.location.href = response.url;
+            return;
+          }
+          // fallback just in case
+          window.location.href = `${BASE_URL}/sales/recordsale?source=onboarding`;
+          return;
+        }
+
+        // ✅ Normal mode: keep your existing JSON behavior
         const result = await response.json();
 
         if (response.ok) {
@@ -195,10 +225,11 @@
         message.textContent = "⚠️ Error connecting to the server.";
       }
     });
-      if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/static/service-worker.js")
-      .then(() => console.log("Service Worker registered"))
-      .catch(err => console.error("SW registration failed:", err));
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/static/service-worker.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW registration failed:", err));
     }
   </script>
 

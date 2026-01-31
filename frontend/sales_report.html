@@ -58,6 +58,55 @@
 
     .container { width: 100%; max-width: 1280px; }
 
+    /* ✅ Onboarding finish banner */
+    .onboarding-finish {
+      display: none;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      padding: 14px 16px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 16px;
+      display: none;
+      gap: 10px;
+    }
+
+    .onboarding-finish .title {
+      font-weight: 800;
+      color: #059669;
+      margin: 0 0 6px;
+    }
+
+    .onboarding-finish .sub {
+      color: var(--text-muted);
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .onboarding-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .onboarding-actions a {
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      background: #ffffff;
+      font-weight: 600;
+    }
+
+    .onboarding-actions a.primary {
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(100, 85, 236, 0.25);
+    }
+
     /* ---------------- HEADER ---------------- */
     .page-header {
       display: flex;
@@ -311,6 +360,19 @@
 <body>
 <div class="container">
 
+  <!-- ✅ Onboarding finish banner -->
+  <div class="onboarding-finish" id="onboardingFinish">
+    <div>
+      <div class="title">✅ Step 3 of 3 — You’ve activated SmartPOS</div>
+      <p class="sub">This is your profit report. Next time, just record sales — SmartPOS will calculate everything.</p>
+
+      <div class="onboarding-actions">
+        <a class="primary" href="/auth/dashboard">🏠 Back to Dashboard</a>
+        <a href="/sales/recordsale">➕ Record Another Sale</a>
+      </div>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <div class="page-header">
     <div class="page-title">
@@ -454,6 +516,14 @@
   const pageSize = 25;
   let activeQuickFilter = null;
 
+  // ✅ Detect onboarding mode from URL
+  const params = new URLSearchParams(window.location.search);
+  const isOnboarding = params.get("source") === "onboarding";
+
+  // ✅ Show finish banner if onboarding
+  const finishEl = document.getElementById("onboardingFinish");
+  if (isOnboarding && finishEl) finishEl.style.display = "block";
+
   // ---------- DATE HELPERS ----------
   function formatDate(date) {
     const y = date.getFullYear();
@@ -525,6 +595,11 @@
     new TomSelect("#productFilter", { allowEmptyOption: true });
 
     renderTable();
+
+    // ✅ Onboarding: auto-show Today so user instantly sees their numbers
+    if (isOnboarding) {
+      setQuickDate("today");
+    }
   }
 
   function loadProductFilter() {
@@ -705,8 +780,6 @@
       .then(() => console.log("Service Worker registered"))
       .catch(err => console.error("SW registration failed:", err));
   }
-
-
 </script>
 
 </body>

@@ -27,15 +27,14 @@ def get_db():
     finally:
         db.close()
 
-
 # -------------------------
 # Pages
 # -------------------------
 @router.get("/recordsale", response_class=HTMLResponse)
 async def record_sale_page(request: Request):
-    return templates.TemplateResponse("record_sale.html", {"request": request})
-
-
+    # ✅ pass source to template so UI can optionally show onboarding helper text
+    source = request.query_params.get("source")
+    return templates.TemplateResponse("record_sale.html", {"request": request, "source": source})
 
 @router.get("/salesreport", response_class=HTMLResponse)
 async def sales_report_page(
@@ -48,7 +47,6 @@ async def sales_report_page(
 
     return templates.TemplateResponse("sales_report.html", {"request": request})
 
-
 # -------------------------
 # Input Models
 # -------------------------
@@ -57,12 +55,10 @@ class SaleItem(BaseModel):
     quantity: int
     selling_price: float   # ✅ REQUIRED
 
-
 class SaleRequest(BaseModel):
     client_name: Optional[str] = None
     sales_person: Optional[str] = None
     items: List[SaleItem]
-
 
 # =======================================================================
 # 🚀 RECORD SALE
@@ -93,6 +89,7 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     db.refresh(new_order)
 
     total_amount = 0
+    total_profit = 0.0  # ✅ optional, for profit messaging
 
     for item in sale_data.items:
 
@@ -118,6 +115,10 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
         total_amount += subtotal
         product.quantity -= item.quantity
 
+        # ✅ profit calc (safe if buying_price is None)
+        bp = product.buying_price if product.buying_price is not None else 0
+        total_profit += (item.selling_price - bp) * item.quantity
+
         sale_row = models.Sales(
             order_id=new_order.id,
             product_id=product.id,
@@ -129,12 +130,15 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     new_order.total_amount = total_amount
     db.commit()
 
+    # ✅ ONBOARDING: first sale recorded
+    record_onboarding_event(db, business_id, "sell_product")
+
     return {
         "message": "Order recorded successfully!",
         "order_code": order_code,
-        "total_amount": total_amount
+        "total_amount": total_amount,
+        "total_profit": round(float(total_profit), 2)
     }
-
 
 # =======================================================================
 # 🧾 SALES REPORT (CORRECT)

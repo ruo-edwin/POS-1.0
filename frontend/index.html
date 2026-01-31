@@ -426,7 +426,7 @@
             <div class="progress-bar-outer">
               <div class="progress-bar-inner" id="onboardingBar"></div>
             </div>
-            <div class="progress-mini" id="onboardingMini">0% • 0/4</div>
+            <div class="progress-mini" id="onboardingMini">0% • 0/3</div>
           </div>
         </div>
 
@@ -438,6 +438,7 @@
       </div>
     </div>
 
+    <!-- ✅ MENU (STOCKS STAYS HERE) -->
     <div class="menu">
       <a href="/sales/recordsale">💰 Sell Products</a>
       <a href="/products/addproduct">➕ Add New Product</a>
@@ -452,7 +453,33 @@
 
   <footer>© 2025 SmartPOS – Simplifying Inventory & Sales Management</footer>
 
-  <!-- POPUP -->
+  <!-- ACTIVATION MODAL -->
+  <div class="modal fade" id="activationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🚀 Let’s record your first sale</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="mb-2">Takes <strong>under 2 minutes</strong>.</p>
+          <ul class="mb-0">
+            <li>Add 1 product</li>
+            <li>Record 1 sale</li>
+            <li>See profit instantly</li>
+          </ul>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Not now</button>
+          <button class="btn btn-primary" id="startActivationBtn">Start</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS POPUP -->
   <div class="modal fade" id="notifyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -504,16 +531,16 @@
     })();
 
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js")
+      navigator.serviceWorker.register("/static/service-worker.js")
         .then(() => console.log("Service Worker registered ✅"))
         .catch(err => console.error("SW registration failed:", err));
     }
 
+    // ✅ 3-step onboarding (stock step removed from onboarding ONLY)
     const ONBOARDING_STEP_DEFS = [
-      { key: "add_product",  icon: "1", name: "Add your first product", desc: "Create a product so you can sell and track stock.", href: "/products/addproduct", cta: "Add" },
-      { key: "update_stock", icon: "2", name: "Update / check stock",   desc: "Confirm quantities and prices in your stock list.", href: "/products/viewstocks", cta: "Open" },
-      { key: "sell_product", icon: "3", name: "Record a sale",          desc: "Sell products to generate sales data.", href: "/sales/recordsale", cta: "Sell" },
-      { key: "view_report",  icon: "4", name: "View sales report",      desc: "See sales history and performance insights.", href: "/sales/salesreport", cta: "View" }
+      { key: "add_product",  icon: "1", name: "Add your first product", desc: "Create one product to get started.", href: "/products/addproduct?source=onboarding", cta: "Add" },
+      { key: "sell_product", icon: "2", name: "Record your first sale", desc: "See your profit calculated instantly.", href: "/sales/recordsale?source=onboarding", cta: "Sell" },
+      { key: "view_report",  icon: "3", name: "View profit report", desc: "Understand how your business is performing.", href: "/sales/salesreport", cta: "View" }
     ];
 
     function setExpanded(expanded) {
@@ -538,7 +565,7 @@
       const startHereBadge = document.getElementById("startHereBadge");
 
       const completed = Object.values(stepsObj || {}).filter(Boolean).length;
-      const pct = Number.isFinite(progress) ? progress : Math.round((completed / 4) * 100);
+      const pct = Number.isFinite(progress) ? progress : Math.round((completed / 3) * 100);
 
       // ✅ Hide the whole section if complete
       if (pct >= 100) {
@@ -549,12 +576,12 @@
       }
 
       barEl.style.width = `${pct}%`;
-      miniEl.textContent = `${pct}% • ${completed}/4`;
+      miniEl.textContent = `${pct}% • ${completed}/3`;
 
       // ✅ Always start collapsed by default
       setExpanded(false);
 
-      // ✅ Border glow only for first-time (0/4)
+      // ✅ Border glow only for first-time (0/3)
       if (completed === 0) {
         cardEl.classList.add("glow");
         startHereBadge.style.display = "inline-block";
@@ -584,12 +611,37 @@
       });
     }
 
+    // Track whether activation modal was shown, to avoid clashing with notify modal
+    let activationModalShown = false;
+
+    function goToNextAction(nextAction) {
+      if (nextAction === "add_product") window.location.href = "/products/addproduct?source=onboarding";
+      else if (nextAction === "sell_product") window.location.href = "/sales/recordsale?source=onboarding";
+      else if (nextAction === "view_report") window.location.href = "/sales/salesreport";
+      else window.location.href = "/sales/recordsale";
+    }
+
     async function loadOnboardingStatus() {
       try {
         const res = await fetch("/onboarding/status", { credentials: "include" });
         if (!res.ok) throw new Error("status " + res.status);
         const data = await res.json();
+
         renderOnboarding(data.steps || {}, data.progress);
+
+        // ✅ Show activation modal if backend says so
+        if (data.show_activation_modal) {
+          const modalEl = document.getElementById("activationModal");
+          const btn = document.getElementById("startActivationBtn");
+
+          if (modalEl && btn) {
+            activationModalShown = true;
+            btn.onclick = () => goToNextAction(data.next_action);
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+          }
+        }
       } catch (e) {
         console.log("[ONBOARDING] failed:", e);
         renderOnboarding({}, 0);
@@ -607,10 +659,16 @@
       });
     })();
 
-    // Blur focused element before modal hides
+    // Blur focused element before modals hide
     const notifyModalEl = document.getElementById("notifyModal");
     if (notifyModalEl) {
       notifyModalEl.addEventListener("hide.bs.modal", () => {
+        if (document.activeElement) document.activeElement.blur();
+      });
+    }
+    const activationModalEl = document.getElementById("activationModal");
+    if (activationModalEl) {
+      activationModalEl.addEventListener("hide.bs.modal", () => {
         if (document.activeElement) document.activeElement.blur();
       });
     }
@@ -700,7 +758,12 @@
 
     window.addEventListener("load", () => {
       loadOnboardingStatus();
-      setTimeout(showNotifyModalIfNeeded, 400);
+
+      // ✅ If activation modal shows, delay notify modal to avoid double popups
+      setTimeout(() => {
+        const delay = activationModalShown ? 2200 : 400;
+        setTimeout(showNotifyModalIfNeeded, delay);
+      }, 0);
     });
   </script>
 

@@ -53,6 +53,36 @@
       color: transparent;
     }
 
+    /* ✅ Onboarding banner (only shows in onboarding mode) */
+    .onboarding-banner {
+      display: none;
+      background: rgba(79, 70, 229, 0.08);
+      border: 1px solid rgba(79, 70, 229, 0.18);
+      padding: 14px 16px;
+      border-radius: 14px;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.06);
+      margin: 0 auto 18px;
+      max-width: 980px;
+    }
+    .onboarding-banner strong { color: var(--accent); }
+
+    /* ✅ Post-sale CTA (only onboarding mode, after success) */
+    .cta-row {
+      display: none;
+      text-align: center;
+      margin-top: 14px;
+    }
+    .cta-row a {
+      display: inline-block;
+      text-align: center;
+      margin: 0;
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    }
+
     .order-info {
       background: var(--bg-card);
       padding: 18px;
@@ -160,6 +190,14 @@
 
 <h1>Record Sales</h1>
 
+<!-- ✅ Onboarding banner -->
+<div class="onboarding-banner" id="onboardingBanner">
+  <div><strong>Step 2 of 3:</strong> Record your first sale to see profit instantly.</div>
+  <div style="margin-top:6px; color:#6b7280; font-size:0.95rem;">
+    Add 1 product, enter quantity, then tap <strong>Record Sale</strong>.
+  </div>
+</div>
+
 <div class="order-info">
   <input id="clientName" placeholder="Customer Name (optional)">
   <input id="salesPerson" placeholder="Sold By (optional)">
@@ -187,6 +225,12 @@
 </div>
 
 <p id="message"></p>
+
+<!-- ✅ Onboarding CTA -->
+<div class="cta-row" id="profitCta">
+  <a href="/sales/salesreport?source=onboarding">📊 View Profit Report</a>
+</div>
+
 <a href="/auth/dashboard">⬅ Back</a>
 
 </div>
@@ -212,6 +256,14 @@
 const baseURL = "https://pos-10-production.up.railway.app";
 let allProducts = [];
 let mpesa = 0, cash = 0;
+
+// ✅ Detect onboarding mode
+const params = new URLSearchParams(window.location.search);
+const isOnboarding = params.get("source") === "onboarding";
+
+// ✅ Show onboarding banner if needed
+const onboardingBanner = document.getElementById("onboardingBanner");
+if (isOnboarding && onboardingBanner) onboardingBanner.style.display = "block";
 
 async function loadProducts() {
   const res = await fetch(`${baseURL}/products/`, { credentials: "include" });
@@ -321,15 +373,33 @@ async function approveSale() {
     body: JSON.stringify(window.pendingSale)
   });
 
+  const out = await res.json().catch(() => ({}));
+
   if (res.ok) {
+    const total = Number(out.total_amount || grandTotal.textContent || 0);
+
     message.style.color = "green";
-    message.textContent = "Sale recorded successfully!";
+
+    if (isOnboarding) {
+      message.innerHTML = `
+        ✅ First sale recorded!<br>
+        <span style="color:#6b7280; font-weight:600;">
+          Order: <strong>${out.order_code || "-"}</strong> • Total: <strong>Ksh ${total.toLocaleString()}</strong><br>
+          Now tap <strong>View Profit Report</strong> below 👇
+        </span>
+      `;
+      const cta = document.getElementById("profitCta");
+      if (cta) cta.style.display = "block";
+    } else {
+      message.textContent = "Sale recorded successfully!";
+    }
+
     salesBody.innerHTML = "";
     addRow();
     updateGrandTotal();
   } else {
     message.style.color = "red";
-    message.textContent = "Error recording sale";
+    message.textContent = out.detail || "Error recording sale";
   }
 }
 
@@ -340,8 +410,6 @@ if ("serviceWorker" in navigator) {
     .then(() => console.log("Service Worker registered"))
     .catch(err => console.error("SW registration failed:", err));
 }
-
-
 </script>
 
 </body>

@@ -4,8 +4,13 @@ from sqlalchemy.orm import Session
 from backend.db import SessionLocal
 from backend import models
 from backend.auth_utils import verify_token
+from backend.onboarding_utils import record_onboarding_event
 
-router = APIRouter(prefix="/onboarding", tags=["onboarding"], dependencies=[Depends(verify_token)])
+router = APIRouter(
+    prefix="/onboarding",
+    tags=["onboarding"],
+    dependencies=[Depends(verify_token)]
+)
 
 def get_db():
     db = SessionLocal()
@@ -38,27 +43,55 @@ def onboarding_status(
     # -----------------------------
     # Event checks (onboarding logs)
     # -----------------------------
-    viewed_stock = db.query(models.OnboardingEvent).filter(
-        models.OnboardingEvent.business_id == business_id,
-        models.OnboardingEvent.event == "view_stock"
-    ).first() is not None
-
     viewed_report = db.query(models.OnboardingEvent).filter(
         models.OnboardingEvent.business_id == business_id,
         models.OnboardingEvent.event == "view_report"
     ).first() is not None
 
-    # ✅ Fallback logic for old users:
-    # If they already have products, treat stock as "done"
-    # If they already have sales/orders, treat report as "done"
+    # -----------------------------
+    # 3-step onboarding
+    # -----------------------------
     steps = {
         "add_product": has_product,
-        "update_stock": viewed_stock or has_product,
         "sell_product": has_sale,
-        "view_report": viewed_report or has_sale
+        "view_report": viewed_report or has_sale  # fallback for old users
     }
 
     completed = sum(1 for v in steps.values() if v)
-    progress = int((completed / 4) * 100)
+    progress = int((completed / 3) * 100)
 
-    return {"steps": steps, "progress": progress}
+    # -----------------------------
+    # Activation modal decision
+    # (show once per "next action")
+    # -----------------------------
+    def next_action_from_steps():
+        if not steps["add_product"]:
+            return "add_product"
+        if not steps["sell_product"]:
+            return "sell_product"
+        if not steps["view_report"]:
+            return "view_report"
+        return None
+
+    next_action = next_action_from_steps()
+
+    show_activation_modal = False
+    if next_action and progress < 100:
+        # show only once for each stage
+        stage_event = f"activation_modal_shown:{next_action}"
+
+        already_shown = db.query(models.OnboardingEvent).filter(
+            models.OnboardingEvent.business_id == business_id,
+            models.OnboardingEvent.event == stage_event
+        ).first() is not None
+
+        if not already_shown:
+            show_activation_modal = True
+            record_onboarding_event(db, business_id, stage_event)
+
+    return {
+        "steps": steps,
+        "progress": progress,
+        "show_activation_modal": show_activation_modal,
+        "next_action": next_action
+    }
