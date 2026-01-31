@@ -202,6 +202,20 @@
     </div>
   </div>
 
+  <!-- Success Toast -->
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          ✅ Account created successfully! Redirecting…
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (required for toast) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
     async function submitForm(e) {
       e.preventDefault();
@@ -237,9 +251,18 @@
         if (!response.ok) {
           alert("❌ Error: " + (result.detail || "Registration failed"));
         } else {
-          alert(result.message || "✅ Account created!");
-          // ✅ Go straight to dashboard (auto-login)
-          window.location.href = "https://pos-10-production.up.railway.app" + (result.redirect || "/auth/dashboard");
+          // ✅ Show toast instead of alert
+          const toastEl = document.getElementById("successToast");
+          const toastBody = toastEl.querySelector(".toast-body");
+          toastBody.textContent = (result.message || "✅ Account created!") + " Redirecting…";
+
+          const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+          toast.show();
+
+          // ✅ Redirect after toast
+          setTimeout(() => {
+            window.location.href = "https://pos-10-production.up.railway.app" + (result.redirect || "/auth/dashboard");
+          }, 2300);
         }
       } catch (error) {
         console.error("Error:", error);
