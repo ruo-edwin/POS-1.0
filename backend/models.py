@@ -40,6 +40,7 @@ class Sales(Base):
     quantity = Column(Integer, nullable=False)
     total_price = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    is_demo = Column(Boolean, default=False, nullable=False)
 
     product = relationship("Product")
     order = relationship("Order", back_populates="sales")

@@ -32,9 +32,11 @@ def get_db():
 # -------------------------
 @router.get("/recordsale", response_class=HTMLResponse)
 async def record_sale_page(request: Request):
-    # ✅ pass source to template so UI can optionally show onboarding helper text
     source = request.query_params.get("source")
-    return templates.TemplateResponse("record_sale.html", {"request": request, "source": source})
+    return templates.TemplateResponse(
+        "record_sale.html",
+        {"request": request, "source": source}
+    )
 
 @router.get("/salesreport", response_class=HTMLResponse)
 async def sales_report_page(
@@ -42,9 +44,7 @@ async def sales_report_page(
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
-    # mark that they opened the sales report page at least once
     record_onboarding_event(db, current_user["business_id"], "view_report")
-
     return templates.TemplateResponse("sales_report.html", {"request": request})
 
 # -------------------------
@@ -53,7 +53,7 @@ async def sales_report_page(
 class SaleItem(BaseModel):
     product_name: str
     quantity: int
-    selling_price: float   # ✅ REQUIRED
+    selling_price: float
 
 class SaleRequest(BaseModel):
     client_name: Optional[str] = None
@@ -72,8 +72,45 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
 
     business_id = user["business_id"]
 
-    # Generate order code
-    last_order = db.execute(text("SELECT id FROM orders ORDER BY id DESC LIMIT 1")).fetchone()
+    # --------------------------------------------------
+    # ✅ NEW: detect onboarding source
+    # --------------------------------------------------
+    source = request.query_params.get("source")
+    is_onboarding = (source == "onboarding")
+
+    # --------------------------------------------------
+    # ✅ NEW: check if business already has a REAL sale
+    # --------------------------------------------------
+    has_real_sale = (
+        db.query(models.Sales)
+        .join(models.Order, models.Sales.order_id == models.Order.id)
+        .filter(
+            models.Order.business_id == business_id,
+            models.Sales.is_demo == False
+        )
+        .first()
+    )
+
+    # --------------------------------------------------
+    # ✅ NEW: demo only if onboarding + no real sales yet
+    # --------------------------------------------------
+    is_demo_sale = (is_onboarding and has_real_sale is None)
+
+    # --------------------------------------------------
+    # ✅ NEW: if this is a REAL sale, delete any old demo sale rows
+    # (demo will therefore also disappear from reports)
+    # --------------------------------------------------
+    if not is_demo_sale:
+        db.query(models.Sales).join(models.Order).filter(
+            models.Order.business_id == business_id,
+            models.Sales.is_demo == True
+        ).delete(synchronize_session=False)
+        db.commit()
+
+    # Generate order code (UNCHANGED)
+    last_order = db.execute(
+        text("SELECT id FROM orders ORDER BY id DESC LIMIT 1")
+    ).fetchone()
     next_number = 1 if not last_order else last_order[0] + 1
     order_code = f"ORD-{next_number:05d}"
 
@@ -89,7 +126,7 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     db.refresh(new_order)
 
     total_amount = 0
-    total_profit = 0.0  # ✅ optional, for profit messaging
+    total_profit = 0.0
 
     for item in sale_data.items:
 
@@ -99,12 +136,23 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
         ).first()
 
         if not product:
-            raise HTTPException(status_code=404, detail=f"Product '{item.product_name}' not found")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Product '{item.product_name}' not found"
+            )
 
-        if product.quantity < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Not enough stock for '{item.product_name}'")
+        # --------------------------------------------------
+        # ✅ NEW: stock check ONLY for real sales
+        # (demo sale should not scare them with stock issues)
+        # --------------------------------------------------
+        if not is_demo_sale:
+            if product.quantity < item.quantity:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Not enough stock for '{item.product_name}'"
+                )
 
-        # ✅ PROTECT AGAINST SELLING BELOW BUYING PRICE
+        # Selling below buying price still blocked (UNCHANGED)
         if product.buying_price is not None and item.selling_price < product.buying_price:
             raise HTTPException(
                 status_code=400,
@@ -113,9 +161,13 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
 
         subtotal = item.selling_price * item.quantity
         total_amount += subtotal
-        product.quantity -= item.quantity
 
-        # ✅ profit calc (safe if buying_price is None)
+        # --------------------------------------------------
+        # ✅ NEW: reduce stock ONLY for real sales
+        # --------------------------------------------------
+        if not is_demo_sale:
+            product.quantity -= item.quantity
+
         bp = product.buying_price if product.buying_price is not None else 0
         total_profit += (item.selling_price - bp) * item.quantity
 
@@ -123,25 +175,37 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
             order_id=new_order.id,
             product_id=product.id,
             quantity=item.quantity,
-            total_price=subtotal   # ✅ CORRECT VALUE STORED
+            total_price=subtotal,
+            is_demo=is_demo_sale  # ✅ NEW
         )
         db.add(sale_row)
 
     new_order.total_amount = total_amount
     db.commit()
 
-    # ✅ ONBOARDING: first sale recorded
     record_onboarding_event(db, business_id, "sell_product")
 
+    # --------------------------------------------------
+    # ✅ NEW: messaging
+    # --------------------------------------------------
+    message = "Order recorded successfully!"
+    if is_demo_sale:
+        message = (
+            "Demo sale recorded successfully. "
+            "Your stock was NOT reduced. "
+            "When you record your next sale, this demo will be removed automatically."
+        )
+
     return {
-        "message": "Order recorded successfully!",
+        "message": message,
         "order_code": order_code,
         "total_amount": total_amount,
-        "total_profit": round(float(total_profit), 2)
+        "total_profit": round(float(total_profit), 2),
+        "is_demo": is_demo_sale
     }
 
 # =======================================================================
-# 🧾 SALES REPORT (CORRECT)
+# 🧾 SALES REPORT (DEMO VISIBLE)
 # =======================================================================
 @router.get("/get_sales_items")
 def get_sales_items(request: Request, db: Session = Depends(get_db)):
@@ -156,7 +220,7 @@ def get_sales_items(request: Request, db: Session = Depends(get_db)):
         db.query(models.Sales, models.Order, models.Product)
         .join(models.Order, models.Sales.order_id == models.Order.id)
         .join(models.Product, models.Sales.product_id == models.Product.id)
-        .filter(models.Order.business_id == business_id)
+        .filter(models.Order.business_id == business_id)  # ✅ unchanged: demo will show
         .order_by(models.Sales.id.desc())
         .all()
     )
@@ -171,8 +235,9 @@ def get_sales_items(request: Request, db: Session = Depends(get_db)):
             "sales_person": order.sales_person,
             "product_name": product.name,
             "quantity": sale.quantity,
-            "subtotal": sale.total_price,     # ✅ ALWAYS CORRECT
-            "buying_price": product.buying_price or 0
+            "subtotal": sale.total_price,
+            "buying_price": product.buying_price or 0,
+            "is_demo": getattr(sale, "is_demo", False)  # ✅ optional for UI badge
         })
 
     return output

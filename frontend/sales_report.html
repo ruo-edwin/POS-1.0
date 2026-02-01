@@ -211,7 +211,6 @@
       color: #fff;
     }
 
-    /* Grouping: main actions vs quick dates */
     .filter-main-actions,
     .filter-quick-actions {
       display: flex;
@@ -226,7 +225,6 @@
       background: var(--border-subtle);
     }
 
-    /* Quick filter buttons active state */
     .quick-btn {
       transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
     }
@@ -315,6 +313,18 @@
       border-radius: 999px;
       display: inline-flex;
       align-items: center;
+      gap: 8px;
+    }
+
+    /* ✅ NEW: demo badge */
+    .demo-badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 900;
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--accent);
     }
 
     .amount.pos { color: #16a34a; }
@@ -428,16 +438,13 @@
     </div>
 
     <div class="filter-actions">
-      <!-- Main filter/reset group -->
       <div class="filter-main-actions">
         <button class="primary" onclick="applyFilters()">Filter</button>
         <button onclick="resetFilters()">Reset</button>
       </div>
 
-      <!-- Divider -->
       <div class="filter-divider"></div>
 
-      <!-- Quick date filters -->
       <div class="filter-quick-actions">
         <button class="quick-btn" id="quick-today" onclick="setQuickDate('today')">Today</button>
         <button class="quick-btn" id="quick-yesterday" onclick="setQuickDate('yesterday')">Yesterday</button>
@@ -537,7 +544,6 @@
   }
 
   function setQuickDate(range) {
-    // Toggle off if clicking the same active filter
     if (activeQuickFilter === range) {
       activeQuickFilter = null;
       document.getElementById("startDate").value = "";
@@ -557,15 +563,14 @@
       start.setDate(today.getDate() - 1);
       end.setDate(today.getDate() - 1);
     } else if (range === "week") {
-      const day = today.getDay(); // 0=Sun
-      const diff = day === 0 ? -6 : 1 - day; // Monday as start
+      const day = today.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
       start.setDate(today.getDate() + diff);
     } else if (range === "month") {
       start = new Date(today.getFullYear(), today.getMonth(), 1);
     } else if (range === "year") {
       start = new Date(today.getFullYear(), 0, 1);
     }
-    // 'today' is default for "today"
 
     document.getElementById("startDate").value = formatDate(start);
     document.getElementById("endDate").value = formatDate(end);
@@ -574,7 +579,7 @@
     const btn = document.getElementById(`quick-${range}`);
     if (btn) btn.classList.add("active");
 
-    applyFilters(); // auto-apply
+    applyFilters();
   }
 
   // ---------- LOAD DATA ----------
@@ -588,7 +593,6 @@
     loadClientFilter();
     loadSalesFilter();
 
-    // Enhance selects with Tom Select (searchable dropdowns)
     new TomSelect("#orderFilter", { allowEmptyOption: true });
     new TomSelect("#clientFilter", { allowEmptyOption: true });
     new TomSelect("#salesFilter", { allowEmptyOption: true });
@@ -596,7 +600,6 @@
 
     renderTable();
 
-    // ✅ Onboarding: auto-show Today so user instantly sees their numbers
     if (isOnboarding) {
       setQuickDate("today");
     }
@@ -679,7 +682,6 @@
     startDate.value = "";
     endDate.value = "";
 
-    // Clear searchable selects
     if (orderFilter.tomselect) orderFilter.tomselect.clear();
     else orderFilter.value = "";
 
@@ -692,7 +694,6 @@
     if (productFilter.tomselect) productFilter.tomselect.clear();
     else productFilter.value = "";
 
-    // Clear quick filter state
     activeQuickFilter = null;
     clearQuickButtonsActive();
 
@@ -716,7 +717,7 @@
     paginated.forEach(i => {
       const qty = Number(i.quantity) || 0;
       const subtotal = Number(i.subtotal) || 0;
-      const buyingPrice = Number(i.buying_price) || 0; // backend must send this
+      const buyingPrice = Number(i.buying_price) || 0;
       const profit = subtotal - (buyingPrice * qty);
 
       qtySum += qty;
@@ -725,10 +726,13 @@
 
       const profitClass = profit >= 0 ? "pos" : "neg";
 
+      // ✅ NEW: show demo badge next to order code
+      const demoBadge = i.is_demo ? `<span class="demo-badge">DEMO</span>` : "";
+
       const row = `
         <tr>
           <td>${new Date(i.date).toLocaleString()}</td>
-          <td><span class="chip">${i.order_code || "-"}</span></td>
+          <td><span class="chip">${i.order_code || "-"} ${demoBadge}</span></td>
           <td>${i.client_name || "-"}</td>
           <td>${i.sales_person || "-"}</td>
           <td>${i.product_name}</td>
@@ -774,7 +778,7 @@
   }
 
   loadSales();
-  
+
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/static/service-worker.js")
       .then(() => console.log("Service Worker registered"))
