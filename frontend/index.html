@@ -426,7 +426,7 @@
             <div class="progress-bar-outer">
               <div class="progress-bar-inner" id="onboardingBar"></div>
             </div>
-            <div class="progress-mini" id="onboardingMini">0% • 0/3</div>
+            <div class="progress-mini" id="onboardingMini">0% • 0/4</div>
           </div>
         </div>
 
@@ -505,6 +505,38 @@
     </div>
   </div>
 
+  <!-- ✅ INSTALL HELP MODAL (fallback when prompt isn't available) -->
+  <div class="modal fade" id="installHelpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">📲 Install SmartPOS App</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body" style="color:#6b7280;">
+          <div style="margin-bottom:10px;">
+            <strong>Android (Chrome):</strong><br>
+            Tap <strong>⋮</strong> (top right) → <strong>Add to Home screen</strong>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <strong>iPhone (Safari):</strong><br>
+            Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
+          </div>
+
+          <div>
+            If you don’t see install, open SmartPOS in your main browser (not inside WhatsApp/Instagram).
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap JS FIRST -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -536,11 +568,20 @@
         .catch(err => console.error("SW registration failed:", err));
     }
 
-    // ✅ 3-step onboarding (stock step removed from onboarding ONLY)
+    // ✅ PWA install prompt handling
+    let deferredPrompt = null;
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    // ✅ 4-step onboarding (added install step)
     const ONBOARDING_STEP_DEFS = [
       { key: "add_product",  icon: "1", name: "Add your first product", desc: "Create one product to get started.", href: "/products/addproduct?source=onboarding", cta: "Add" },
       { key: "sell_product", icon: "2", name: "Record your first sale", desc: "See your profit calculated instantly.", href: "/sales/recordsale?source=onboarding", cta: "Sell" },
-      { key: "view_report",  icon: "3", name: "View profit report", desc: "Understand how your business is performing.", href: "/sales/salesreport", cta: "View" }
+      { key: "view_report",  icon: "3", name: "View profit report", desc: "Understand how your business is performing.", href: "/sales/salesreport", cta: "View" },
+      { key: "install_app",  icon: "4", name: "Install SmartPOS app", desc: "Open SmartPOS like a normal app on your phone.", href: "#", cta: "Install" }
     ];
 
     function setExpanded(expanded) {
@@ -557,6 +598,48 @@
       }
     }
 
+    function isAppInstalled() {
+      try {
+        const standalone =
+          window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+        const iosStandalone = window.navigator && window.navigator.standalone === true;
+        return !!(standalone || iosStandalone);
+      } catch (_) {
+        return false;
+      }
+    }
+
+    // ✅ mark install in backend (so superadmin can see) + log status if not ok
+    async function markInstalledBackend() {
+      try {
+        const res = await fetch("/onboarding/mark_installed", {
+          method: "POST",
+          credentials: "include"
+        });
+        if (!res.ok) console.log("[ONBOARDING] mark_installed status:", res.status);
+      } catch (e) {
+        console.log("[ONBOARDING] mark_installed failed:", e);
+      }
+    }
+
+    // ✅ if running as installed, record it once per device (localStorage)
+    async function autoRecordInstallIfStandalone() {
+      try {
+        if (!isAppInstalled()) return;
+
+        const already = localStorage.getItem("install_marked") === "1";
+        if (already) return;
+
+        await markInstalledBackend();
+        localStorage.setItem("install_marked", "1");
+
+        // refresh status so step turns green
+        loadOnboardingStatus();
+      } catch (e) {
+        console.log("[ONBOARDING] autoRecordInstallIfStandalone failed:", e);
+      }
+    }
+
     function renderOnboarding(stepsObj, progress) {
       const cardEl = document.getElementById("onboardingCard");
       const barEl = document.getElementById("onboardingBar");
@@ -564,8 +647,9 @@
       const stepsEl = document.getElementById("onboardingSteps");
       const startHereBadge = document.getElementById("startHereBadge");
 
+      const totalSteps = 4;
       const completed = Object.values(stepsObj || {}).filter(Boolean).length;
-      const pct = Number.isFinite(progress) ? progress : Math.round((completed / 3) * 100);
+      const pct = Number.isFinite(progress) ? progress : Math.round((completed / totalSteps) * 100);
 
       // ✅ Hide the whole section if complete
       if (pct >= 100) {
@@ -576,12 +660,12 @@
       }
 
       barEl.style.width = `${pct}%`;
-      miniEl.textContent = `${pct}% • ${completed}/3`;
+      miniEl.textContent = `${pct}% • ${completed}/${totalSteps}`;
 
       // ✅ Always start collapsed by default
       setExpanded(false);
 
-      // ✅ Border glow only for first-time (0/3)
+      // ✅ Border glow only for first-time (0/4)
       if (completed === 0) {
         cardEl.classList.add("glow");
         startHereBadge.style.display = "inline-block";
@@ -597,6 +681,10 @@
         const div = document.createElement("div");
         div.className = "step" + (done ? " done" : "");
 
+        const actionHtml = (def.key === "install_app")
+          ? `<a class="step-action" href="#" id="installStepBtn">${done ? "Done" : def.cta}</a>`
+          : `<a class="step-action" href="${def.href}">${done ? "Done" : def.cta}</a>`;
+
         div.innerHTML = `
           <div class="step-left">
             <div class="step-icon">${done ? "✓" : def.icon}</div>
@@ -605,10 +693,40 @@
               <p class="step-desc">${def.desc}</p>
             </div>
           </div>
-          <a class="step-action" href="${def.href}">${done ? "Done" : def.cta}</a>
+          ${actionHtml}
         `;
         stepsEl.appendChild(div);
       });
+
+      // ✅ Hook install action (only after render)
+      const installBtn = document.getElementById("installStepBtn");
+      if (installBtn) {
+        installBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+
+          // If browser supports the native install prompt
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const choice = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+
+            // If they accepted, record once (centralized)
+            if (choice && choice.outcome === "accepted") {
+              setTimeout(async () => {
+                await autoRecordInstallIfStandalone();
+              }, 800);
+            }
+            return;
+          }
+
+          // Otherwise show help modal
+          const modalEl = document.getElementById("installHelpModal");
+          if (modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+          }
+        }, { once: true });
+      }
     }
 
     // Track whether activation modal was shown, to avoid clashing with notify modal
@@ -618,6 +736,28 @@
       if (nextAction === "add_product") window.location.href = "/products/addproduct?source=onboarding";
       else if (nextAction === "sell_product") window.location.href = "/sales/recordsale?source=onboarding";
       else if (nextAction === "view_report") window.location.href = "/sales/salesreport";
+
+      // ✅ install step routes to installer action (same as clicking install)
+      else if (nextAction === "install_app") {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(async (choice) => {
+            deferredPrompt = null;
+            if (choice && choice.outcome === "accepted") {
+              setTimeout(async () => {
+                await autoRecordInstallIfStandalone();
+              }, 800);
+            }
+          });
+          return;
+        }
+        const modalEl = document.getElementById("installHelpModal");
+        if (modalEl) {
+          const modal = new bootstrap.Modal(modalEl);
+          modal.show();
+          return;
+        }
+      }
       else window.location.href = "/sales/recordsale";
     }
 
@@ -669,6 +809,13 @@
     const activationModalEl = document.getElementById("activationModal");
     if (activationModalEl) {
       activationModalEl.addEventListener("hide.bs.modal", () => {
+        if (document.activeElement) document.activeElement.blur();
+      });
+    }
+
+    const installHelpModalEl = document.getElementById("installHelpModal");
+    if (installHelpModalEl) {
+      installHelpModalEl.addEventListener("hide.bs.modal", () => {
         if (document.activeElement) document.activeElement.blur();
       });
     }
@@ -758,6 +905,9 @@
 
     window.addEventListener("load", () => {
       loadOnboardingStatus();
+
+      // ✅ mark install if already running as installed app (once per device)
+      autoRecordInstallIfStandalone();
 
       // ✅ If activation modal shows, delay notify modal to avoid double popups
       setTimeout(() => {

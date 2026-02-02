@@ -19,6 +19,22 @@ def get_db():
     finally:
         db.close()
 
+# ✅ NEW: mark installed (called from frontend when app is running as installed/PWA)
+@router.post("/mark_installed")
+def mark_installed(
+    request: Request,
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    business_id = current_user.get("business_id")
+    if not business_id:
+        raise HTTPException(status_code=400, detail="No business_id in token")
+
+    # Store as onboarding event (idempotent due to uq_onboarding_event)
+    record_onboarding_event(db, business_id, "install_app")
+
+    return {"message": "Install recorded"}
+
 @router.get("/status")
 def onboarding_status(
     request: Request,
@@ -48,17 +64,23 @@ def onboarding_status(
         models.OnboardingEvent.event == "view_report"
     ).first() is not None
 
+    installed_app = db.query(models.OnboardingEvent).filter(
+        models.OnboardingEvent.business_id == business_id,
+        models.OnboardingEvent.event == "install_app"
+    ).first() is not None
+
     # -----------------------------
-    # 3-step onboarding
+    # ✅ 4-step onboarding
     # -----------------------------
     steps = {
         "add_product": has_product,
         "sell_product": has_sale,
-        "view_report": viewed_report or has_sale  # fallback for old users
+        "view_report": viewed_report or has_sale,  # fallback for old users
+        "install_app": installed_app
     }
 
     completed = sum(1 for v in steps.values() if v)
-    progress = int((completed / 3) * 100)
+    progress = int((completed / 4) * 100)
 
     # -----------------------------
     # Activation modal decision
@@ -71,6 +93,8 @@ def onboarding_status(
             return "sell_product"
         if not steps["view_report"]:
             return "view_report"
+        if not steps["install_app"]:
+            return "install_app"
         return None
 
     next_action = next_action_from_steps()

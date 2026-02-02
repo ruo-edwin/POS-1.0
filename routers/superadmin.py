@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Request, Body
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, case   # ✅ ADDED: case
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import pytz
@@ -101,11 +101,28 @@ def create_superadmin(
 #      - products_count
 #      - last_sale_date (from orders)
 #      - total_revenue (sum of orders.total_amount)
+#    ✅ NEW ADDITION:
+#      - is_installed (from onboarding events: event == "install_app")
 #    ✅ Also avoids N+1 queries by using one aggregated query
 # ----------------------------------------------------
 @router.get("/get_all_clients")
 def get_all_clients(request: Request, db: Session = Depends(get_db)):
     require_superadmin(request, db)
+
+    # ✅ ADDED: aggregated install flag per business (no N+1)
+    install_subq = (
+        db.query(
+            models.OnboardingEvent.business_id.label("business_id"),
+            func.max(
+                case(
+                    (models.OnboardingEvent.event == "install_app", 1),
+                    else_=0
+                )
+            ).label("is_installed")
+        )
+        .group_by(models.OnboardingEvent.business_id)
+        .subquery()
+    )
 
     rows = (
         db.query(
@@ -126,6 +143,9 @@ def get_all_clients(request: Request, db: Session = Depends(get_db)):
             func.count(func.distinct(models.Product.id)).label("products_count"),
             func.max(models.Order.created_at).label("last_sale_date_utc"),
             func.coalesce(func.sum(models.Order.total_amount), 0).label("total_revenue"),
+
+            # ✅ ADDED: install status (1/0)
+            func.coalesce(install_subq.c.is_installed, 0).label("is_installed"),
         )
         .outerjoin(models.Subscription, models.Subscription.business_id == models.Business.id)
         .outerjoin(
@@ -134,6 +154,10 @@ def get_all_clients(request: Request, db: Session = Depends(get_db)):
         )
         .outerjoin(models.Product, models.Product.business_id == models.Business.id)
         .outerjoin(models.Order, models.Order.business_id == models.Business.id)
+
+        # ✅ ADDED: join install subquery
+        .outerjoin(install_subq, install_subq.c.business_id == models.Business.id)
+
         .group_by(
             models.Business.id,
             models.Business.business_name,
@@ -143,6 +167,7 @@ def get_all_clients(request: Request, db: Session = Depends(get_db)):
             models.Subscription.status,
             models.Subscription.is_active,
             models.Subscription.end_date,
+            install_subq.c.is_installed,  # ✅ ADDED: needed due to select
         )
         .all()
     )
@@ -181,6 +206,9 @@ def get_all_clients(request: Request, db: Session = Depends(get_db)):
             "products_count": int(r.products_count or 0),
             "last_sale_date": last_sale_local.isoformat() if last_sale_local else None,
             "total_revenue": float(r.total_revenue or 0),
+
+            # ✅ ADDED: installation flag
+            "is_installed": bool(r.is_installed),
         })
 
     return output

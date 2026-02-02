@@ -421,6 +421,8 @@
               <th>Subscription</th>
               <th>Days Left</th>
               <th>Status</th>
+              <!-- ✅ ADDED -->
+              <th>Installed</th>
               <th style="width: 220px;">Controls</th>
             </tr>
           </thead>
@@ -519,6 +521,17 @@
       return "expired";
     }
 
+    // ✅ ADDED: installed display helper
+    function isInstalled(client) {
+      // backend should return: is_installed: true/false (recommended)
+      // fallback: install_app: true/false
+      return !!(client.is_installed || client.install_app);
+    }
+
+    function installedLabel(client) {
+      return isInstalled(client) ? "✅" : "—";
+    }
+
     let reminderModal;
 
     function openReminderModal(businessId, businessName) {
@@ -605,6 +618,7 @@
       const products = (client.products_count ?? "—");
       const lastSale = formatDateShort(client.last_sale_date);
       const revenue = formatMoneyKES(client.total_revenue);
+      const installed = isInstalled(client) ? "✅ Installed" : "— Not installed";
 
       return `
         <div class="details-panel">
@@ -612,6 +626,8 @@
             <div class="chip"><span>📦 Products</span> ${products}</div>
             <div class="chip"><span>🧾 Last sale</span> ${lastSale}</div>
             <div class="chip"><span>💰 Revenue</span> ${revenue}</div>
+            <!-- ✅ ADDED -->
+            <div class="chip"><span>📲 App</span> ${installed}</div>
           </div>
 
           <div class="quick-actions">
@@ -666,6 +682,9 @@
             <td class="mono">${client.days_left ?? "—"}</td>
             <td>${client.is_active ? "Active" : "Inactive"}</td>
 
+            <!-- ✅ ADDED -->
+            <td class="mono">${installedLabel(client)}</td>
+
             <td class="d-flex gap-2 align-items-center">
               <button class="btn btn-light action-btn" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false">
                 Details
@@ -675,7 +694,7 @@
           </tr>
 
           <tr class="details-row">
-            <td colspan="8">
+            <td colspan="9">
               <div class="collapse" id="${collapseId}">
                 ${getDetailsPanelHTML(client)}
               </div>
@@ -687,6 +706,7 @@
         const products = (client.products_count ?? "—");
         const lastSale = formatDateShort(client.last_sale_date);
         const revenue = formatMoneyKES(client.total_revenue);
+        const installed = isInstalled(client) ? "✅ Installed" : "— Not installed";
 
         cards.innerHTML += `
           <div class="client-card">
@@ -709,6 +729,8 @@
               <div class="chip"><span>📦</span> ${products}</div>
               <div class="chip"><span>🧾</span> ${lastSale}</div>
               <div class="chip"><span>💰</span> ${revenue}</div>
+              <!-- ✅ ADDED -->
+              <div class="chip"><span>📲</span> ${installed}</div>
             </div>
 
             <div class="bottom">
