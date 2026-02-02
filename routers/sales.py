@@ -97,15 +97,41 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     is_demo_sale = (is_onboarding and has_real_sale is None)
 
     # --------------------------------------------------
-    # ✅ NEW: if this is a REAL sale, delete any old demo sale rows
-    # (demo will therefore also disappear from reports)
+    # ✅ FIX: if this is a REAL sale, delete any old demo sale rows + demo orders
+    # (Can't delete on a joined query in SQLAlchemy)
+    #
+    # ✅ ADDED NOW: Only run cleanup if demo orders actually exist
     # --------------------------------------------------
     if not is_demo_sale:
-        db.query(models.Sales).join(models.Order).filter(
-            models.Order.business_id == business_id,
-            models.Sales.is_demo == True
-        ).delete(synchronize_session=False)
-        db.commit()
+        # Find demo order IDs for this business (distinct)
+        demo_order_ids_rows = (
+            db.query(models.Order.id)
+            .join(models.Sales, models.Sales.order_id == models.Order.id)
+            .filter(
+                models.Order.business_id == business_id,
+                models.Sales.is_demo == True
+            )
+            .distinct()
+            .all()
+        )
+
+        demo_order_ids_list = [r[0] for r in demo_order_ids_rows]
+
+        # ✅ If no demo orders, skip cleanup entirely
+        if demo_order_ids_list:
+            # Delete demo sales rows (no join here)
+            db.query(models.Sales).filter(
+                models.Sales.order_id.in_(demo_order_ids_list),
+                models.Sales.is_demo == True
+            ).delete(synchronize_session=False)
+
+            # Delete demo orders themselves
+            db.query(models.Order).filter(
+                models.Order.id.in_(demo_order_ids_list),
+                models.Order.business_id == business_id
+            ).delete(synchronize_session=False)
+
+            db.commit()
 
     # Generate order code (UNCHANGED)
     last_order = db.execute(

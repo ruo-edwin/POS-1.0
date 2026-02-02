@@ -182,16 +182,19 @@
     }
 
     .popup-buttons button { margin: 10px; }
-
+    
+    /* Hide mobile-only UI by default (desktop/tablet) */
+    .mobile-optional,
+    .mobile-bottom-bar {
+      display: none;
+    }
     /* ============================================================
        ✅✅✅ MOBILE-ONLY ADJUSTMENTS (CHANGE NOTHING ELSE)
-       - Reorder flow for mobile
-       - Hide optional fields behind collapsible
-       - Convert product table into stacked "cards"
-       - Fixed bottom bar with Total + Record Sale
-       - Keep desktop untouched
+   
        ============================================================ */
     @media (max-width: 768px) {
+       .mobile-optional { display: block; }
+       .mobile-bottom-bar { display: block; }
       body {
         padding: 14px;
       }
