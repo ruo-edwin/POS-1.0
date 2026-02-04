@@ -90,7 +90,7 @@
       border: none;
       background: linear-gradient(135deg, var(--accent), var(--accent-strong));
       color: #fff;
-      font-weight: 800;
+      font-weight: 900;
       box-shadow: 0 12px 30px rgba(100, 85, 236, 0.25);
       display: inline-flex;
       align-items: center;
@@ -346,7 +346,7 @@
     /* ✅ Sticky CTA: hidden by default everywhere */
     .mobile-sticky-cta { display: none; }
 
-    /* ✅ Install Modal (button only) */
+    /* ✅ Install Modal (minimal) */
     .install-modal {
       position: fixed;
       inset: 0;
@@ -403,10 +403,28 @@
       box-shadow: 0 12px 30px rgba(100, 85, 236, 0.25);
     }
 
-    .install-btn:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      box-shadow: none;
+    .install-hint {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: #ffffff;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.35;
+      display: none;
+    }
+
+    .install-next {
+      margin-top: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: #ffffff;
+      font-weight: 900;
+      cursor: pointer;
+      display: none;
     }
 
     @media (max-width: 900px) {
@@ -478,10 +496,8 @@
   <div class="onboarding-finish" id="onboardingFinish">
     <div>
       <div class="title">✅ Step 3 of 4 — Install SmartPOS</div>
-
-      <!-- ✅ ONLY option -->
       <div class="onboarding-actions">
-        <a href="javascript:void(0)" onclick="openInstallModal()">📲 Install SmartPOS (Step 4)</a>
+        <a href="javascript:void(0)" id="installCtaTop" onclick="openInstallModal()">📲 Install SmartPOS (Step 4)</a>
       </div>
     </div>
   </div>
@@ -613,7 +629,7 @@
 
   <a class="back-link" href="/auth/dashboard">← Back to Home</a>
 
-  <!-- ✅ Step 4 Modal: Install button only -->
+  <!-- ✅ Step 4 Modal: 1 button + tiny iOS hint + continue -->
   <div class="install-modal" id="installModal" aria-hidden="true">
     <div class="install-card">
       <div class="install-head">
@@ -623,6 +639,12 @@
 
       <div class="install-body">
         <button id="installBtn" class="install-btn">Install SmartPOS</button>
+
+        <div id="installHint" class="install-hint">
+          iPhone: Tap <b>Share</b> → <b>Add to Home Screen</b>.
+        </div>
+
+        <button id="goDashboardBtn" class="install-next">Go to Dashboard</button>
       </div>
     </div>
   </div>
@@ -662,8 +684,12 @@
   const isMobile = window.matchMedia("(max-width: 700px)").matches;
   if (isOnboarding && stickyEl && isMobile) stickyEl.classList.add("show");
 
-  // ---------- INSTALL (button only) ----------
+  // ---------- INSTALL (smooth minimal) ----------
   let deferredPrompt = null;
+
+  function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
 
   function openInstallModal() {
     const modal = document.getElementById("installModal");
@@ -672,12 +698,31 @@
     modal.classList.add("show");
     modal.setAttribute("aria-hidden", "false");
 
-    // If install prompt isn't available, disable the button (no explanations)
     const btn = document.getElementById("installBtn");
-    if (btn) {
-      const canInstall = !!deferredPrompt;
-      btn.disabled = !canInstall;
-      btn.textContent = canInstall ? "Install SmartPOS" : "Install not available";
+    const hint = document.getElementById("installHint");
+    const goBtn = document.getElementById("goDashboardBtn");
+
+    // Reset
+    hint.style.display = "none";
+    goBtn.style.display = "none";
+
+    // Button label adapts
+    if (isIOS()) {
+      btn.textContent = "Add to Home Screen";
+    } else {
+      btn.textContent = "Install SmartPOS";
+    }
+
+    // If Android prompt exists, keep it ready
+    // If iOS (no prompt), show tiny hint + allow continue
+    if (!deferredPrompt) {
+      if (isIOS()) {
+        hint.style.display = "block";
+        goBtn.style.display = "block";
+      } else {
+        // Desktop or unsupported: still allow dashboard
+        goBtn.style.display = "block";
+      }
     }
   }
 
@@ -693,23 +738,37 @@
     deferredPrompt = e;
   });
 
-  // Click install -> prompt -> if accepted redirect to dashboard
-  document.addEventListener("click", async (e) => {
-    if (e.target && e.target.id === "installBtn") {
-      if (!deferredPrompt) return;
+  document.getElementById("goDashboardBtn").addEventListener("click", () => {
+    window.location.href = "/auth/dashboard";
+  });
 
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      deferredPrompt = null;
+  document.getElementById("installBtn").addEventListener("click", async () => {
+    // iOS: show tiny hint + show continue
+    if (isIOS() && !deferredPrompt) {
+      document.getElementById("installHint").style.display = "block";
+      document.getElementById("goDashboardBtn").style.display = "block";
+      return;
+    }
 
-      // If installed (accepted) -> redirect dashboard
-      if (choice && choice.outcome === "accepted") {
-        window.location.href = "/auth/dashboard";
-      }
+    // Android/Chrome: prompt install
+    if (!deferredPrompt) {
+      // fallback: just continue
+      window.location.href = "/auth/dashboard";
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+
+    if (choice && choice.outcome === "accepted") {
+      window.location.href = "/auth/dashboard";
+    } else {
+      // user canceled -> show continue
+      document.getElementById("goDashboardBtn").style.display = "block";
     }
   });
 
-  // Also redirect after actual app installation event (extra safety)
   window.addEventListener("appinstalled", () => {
     window.location.href = "/auth/dashboard";
   });
@@ -785,7 +844,7 @@
 
     if (isOnboarding) {
       setQuickDate("today");
-      // Optional: auto-open install modal on mobile
+      // Smooth: auto-open install modal on mobile after a short delay
       if (isMobile) setTimeout(openInstallModal, 700);
     }
   }
