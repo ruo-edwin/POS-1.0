@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- PWA -->
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#635bff">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#635bff">
 
-<!-- iOS support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SmartPOS">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <!-- iOS support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SmartPOS">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
   <title>Sales Report | SmartPOS</title>
 
@@ -58,22 +58,21 @@
 
     .container { width: 100%; max-width: 1280px; }
 
-    /* ✅ Onboarding finish banner */
+    /* ✅ Onboarding banner */
     .onboarding-finish {
       display: none;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.18);
+      background: rgba(79, 70, 229, 0.06);
+      border: 1px solid rgba(79, 70, 229, 0.18);
       padding: 14px 16px;
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-soft);
       margin-bottom: 16px;
-      display: none;
       gap: 10px;
     }
 
     .onboarding-finish .title {
-      font-weight: 800;
-      color: #059669;
+      font-weight: 900;
+      color: #4338ca;
       margin: 0 0 6px;
     }
 
@@ -81,6 +80,7 @@
       color: var(--text-muted);
       margin: 0;
       font-size: 0.95rem;
+      line-height: 1.35;
     }
 
     .onboarding-actions {
@@ -92,19 +92,16 @@
 
     .onboarding-actions a {
       text-decoration: none;
-      padding: 8px 14px;
+      padding: 10px 16px;
       border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      color: var(--text-main);
-      background: #ffffff;
-      font-weight: 600;
-    }
-
-    .onboarding-actions a.primary {
       border: none;
       background: linear-gradient(135deg, var(--accent), var(--accent-strong));
       color: #fff;
+      font-weight: 800;
       box-shadow: 0 12px 30px rgba(100, 85, 236, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     /* ---------------- HEADER ---------------- */
@@ -356,6 +353,7 @@
       cursor: not-allowed;
     }
 
+    /* ✅ MOBILE-ONLY: table readability + force install as the only next step */
     @media (max-width: 900px) {
       .info-dashboard { grid-template-columns: repeat(2,1fr); }
     }
@@ -363,6 +361,61 @@
     @media (max-width: 700px) {
       .info-dashboard { grid-template-columns: 1fr; }
       .page-header { flex-direction: column; align-items: flex-start; }
+
+      /* space for sticky bar */
+      body { padding-bottom: 98px; }
+
+      /* onboarding banner CTA full width on mobile */
+      .onboarding-actions a {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      /* hide less important columns on mobile (keeps laptop same) */
+      table { min-width: 0; }
+      th:nth-child(2), td:nth-child(2),   /* Order */
+      th:nth-child(4), td:nth-child(4) {  /* Sales Person */
+        display: none;
+      }
+
+      td { white-space: normal; }
+
+      /* mobile sticky CTA */
+      .mobile-sticky-cta {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        z-index: 9999;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+
+        padding: 12px 14px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(0,0,0,0.10);
+        border-radius: 16px;
+        box-shadow: 0 18px 40px rgba(0,0,0,0.14);
+        backdrop-filter: blur(10px);
+      }
+
+      .ms-text { display: flex; flex-direction: column; gap: 2px; }
+      .ms-title { font-weight: 900; font-size: 0.92rem; color: #111827; }
+      .ms-sub { font-size: 0.82rem; color: var(--text-muted); }
+
+      .ms-btn {
+        text-decoration: none;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 900;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        box-shadow: 0 12px 30px rgba(100, 85, 236, 0.25);
+        white-space: nowrap;
+      }
     }
   </style>
 </head>
@@ -370,15 +423,15 @@
 <body>
 <div class="container">
 
-  <!-- ✅ Onboarding finish banner -->
+  <!-- ✅ Onboarding banner (Step 3 of 4) -->
   <div class="onboarding-finish" id="onboardingFinish">
     <div>
-      <div class="title">✅ Step 3 of 3 — You’ve activated SmartPOS</div>
-      <p class="sub">This is your profit report. Next time, just record sales — SmartPOS will calculate everything.</p>
+      <div class="title">✅ Step 3 of 4 — Profit Report Ready</div>
+      <p class="sub">One last step: install SmartPOS on your phone so you can open it like an app.</p>
 
+      <!-- ✅ ONLY option: go to install step (force next action) -->
       <div class="onboarding-actions">
-        <a class="primary" href="/auth/dashboard">🏠 Back to Dashboard</a>
-        <a href="/sales/recordsale">➕ Record Another Sale</a>
+        <a href="/install?source=onboarding">📲 Continue to Install (Step 4)</a>
       </div>
     </div>
   </div>
@@ -510,6 +563,15 @@
 
   <a class="back-link" href="/auth/dashboard">← Back to Home</a>
 
+  <!-- ✅ Mobile-only sticky CTA (only shown in onboarding mode via JS) -->
+  <div class="mobile-sticky-cta" id="mobileStickyCta" style="display:none;">
+    <div class="ms-text">
+      <div class="ms-title">Step 3 of 4</div>
+      <div class="ms-sub">Next: Install SmartPOS</div>
+    </div>
+    <a class="ms-btn" href="/install?source=onboarding">Continue</a>
+  </div>
+
 </div>
 
 <!-- Excel Export -->
@@ -527,9 +589,12 @@
   const params = new URLSearchParams(window.location.search);
   const isOnboarding = params.get("source") === "onboarding";
 
-  // ✅ Show finish banner if onboarding
+  // ✅ Show onboarding banner + mobile sticky CTA only in onboarding
   const finishEl = document.getElementById("onboardingFinish");
   if (isOnboarding && finishEl) finishEl.style.display = "block";
+
+  const stickyEl = document.getElementById("mobileStickyCta");
+  if (isOnboarding && stickyEl) stickyEl.style.display = "flex";
 
   // ---------- DATE HELPERS ----------
   function formatDate(date) {
@@ -726,7 +791,7 @@
 
       const profitClass = profit >= 0 ? "pos" : "neg";
 
-      // ✅ NEW: show demo badge next to order code
+      // ✅ show demo badge next to order code
       const demoBadge = i.is_demo ? `<span class="demo-badge">DEMO</span>` : "";
 
       const row = `
