@@ -299,9 +299,7 @@
       white-space: nowrap;
     }
 
-    tr:hover {
-      background: #f9fafb;
-    }
+    tr:hover { background: #f9fafb; }
 
     .chip {
       padding: 4px 10px;
@@ -353,7 +351,102 @@
       cursor: not-allowed;
     }
 
-    /* ✅ MOBILE-ONLY: table readability + force install as the only next step */
+    /* ✅ Sticky CTA: hidden by default everywhere */
+    .mobile-sticky-cta { display: none; }
+
+    /* ✅ Install Modal */
+    .install-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 10000;
+    }
+    .install-modal.show { display: flex; }
+
+    .install-card {
+      width: 100%;
+      max-width: 520px;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 1px solid rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .install-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(79,70,229,0.06);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .install-title { font-weight: 900; color: #4338ca; }
+    .install-sub { color: var(--text-muted); font-size: 0.92rem; margin-top: 4px; }
+
+    .install-close {
+      border: none;
+      background: #fff;
+      border-radius: 999px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.10);
+    }
+
+    .install-body { padding: 14px 16px; }
+    .install-primary { margin-bottom: 10px; }
+
+    .install-btn {
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 14px;
+      font-weight: 900;
+      color: #fff;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      box-shadow: 0 12px 30px rgba(100, 85, 236, 0.25);
+    }
+
+    .install-note { color: var(--text-muted); font-size: 0.9rem; }
+
+    .install-steps {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .install-step {
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+
+    .install-step b { display:block; margin-bottom: 4px; }
+
+    .install-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+
+    .install-done {
+      border: 1px solid rgba(0,0,0,0.10);
+      background: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    /* ✅ MOBILE-ONLY: table readability + onboarding CTA + sticky bar */
     @media (max-width: 900px) {
       .info-dashboard { grid-template-columns: repeat(2,1fr); }
     }
@@ -381,8 +474,8 @@
 
       td { white-space: normal; }
 
-      /* mobile sticky CTA */
-      .mobile-sticky-cta {
+      /* mobile sticky CTA (ONLY visible on mobile when .show is added) */
+      .mobile-sticky-cta.show {
         position: fixed;
         left: 12px;
         right: 12px;
@@ -429,9 +522,9 @@
       <div class="title">✅ Step 3 of 4 — Profit Report Ready</div>
       <p class="sub">One last step: install SmartPOS on your phone so you can open it like an app.</p>
 
-      <!-- ✅ ONLY option: go to install step (force next action) -->
+      <!-- ✅ ONLY option: opens modal (no dead link) -->
       <div class="onboarding-actions">
-        <a href="/install?source=onboarding">📲 Continue to Install (Step 4)</a>
+        <a href="javascript:void(0)" onclick="openInstallModal()">📲 Install SmartPOS (Step 4)</a>
       </div>
     </div>
   </div>
@@ -563,13 +656,41 @@
 
   <a class="back-link" href="/auth/dashboard">← Back to Home</a>
 
-  <!-- ✅ Mobile-only sticky CTA (only shown in onboarding mode via JS) -->
-  <div class="mobile-sticky-cta" id="mobileStickyCta" style="display:none;">
+  <!-- ✅ Step 4 Modal: Install App -->
+  <div class="install-modal" id="installModal" aria-hidden="true">
+    <div class="install-card">
+      <div class="install-head">
+        <div>
+          <div class="install-title">✅ Step 4 of 4 — Install SmartPOS</div>
+          <div class="install-sub">Install it so you can open it like a normal app.</div>
+        </div>
+        <button class="install-close" onclick="closeInstallModal()">✕</button>
+      </div>
+
+      <div class="install-body">
+        <div id="installPrimaryArea" class="install-primary">
+          <button id="installBtn" class="install-btn" style="display:none;">Install SmartPOS</button>
+          <div id="installNoPrompt" class="install-note" style="display:none;">
+            Your browser didn’t show an install button. Follow the steps below 👇
+          </div>
+        </div>
+
+        <div class="install-steps" id="installSteps"></div>
+
+        <div class="install-footer">
+          <button class="install-done" onclick="closeInstallModal()">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Mobile-only sticky CTA -->
+  <div class="mobile-sticky-cta" id="mobileStickyCta">
     <div class="ms-text">
       <div class="ms-title">Step 3 of 4</div>
       <div class="ms-sub">Next: Install SmartPOS</div>
     </div>
-    <a class="ms-btn" href="/install?source=onboarding">Continue</a>
+    <a class="ms-btn" href="javascript:void(0)" onclick="openInstallModal()">Install</a>
   </div>
 
 </div>
@@ -589,12 +710,87 @@
   const params = new URLSearchParams(window.location.search);
   const isOnboarding = params.get("source") === "onboarding";
 
-  // ✅ Show onboarding banner + mobile sticky CTA only in onboarding
+  // ✅ Show onboarding banner if onboarding
   const finishEl = document.getElementById("onboardingFinish");
   if (isOnboarding && finishEl) finishEl.style.display = "block";
 
+  // ✅ Mobile-only sticky CTA (only if onboarding AND screen <= 700px)
   const stickyEl = document.getElementById("mobileStickyCta");
-  if (isOnboarding && stickyEl) stickyEl.style.display = "flex";
+  const isMobile = window.matchMedia("(max-width: 700px)").matches;
+  if (isOnboarding && stickyEl && isMobile) stickyEl.classList.add("show");
+
+  // ---------- INSTALL (Step 4 Modal) ----------
+  let deferredPrompt = null;
+
+  function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
+
+  function isAndroid() {
+    return /android/i.test(navigator.userAgent);
+  }
+
+  function openInstallModal() {
+    const modal = document.getElementById("installModal");
+    if (!modal) return;
+
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+
+    const stepsEl = document.getElementById("installSteps");
+    const btn = document.getElementById("installBtn");
+    const noPrompt = document.getElementById("installNoPrompt");
+
+    // Clear steps
+    stepsEl.innerHTML = "";
+
+    // If browser supports install prompt, show button
+    if (deferredPrompt && btn) {
+      btn.style.display = "block";
+      noPrompt.style.display = "none";
+      btn.onclick = async () => {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        btn.style.display = "none";
+        noPrompt.style.display = "block";
+      };
+    } else {
+      if (btn) btn.style.display = "none";
+      if (noPrompt) noPrompt.style.display = "block";
+    }
+
+    // Instructions
+    if (isIOS()) {
+      stepsEl.innerHTML = `
+        <div class="install-step"><b>iPhone / iPad</b>1) Tap <b>Share</b> (square with arrow).<br>2) Tap <b>Add to Home Screen</b>.<br>3) Tap <b>Add</b>.</div>
+        <div class="install-step"><b>After Installing</b>Open SmartPOS from your home screen and record your first sale.</div>
+      `;
+    } else if (isAndroid()) {
+      stepsEl.innerHTML = `
+        <div class="install-step"><b>Android (Chrome)</b>1) Tap the <b>3 dots</b> menu.<br>2) Tap <b>Install app</b> / <b>Add to Home screen</b>.<br>3) Tap <b>Install</b>.</div>
+        <div class="install-step"><b>After Installing</b>Open SmartPOS from your home screen and record your first sale.</div>
+      `;
+    } else {
+      stepsEl.innerHTML = `
+        <div class="install-step"><b>Install</b>Look for <b>Install app</b> or <b>Add to Home screen</b> in your browser menu.</div>
+        <div class="install-step"><b>After Installing</b>Open SmartPOS from your home screen and record your first sale.</div>
+      `;
+    }
+  }
+
+  function closeInstallModal() {
+    const modal = document.getElementById("installModal");
+    if (!modal) return;
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  // Capture install prompt
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
 
   // ---------- DATE HELPERS ----------
   function formatDate(date) {
@@ -667,6 +863,8 @@
 
     if (isOnboarding) {
       setQuickDate("today");
+      // Optional: auto-open install step after a moment on mobile
+      if (isMobile) setTimeout(openInstallModal, 700);
     }
   }
 
@@ -791,7 +989,6 @@
 
       const profitClass = profit >= 0 ? "pos" : "neg";
 
-      // ✅ show demo badge next to order code
       const demoBadge = i.is_demo ? `<span class="demo-badge">DEMO</span>` : "";
 
       const row = `
