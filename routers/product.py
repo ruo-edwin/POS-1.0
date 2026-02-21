@@ -29,6 +29,11 @@ def get_db():
 
 @router.get("/addproduct", response_class=HTMLResponse)
 async def add_product_page(request: Request):
+    # ✅ NEW: admin/manager only
+    current_user = verify_token(request)
+    if not current_user or current_user.get("role") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     # ✅ capture onboarding source so the template (or redirects) can use it
     source = request.query_params.get("source")  # "onboarding" or None
     return templates.TemplateResponse("add_product.html", {"request": request, "source": source})
@@ -39,6 +44,10 @@ async def view_stocks_page(
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
+    # ✅ NEW: admin/manager only
+    if not current_user or current_user.get("role") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     # ✅ Stock page still exists, but we are NOT tracking it as an onboarding step anymore
     return templates.TemplateResponse("view_stock.html", {"request": request})
 
@@ -54,6 +63,10 @@ def add_product(
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
+    # ✅ NEW: admin/manager only
+    if not current_user or current_user.get("role") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     try:
         new_product = models.Product(
             name=name,
@@ -106,6 +119,10 @@ def update_stock(
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
+    # ✅ NEW: admin/manager only
+    if not current_user or current_user.get("role") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     product = db.query(models.Product).filter(
         models.Product.id == product_id,
         models.Product.business_id == current_user["business_id"]

@@ -44,6 +44,10 @@ async def sales_report_page(
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
+    # ✅ NEW: admin only
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+
     record_onboarding_event(db, current_user["business_id"], "view_report")
     return templates.TemplateResponse("sales_report.html", {"request": request})
 
@@ -69,6 +73,10 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     user = verify_token(request)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    # ✅ NEW: allow only admin/manager/staff to record sales
+    if user.get("role") not in ["admin", "manager", "staff"]:
+        raise HTTPException(status_code=403, detail="Access denied")
 
     business_id = user["business_id"]
 
@@ -140,13 +148,16 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
     next_number = 1 if not last_order else last_order[0] + 1
     order_code = f"ORD-{next_number:05d}"
 
+    # 🔥 ONLY CHANGE BELOW
     new_order = models.Order(
         order_code=order_code,
         business_id=business_id,
         client_name=sale_data.client_name,
-        sales_person=sale_data.sales_person,
+        sales_person=user["username"],   # ← AUTO FROM TOKEN
+        created_by=user["user_id"],      # ← SECURE USER LINK
         total_amount=0
     )
+
     db.add(new_order)
     db.commit()
     db.refresh(new_order)
@@ -239,6 +250,10 @@ def get_sales_items(request: Request, db: Session = Depends(get_db)):
     user = verify_token(request)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    # ✅ NEW: admin only
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
 
     business_id = user["business_id"]
 

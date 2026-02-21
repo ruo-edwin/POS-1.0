@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Staff | SmartPOS</title>
+
+  <!-- Inter Font -->
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+  <style>
+    :root {
+      --accent: #4f46e5;
+      --accent-strong: #6366f1;
+      --bg-body: linear-gradient(135deg, #f7f9fc, #e7ebf5);
+      --bg-card: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border-soft: rgba(0,0,0,0.08);
+      --radius: 18px;
+      --shadow-soft: 0 18px 40px rgba(0,0,0,0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: var(--bg-body);
+      display: flex;
+      justify-content: center;
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: var(--bg-card);
+      padding: 36px 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-soft);
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+      background: linear-gradient(90deg, #1f2937, #6366f1);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+
+    .staff-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .staff-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      background: rgba(0,0,0,0.02);
+      font-size: 0.92rem;
+    }
+
+    .role-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(79,70,229,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(79,70,229,0.25);
+    }
+
+    .empty-state {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px dashed var(--border-soft);
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+    }
+
+    button {
+      margin-top: 6px;
+      padding: 12px;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(79,70,229,0.25);
+      transition: 0.25s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 24px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>👥 Manage Staff</h1>
+    <div class="subtitle">Add and manage users for your business</div>
+
+    <!-- Existing Staff -->
+    <h3>Existing Staff</h3>
+    <div class="staff-list">
+      {% for s in staff_list %}
+        <div class="staff-item">
+          <span>{{ s.username }}</span>
+          <span class="role-badge">{{ s.role }}</span>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          No staff added yet.
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Add New Staff -->
+    <h3>Add New Staff</h3>
+
+    <form method="post" action="/auth/create_staff">
+      <div>
+        <label>Username</label>
+        <input type="text" name="username" required>
+      </div>
+
+      <div>
+        <label>Password</label>
+        <input type="password" name="password" required>
+      </div>
+
+      <div>
+        <label>Role</label>
+        <select name="role" required>
+          <option value="staff">Staff (Sell Only)</option>
+          <option value="manager">Manager (Sell + Manage Products)</option>
+        </select>
+      </div>
+
+      <button type="submit">Create Staff</button>
+    </form>
+
+    <a href="/auth/dashboard" class="back-link">⬅ Back to Dashboard</a>
+
+  </div>
+
+</body>
+</html>

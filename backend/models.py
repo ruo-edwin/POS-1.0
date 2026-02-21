@@ -75,7 +75,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     business = relationship("Business", back_populates="users")
-
+    orders = relationship("Order", back_populates="creator")
 
 
 class Subscription(Base):
@@ -106,7 +106,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     order_code = Column(String(20), unique=True, index=True)
     business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
-
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     client_name = Column(String(100), nullable=True)
     sales_person = Column(String(100), nullable=True)
 
@@ -115,6 +115,7 @@ class Order(Base):
 
     business = relationship("Business", back_populates="orders")
     sales = relationship("Sales", back_populates="order")
+    creator = relationship("User", back_populates="orders")
 
 class PushSubscription(Base):
     __tablename__ = "push_subscriptions"

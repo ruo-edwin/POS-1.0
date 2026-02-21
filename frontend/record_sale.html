@@ -496,7 +496,9 @@ function addRow() {
       <input list="productList" placeholder="Search product…" oninput="updateProduct(this)">
     </td>
     <td data-label="Price">
-      <input class="price" type="number" min="0" oninput="validatePrice(this)">
+     <input class="price" type="number" min="0"
+       onfocus="this.select()"
+       oninput="validatePrice(this)">
     </td>
     <td data-label="Stock">
       <input class="stock" readonly>

@@ -44,6 +44,10 @@ def get_dashboard(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse(url="/auth/login")
 
+    # 🔥 NEW: Staff cannot access dashboard
+    if user.role == "staff":
+        return RedirectResponse(url="/sales/recordsale")
+
     business_name = user.business.business_name if user.business_id else "Superadmin"
 
     return templates.TemplateResponse(
@@ -69,6 +73,31 @@ async def register_page(request: Request):
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
+# ✅ manage staff page
+@router.get("/manage_staff", response_class=HTMLResponse)
+def manage_staff_page(
+    request: Request,
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    # 🔒 Admin only
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    business_id = current_user["business_id"]
+
+    staff_list = db.query(models.User).filter(
+        models.User.business_id == business_id,
+        models.User.role.in_(["staff", "manager"])
+    ).all()
+
+    return templates.TemplateResponse(
+        "manage_staff.html",
+        {
+            "request": request,
+            "staff_list": staff_list
+        }
+    )
 
 # ✅ Register: Business + Admin + Subscription + AUTO LOGIN
 @router.post("/register_form")
@@ -131,7 +160,7 @@ def register_business(
         db.add(new_subscription)
         db.commit()
 
-        # ✅ AUTO LOGIN TOKEN (NEW)
+        # AUTO LOGIN TOKEN
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={
@@ -173,7 +202,7 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
         if not user or not pwd_context.verify(password, user.password_hash):
             raise HTTPException(status_code=400, detail="Invalid username or password")
 
-        # ⭐⭐⭐ SUPERADMIN BYPASS — NO SUBSCRIPTION CHECK ⭐⭐⭐
+        # SUPERADMIN BYPASS
         if user.role == "superadmin":
             user.is_active = 1
             user.last_login = datetime.utcnow()
@@ -200,7 +229,6 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
                 max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
             )
             return response
-        # ⭐⭐⭐ END SUPERADMIN ⭐⭐⭐
 
         subscription = db.query(models.Subscription).filter(
             models.Subscription.business_id == user.business_id
@@ -241,7 +269,16 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
             expires_delta=access_token_expires
         )
 
-        response = RedirectResponse(url="/auth/dashboard", status_code=302)
+        # 🔥 NEW: Role-based redirect
+        if user.role == "staff":
+            redirect_url = "/sales/recordsale"
+        elif user.role == "manager":
+            redirect_url = "/auth/dashboard"
+        else:  # admin
+            redirect_url = "/auth/dashboard"
+
+        response = RedirectResponse(url=redirect_url, status_code=302)
+
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -255,7 +292,38 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+@router.post("/create_staff")
+def create_staff(
+    username: str = Form(...),
+    password: str = Form(...),
+    role: str = Form(...),
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    # 🔒 Admin only
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
 
+    if role not in ["staff", "manager"]:
+        raise HTTPException(status_code=400, detail="Invalid role selected")
+
+    # Prevent duplicate username
+    existing = db.query(models.User).filter(models.User.username == username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    new_user = models.User(
+        business_id=current_user["business_id"],
+        username=username,
+        password_hash=pwd_context.hash(password.strip()),
+        role=role,
+        is_active=1
+    )
+
+    db.add(new_user)
+    db.commit()
+
+    return RedirectResponse(url="/auth/manage_staff", status_code=303)
 
 # ✅ Logout
 @router.get("/logout")
