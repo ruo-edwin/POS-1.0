@@ -499,8 +499,7 @@ function addRow() {
      <td data-label="Price">
   <input class="price" type="number" min="0"
     onfocus="clearPrice(this)"
-    onblur="restoreMinPrice(this)"
-    oninput="validatePrice(this)">
+    onblur="restoreMinPrice(this)">
 </td>
     </td>
     <td data-label="Stock">
@@ -579,11 +578,17 @@ function clearPrice(input) {
   input.value = "";
 }
 
-function restoreMinPrice(input) {
+function finalizePrice(input) {
+  const min = +input.dataset.minPrice || 0;
+
   if (!input.value) {
-    const min = +input.dataset.minPrice || 0;
+    input.value = min;
+  } else if (+input.value < min) {
     input.value = min;
   }
+
+  // update totals after validation
+  updateTotal(input.closest("tr").querySelector(".qty"));
 }
 function submitSale() {
   const items = [];
