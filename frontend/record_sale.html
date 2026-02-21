@@ -496,9 +496,12 @@ function addRow() {
       <input list="productList" placeholder="Search product…" oninput="updateProduct(this)">
     </td>
     <td data-label="Price">
-     <input class="price" type="number" min="0"
-       onfocus="this.select()"
-       oninput="validatePrice(this)">
+     <td data-label="Price">
+  <input class="price" type="number" min="0"
+    onfocus="clearPrice(this)"
+    onblur="restoreMinPrice(this)"
+    oninput="validatePrice(this)">
+</td>
     </td>
     <td data-label="Stock">
       <input class="stock" readonly>
@@ -571,7 +574,17 @@ function syncOptionalFields() {
   if (clientName.value && !cnM.value) cnM.value = clientName.value;
   if (salesPerson.value && !spM.value) spM.value = salesPerson.value;
 }
+function clearPrice(input) {
+  input.dataset.originalValue = input.value;
+  input.value = "";
+}
 
+function restoreMinPrice(input) {
+  if (!input.value) {
+    const min = +input.dataset.minPrice || 0;
+    input.value = min;
+  }
+}
 function submitSale() {
   const items = [];
   document.querySelectorAll("#salesBody tr").forEach(r => {
