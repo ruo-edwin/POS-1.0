@@ -35,52 +35,63 @@ def get_dashboard(
     db: Session = Depends(get_db),
 ):
 
+    # ----------------------------
+    # AUTH CHECK
+    # ----------------------------
     if not current_user:
         return RedirectResponse(url="/auth/login")
 
+    # Staff go straight to POS
     if current_user["role"] == "staff":
         return RedirectResponse(url="/sales/recordsale")
 
     business_id = current_user["business_id"]
 
     # ----------------------------
-    # TODAY RANGE
+    # TODAY TIME RANGE (SAFE)
     # ----------------------------
-    today = datetime.utcnow().date()
+    today_start = datetime.utcnow().replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
 
     # ----------------------------
-    # TODAY SALES
+    # TODAY ORDERS
     # ----------------------------
     orders_today = (
         db.query(models.Order)
         .filter(
             models.Order.business_id == business_id,
-            models.Order.created_at >= today
+            models.Order.created_at >= today_start
         )
         .all()
     )
 
-    today_revenue = sum(o.total_amount for o in orders_today)
+    today_revenue = sum(o.total_amount or 0 for o in orders_today)
     transactions = len(orders_today)
 
     # ----------------------------
-    # PROFIT CALCULATION
+    # TODAY PROFIT (MATCHES REVENUE RANGE)
     # ----------------------------
     sales_rows = (
         db.query(models.Sales, models.Product)
         .join(models.Product, models.Sales.product_id == models.Product.id)
         .join(models.Order, models.Sales.order_id == models.Order.id)
-        .filter(models.Order.business_id == business_id)
+        .filter(
+            models.Order.business_id == business_id,
+            models.Order.created_at >= today_start,
+            models.Sales.is_demo == False  # ignore demo onboarding sales
+        )
         .all()
     )
 
-    today_profit = 0
+    today_profit = 0.0
+
     for sale, product in sales_rows:
-        bp = product.buying_price or 0
-        today_profit += sale.total_price - (bp * sale.quantity)
+        buying_price = product.buying_price or 0
+        today_profit += sale.total_price - (buying_price * sale.quantity)
 
     # ----------------------------
-    # LOW STOCK
+    # LOW STOCK COUNT
     # ----------------------------
     low_stock_count = (
         db.query(models.Product)
@@ -102,8 +113,16 @@ def get_dashboard(
         .all()
     )
 
-    user = db.query(models.User).get(current_user["user_id"])
+    # ----------------------------
+    # CURRENT USER OBJECT
+    # ----------------------------
+    user = db.query(models.User).filter(
+        models.User.id == current_user["user_id"]
+    ).first()
 
+    # ----------------------------
+    # RESPONSE
+    # ----------------------------
     return templates.TemplateResponse(
         "index.html",
         {
@@ -111,14 +130,13 @@ def get_dashboard(
 
             "active_page": "dashboard",
 
-            "today_revenue": today_revenue,
+            "today_revenue": round(today_revenue, 2),
             "today_profit": round(today_profit, 2),
             "transactions": transactions,
             "low_stock": low_stock_count,
             "recent_orders": recent_orders,
         }
     )
-
 # ✅ Registration page
 @router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
