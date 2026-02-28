@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>{% block title %}SmartPOS{% endblock %}</title>
+
+<link href="https://rsms.me/inter/inter.css" rel="stylesheet">
+
+<style>
+
+/* =====================
+   ROOT THEME
+===================== */
+
+:root{
+    --bg:#f6f8fc;
+    --sidebar:#0f172a;
+    --card:#ffffff;
+    --border:#e6ebf1;
+    --text:#1a1f36;
+    --muted:#6b7280;
+
+    --primary:#635bff;
+    --primary-soft:rgba(99,91,255,0.12);
+
+    --danger:#ef4444;
+}
+
+/* =====================
+   RESET
+===================== */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+}
+
+/* =====================
+   APP LAYOUT
+===================== */
+
+.app{
+    display:flex;
+    height:100vh;
+}
+
+/* =====================
+   SIDEBAR
+===================== */
+
+.sidebar{
+    width:250px;
+    background:var(--sidebar);
+    color:white;
+    display:flex;
+    flex-direction:column;
+    padding:24px 18px;
+}
+
+.brand{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:30px;
+}
+
+.user-box{
+    background:rgba(255,255,255,0.06);
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:30px;
+}
+
+.role{
+    font-size:12px;
+    background:var(--primary);
+    padding:4px 10px;
+    border-radius:20px;
+    display:inline-block;
+    margin-top:6px;
+}
+
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.nav a{
+    text-decoration:none;
+    color:#cbd5e1;
+    padding:10px 14px;
+    border-radius:10px;
+    transition:.2s;
+}
+
+.nav a:hover,
+.nav a.active{
+    background:var(--primary-soft);
+    color:white;
+}
+
+/* =====================
+   MAIN AREA
+===================== */
+
+.main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+}
+
+/* TOPBAR */
+
+.topbar{
+    background:white;
+    border-bottom:1px solid var(--border);
+    padding:18px 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.page-title{
+    font-size:20px;
+    font-weight:600;
+}
+
+.business-name{
+    color:var(--muted);
+    font-size:14px;
+}
+
+/* CONTENT */
+
+.content{
+    padding:28px;
+    overflow-y:auto;
+}
+
+/* CARDS */
+
+.card{
+    background:var(--card);
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.04);
+}
+
+/* GRID */
+
+.grid{
+    display:grid;
+    gap:20px;
+}
+
+.grid-4{
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+    .sidebar{
+        width:70px;
+    }
+
+    .brand,
+    .user-box span,
+    .nav a span{
+        display:none;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar">
+
+        <div class="brand">SmartPOS</div>
+
+        <!-- USER IDENTITY -->
+        <div class="user-box">
+            <strong>{{ username or "" }}</strong><br>
+            <span>{{ business or "" }}</span><br>
+            <div class="role">{{ role or "" }}</div>
+        </div>
+
+        <!-- NAVIGATION -->
+        <nav class="nav">
+            <a href="/auth/dashboard">🏠 <span>Dashboard</span></a>
+            <a href="/sales/recordsale">💰 <span>Sales</span></a>
+            <a href="/products/viewstocks">📦 <span>Products</span></a>
+            <a href="/sales/salesreport">📊 <span>Reports</span></a>
+            <a href="/auth/manage_staff">👥 <span>Staff</span></a>
+            <a href="/settings">⚙️ <span>Settings</span></a>
+        </nav>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+    <div class="main">
+
+        <header class="topbar">
+
+            <div>
+                <div class="page-title">
+                    {% block page_title %}Dashboard{% endblock %}
+                </div>
+
+                <div class="business-name">
+                    {{ business or "" }}
+                </div>
+            </div>
+
+            <a href="/auth/logout" style="color:#ef4444;text-decoration:none;font-weight:600;">
+                Logout
+            </a>
+
+        </header>
+
+
+        <!-- PAGE CONTENT -->
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

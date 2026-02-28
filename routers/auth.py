@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
+from backend.template_context import base_context
 from backend import models
 from backend.db import SessionLocal
 from backend.auth_utils import (
@@ -27,40 +28,34 @@ def get_db():
         db.close()
 
 
-# ✅ Dashboard redirect
 @router.get("/dashboard")
-def get_dashboard(request: Request, db: Session = Depends(get_db)):
-    token = request.cookies.get("access_token")
-    if not token:
+def get_dashboard(
+    request: Request,
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db),
+):
+
+    if not current_user:
         return RedirectResponse(url="/auth/login")
 
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("user_id")
-    except JWTError:
-        return RedirectResponse(url="/auth/login")
-
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        return RedirectResponse(url="/auth/login")
-
-    # 🔥 NEW: Staff cannot access dashboard
-    if user.role == "staff":
+    # staff bypass
+    if current_user["role"] == "staff":
         return RedirectResponse(url="/sales/recordsale")
 
-    business_name = user.business.business_name if user.business_id else "Superadmin"
+    user = db.query(models.User).filter(
+        models.User.id == current_user["user_id"]
+    ).first()
+
+    if not user:
+        return RedirectResponse(url="/auth/login")
 
     return templates.TemplateResponse(
         "index.html",
         {
-            "request": request,
-            "username": user.username,
-            "business_name": business_name,
+            **base_context(request, user),
             "last_login": user.last_login,
-            "role": user.role
         }
     )
-
 
 # ✅ Registration page
 @router.get("/register", response_class=HTMLResponse)

@@ -23,6 +23,11 @@
     padding:22px;
     border:1px solid rgba(0,0,0,0.08);
     box-shadow:0 12px 24px rgba(0,0,0,0.05);
+    transition:.2s ease;
+}
+
+.kpi-card:hover{
+    transform:translateY(-4px);
 }
 
 .kpi-label{
@@ -90,6 +95,11 @@
     border-bottom:none;
 }
 
+.placeholder{
+    color:#9ca3af;
+    font-style:italic;
+}
+
 </style>
 
 {% endblock %}
@@ -104,22 +114,30 @@
 
     <div class="kpi-card">
         <div class="kpi-label">Today's Sales</div>
-        <div class="kpi-value">KSh 0</div>
+        <div class="kpi-value">
+            {{ today_sales if today_sales is defined else "—" }}
+        </div>
     </div>
 
     <div class="kpi-card">
         <div class="kpi-label">Profit Today</div>
-        <div class="kpi-value">KSh 0</div>
+        <div class="kpi-value">
+            {{ today_profit if today_profit is defined else "—" }}
+        </div>
     </div>
 
     <div class="kpi-card">
         <div class="kpi-label">Transactions</div>
-        <div class="kpi-value">0</div>
+        <div class="kpi-value">
+            {{ today_transactions if today_transactions is defined else "—" }}
+        </div>
     </div>
 
     <div class="kpi-card">
         <div class="kpi-label">Low Stock Items</div>
-        <div class="kpi-value">0</div>
+        <div class="kpi-value">
+            {{ low_stock_count if low_stock_count is defined else "—" }}
+        </div>
     </div>
 
 </div>
@@ -132,7 +150,7 @@
 
     <div class="panel-title">Sales Overview</div>
 
-    <p style="color:#6b7280;">
+    <p class="placeholder">
         Sales analytics will appear here once transactions begin.
     </p>
 
@@ -151,13 +169,13 @@
         <a href="/sales/recordsale">💰 Record Sale</a>
 
         {% if role in ["admin","manager"] %}
-        <a href="/products/addproduct">➕ Add Product</a>
-        <a href="/products/viewstocks">📦 View Stock</a>
+            <a href="/products/addproduct">➕ Add Product</a>
+            <a href="/products/viewstocks">📦 View Stock</a>
         {% endif %}
 
         {% if role == "admin" %}
-        <a href="/sales/salesreport">📊 Reports</a>
-        <a href="/auth/manage_staff">👥 Staff</a>
+            <a href="/sales/salesreport">📊 Reports</a>
+            <a href="/auth/manage_staff">👥 Manage Staff</a>
         {% endif %}
 
     </div>
@@ -172,8 +190,13 @@
 
     <div class="panel-title">Recent Activity</div>
 
-    <div class="activity-item">No activity yet.</div>
-    <div class="activity-item">Sales and stock updates will appear here.</div>
+    <div class="activity-item placeholder">
+        No activity yet.
+    </div>
+
+    <div class="activity-item placeholder">
+        Sales and stock updates will appear here automatically.
+    </div>
 
 </div>
 
