@@ -16,14 +16,14 @@
 
 :root{
     --bg:#f6f8fc;
-    --sidebar:#0f172a;
+    --sidebar:#0b1220;
     --card:#ffffff;
     --border:#e6ebf1;
-    --text:#1a1f36;
+    --text:#111827;
     --muted:#6b7280;
 
     --primary:#635bff;
-    --primary-soft:rgba(99,91,255,0.12);
+    --primary-soft:rgba(99,91,255,0.14);
 
     --danger:#ef4444;
 }
@@ -42,7 +42,7 @@ body{
     color:var(--text);
 }
 
-/* ================= LAYOUT ================= */
+/* ================= APP LAYOUT ================= */
 
 .app{
     display:flex;
@@ -52,51 +52,66 @@ body{
 /* ================= SIDEBAR ================= */
 
 .sidebar{
-    width:240px;
+    width:250px;
     background:var(--sidebar);
     color:white;
     display:flex;
     flex-direction:column;
-    padding:24px 18px;
+    padding:26px 20px;
 }
 
 /* BRAND */
 
 .brand{
-    font-size:20px;
+    font-size:21px;
     font-weight:700;
-    margin-bottom:28px;
-    letter-spacing:.3px;
+    letter-spacing:.4px;
+    margin-bottom:34px;
+    opacity:.95;
 }
 
-/* USER IDENTITY (SMALL + CLEAN) */
+/* ================= IDENTITY ================= */
 
 .identity{
-    margin-bottom:28px;
-    line-height:1.4;
+    padding:16px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.06);
+    margin-bottom:30px;
 }
+
+/* BUSINESS (MAIN EMPHASIS) */
 
 .identity .business{
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:#94a3b8;
-    font-weight:600;
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:.02em;
+    margin-bottom:4px;
 }
+
+/* USERNAME */
 
 .identity .username{
-    font-size:14px;
-    font-weight:600;
-    margin-top:2px;
+    font-size:13px;
+    color:#cbd5e1;
 }
+
+/* ROLE BADGE */
 
 .identity .role{
+    display:inline-block;
+    margin-top:8px;
     font-size:11px;
-    color:#cbd5e1;
-    margin-top:2px;
+    padding:4px 10px;
+    border-radius:20px;
+    background:var(--primary-soft);
+    color:#c7d2fe;
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:uppercase;
 }
 
-/* NAV */
+/* ================= NAVIGATION ================= */
 
 .nav{
     display:flex;
@@ -108,31 +123,41 @@ body{
 .nav a{
     text-decoration:none;
     color:#cbd5e1;
-    padding:10px 14px;
+    padding:11px 14px;
     border-radius:10px;
     font-size:14px;
-    transition:.2s;
+    transition:.18s ease;
 }
 
-.nav a:hover,
-.nav a.active{
-    background:var(--primary-soft);
+.nav a:hover{
+    background:rgba(255,255,255,0.06);
     color:white;
 }
 
-/* LOGOUT (BOTTOM) */
+.nav a.active{
+    background:var(--primary-soft);
+    color:white;
+    font-weight:600;
+}
+
+/* ================= LOGOUT ================= */
 
 .logout{
     margin-top:auto;
     border-top:1px solid rgba(255,255,255,0.08);
-    padding-top:14px;
+    padding-top:16px;
 }
 
 .logout a{
-    color:#f87171;
     text-decoration:none;
+    color:#fca5a5;
     font-size:14px;
     font-weight:600;
+    transition:.2s;
+}
+
+.logout a:hover{
+    color:#ef4444;
 }
 
 /* ================= MAIN ================= */
@@ -148,7 +173,7 @@ body{
 .topbar{
     background:white;
     border-bottom:1px solid var(--border);
-    padding:18px 28px;
+    padding:20px 30px;
 }
 
 .page-title{
@@ -159,34 +184,14 @@ body{
 .business-name{
     font-size:13px;
     color:var(--muted);
-    margin-top:2px;
+    margin-top:3px;
 }
 
 /* CONTENT */
 
 .content{
-    padding:28px;
+    padding:30px;
     overflow-y:auto;
-}
-
-/* CARDS */
-
-.card{
-    background:var(--card);
-    border-radius:14px;
-    padding:20px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.04);
-}
-
-/* GRID */
-
-.grid{
-    display:grid;
-    gap:20px;
-}
-
-.grid-4{
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 }
 
 /* ================= MOBILE ================= */
@@ -211,19 +216,19 @@ body{
 
 <div class="app">
 
-    <!-- ================= SIDEBAR ================= -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
 
         <div class="brand">SmartPOS</div>
 
-        <!-- CLEAN IDENTITY -->
+        <!-- PREMIUM IDENTITY -->
         <div class="identity">
             <div class="business">{{ business or "" }}</div>
             <div class="username">{{ username or "" }}</div>
             <div class="role">{{ role or "" }}</div>
         </div>
 
-        <!-- NAVIGATION -->
+        <!-- NAV -->
         <nav class="nav">
             <a href="/auth/dashboard">Dashboard</a>
             <a href="/sales/recordsale">Sales</a>
@@ -240,12 +245,10 @@ body{
 
     </aside>
 
-
-    <!-- ================= MAIN ================= -->
+    <!-- MAIN -->
     <div class="main">
 
         <header class="topbar">
-
             <div class="page-title">
                 {% block page_title %}Dashboard{% endblock %}
             </div>
@@ -253,10 +256,8 @@ body{
             <div class="business-name">
                 {{ business or "" }}
             </div>
-
         </header>
 
-        <!-- PAGE CONTENT -->
         <main class="content">
             {% block content %}{% endblock %}
         </main>
