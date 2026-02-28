@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>{% block title %}SmartPOS{% endblock %}
+<title>{% block title %}SmartPOS{% endblock %}</title>
 
 <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
 
@@ -14,16 +14,16 @@
 
 :root{
     --bg:#f5f7fb;
-    --sidebar:#0b1220;
-    --sidebar-soft:#111a2e;
+    --sidebar:#0e1628;
+    --sidebar-soft:#131c33;
     --card:#ffffff;
     --border:#e6ebf1;
 
     --text:#111827;
-    --muted:#9aa4b2;
+    --muted:#94a3b8;
 
     --primary:#635bff;
-    --primary-soft:rgba(99,91,255,0.15);
+    --primary-soft:rgba(99,91,255,0.14);
 
     --danger:#ef4444;
 }
@@ -51,7 +51,7 @@ body{
 
 .sidebar{
     width:260px;
-    background:linear-gradient(180deg,#0b1220,#0f1b33);
+    background:linear-gradient(180deg,#0e1628,#111c36);
     color:white;
     display:flex;
     flex-direction:column;
@@ -62,11 +62,11 @@ body{
 /* ===== BUSINESS IDENTITY ===== */
 
 .identity{
-    margin-bottom:28px;
+    margin-bottom:30px;
 }
 
 .business{
-    font-size:18px;
+    font-size:19px;
     font-weight:700;
     letter-spacing:.4px;
     margin-bottom:6px;
@@ -89,10 +89,10 @@ body{
     text-transform:uppercase;
 }
 
-/* ================= NAV GROUP ================= */
+/* ================= NAVIGATION ================= */
 
 .nav-section{
-    margin-top:22px;
+    margin-top:20px;
 }
 
 .nav-title{
@@ -114,22 +114,21 @@ body{
     color:#cbd5e1;
     padding:10px 14px;
     border-radius:10px;
-    position:relative;
     font-size:14px;
     transition:.2s;
+    position:relative;
 }
 
-/* hover */
 .nav a:hover{
     background:rgba(255,255,255,0.06);
 }
 
-/* ACTIVE PAGE INDICATOR */
 .nav a.active{
     background:var(--primary-soft);
     color:white;
 }
 
+/* left active indicator */
 .nav a.active::before{
     content:"";
     position:absolute;
@@ -137,11 +136,11 @@ body{
     top:6px;
     bottom:6px;
     width:3px;
-    border-radius:3px;
     background:var(--primary);
+    border-radius:3px;
 }
 
-/* logout styling */
+/* logout */
 .nav a.logout{
     margin-top:18px;
     color:#fca5a5;
@@ -159,7 +158,7 @@ body{
     flex-direction:column;
 }
 
-/* ===== TOPBAR ===== */
+/* TOPBAR */
 
 .topbar{
     background:white;
@@ -173,26 +172,16 @@ body{
 }
 
 .business-sub{
-    color:var(--muted);
     font-size:14px;
-    margin-top:3px;
+    color:var(--muted);
+    margin-top:4px;
 }
 
-/* ===== CONTENT ===== */
+/* CONTENT */
 
 .content{
     padding:30px;
     overflow-y:auto;
-}
-
-/* ================= CARDS ================= */
-
-.card{
-    background:white;
-    border-radius:16px;
-    padding:22px;
-    border:1px solid rgba(0,0,0,0.05);
-    box-shadow:0 10px 24px rgba(0,0,0,0.04);
 }
 
 /* ================= MOBILE ================= */
@@ -222,7 +211,7 @@ body{
 
 <aside class="sidebar">
 
-    <!-- BUSINESS IDENTITY -->
+    <!-- Identity -->
     <div class="identity">
         <div class="business">{{ business }}</div>
 
@@ -232,45 +221,66 @@ body{
         </div>
     </div>
 
-    <!-- ===== OVERVIEW ===== -->
+    <!-- Overview -->
     <div class="nav-section">
         <div class="nav-title">Overview</div>
         <nav class="nav">
             <a href="/auth/dashboard"
-               class="{% if request.url.path == '/auth/dashboard' %}active{% endif %}">
+               class="{% if active_page == 'dashboard' %}active{% endif %}">
                <span>Dashboard</span>
             </a>
         </nav>
     </div>
 
-    <!-- ===== SALES ===== -->
+    <!-- Sales -->
     <div class="nav-section">
         <div class="nav-title">Sales</div>
         <nav class="nav">
-            <a href="/sales/recordsale"> <span>Record Sale</span></a>
-            <a href="/sales/returns"> <span>Sales Return</span></a>
+            <a href="/sales/recordsale"
+               class="{% if active_page == 'sales' %}active{% endif %}">
+               <span>Record Sale</span>
+            </a>
+
+            <a href="/sales/returns"
+               class="{% if active_page == 'returns' %}active{% endif %}">
+               <span>Sales Return</span>
+            </a>
         </nav>
     </div>
 
-    <!-- ===== INVENTORY ===== -->
+    <!-- Inventory -->
     <div class="nav-section">
         <div class="nav-title">Inventory</div>
         <nav class="nav">
-            <a href="/products/viewstocks"><span>View Products</span></a>
-            <a href="/products/addproduct"><span>Add Product</span></a>
+            <a href="/products/viewstocks"
+               class="{% if active_page == 'products' %}active{% endif %}">
+               <span>View Products</span>
+            </a>
+
+            <a href="/products/addproduct"
+               class="{% if active_page == 'add_product' %}active{% endif %}">
+               <span>Add Product</span>
+            </a>
         </nav>
     </div>
 
-    <!-- ===== MANAGEMENT ===== -->
+    <!-- Management -->
     <div class="nav-section">
         <div class="nav-title">Management</div>
         <nav class="nav">
-            <a href="/sales/salesreport"><span>Reports</span></a>
-            <a href="/auth/manage_staff"><span>Staff</span></a>
+            <a href="/sales/salesreport"
+               class="{% if active_page == 'reports' %}active{% endif %}">
+               <span>Reports</span>
+            </a>
+
+            <a href="/auth/manage_staff"
+               class="{% if active_page == 'staff' %}active{% endif %}">
+               <span>Staff</span>
+            </a>
         </nav>
     </div>
 
-    <!-- LOGOUT -->
+    <!-- Logout -->
     <nav class="nav">
         <a href="/auth/logout" class="logout">
             <span>Logout</span>
