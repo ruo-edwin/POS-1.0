@@ -8,11 +8,11 @@
 
 <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
 
+{% block extra_head %}{% endblock %}
+
 <style>
 
-/* =====================
-   ROOT THEME
-===================== */
+/* ================= ROOT ================= */
 
 :root{
     --bg:#f6f8fc;
@@ -28,9 +28,7 @@
     --danger:#ef4444;
 }
 
-/* =====================
-   RESET
-===================== */
+/* ================= RESET ================= */
 
 *{
     box-sizing:border-box;
@@ -44,21 +42,17 @@ body{
     color:var(--text);
 }
 
-/* =====================
-   APP LAYOUT
-===================== */
+/* ================= LAYOUT ================= */
 
 .app{
     display:flex;
     height:100vh;
 }
 
-/* =====================
-   SIDEBAR
-===================== */
+/* ================= SIDEBAR ================= */
 
 .sidebar{
-    width:250px;
+    width:240px;
     background:var(--sidebar);
     color:white;
     display:flex;
@@ -66,32 +60,49 @@ body{
     padding:24px 18px;
 }
 
+/* BRAND */
+
 .brand{
     font-size:20px;
     font-weight:700;
-    margin-bottom:30px;
+    margin-bottom:28px;
+    letter-spacing:.3px;
 }
 
-.user-box{
-    background:rgba(255,255,255,0.06);
-    padding:14px;
-    border-radius:12px;
-    margin-bottom:30px;
+/* USER IDENTITY (SMALL + CLEAN) */
+
+.identity{
+    margin-bottom:28px;
+    line-height:1.4;
 }
 
-.role{
+.identity .business{
     font-size:12px;
-    background:var(--primary);
-    padding:4px 10px;
-    border-radius:20px;
-    display:inline-block;
-    margin-top:6px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#94a3b8;
+    font-weight:600;
 }
+
+.identity .username{
+    font-size:14px;
+    font-weight:600;
+    margin-top:2px;
+}
+
+.identity .role{
+    font-size:11px;
+    color:#cbd5e1;
+    margin-top:2px;
+}
+
+/* NAV */
 
 .nav{
     display:flex;
     flex-direction:column;
     gap:6px;
+    flex:1;
 }
 
 .nav a{
@@ -99,6 +110,7 @@ body{
     color:#cbd5e1;
     padding:10px 14px;
     border-radius:10px;
+    font-size:14px;
     transition:.2s;
 }
 
@@ -108,9 +120,22 @@ body{
     color:white;
 }
 
-/* =====================
-   MAIN AREA
-===================== */
+/* LOGOUT (BOTTOM) */
+
+.logout{
+    margin-top:auto;
+    border-top:1px solid rgba(255,255,255,0.08);
+    padding-top:14px;
+}
+
+.logout a{
+    color:#f87171;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:600;
+}
+
+/* ================= MAIN ================= */
 
 .main{
     flex:1;
@@ -124,9 +149,6 @@ body{
     background:white;
     border-bottom:1px solid var(--border);
     padding:18px 28px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
 }
 
 .page-title{
@@ -135,8 +157,9 @@ body{
 }
 
 .business-name{
+    font-size:13px;
     color:var(--muted);
-    font-size:14px;
+    margin-top:2px;
 }
 
 /* CONTENT */
@@ -166,15 +189,16 @@ body{
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 }
 
-/* MOBILE */
+/* ================= MOBILE ================= */
 
 @media(max-width:900px){
+
     .sidebar{
         width:70px;
     }
 
     .brand,
-    .user-box span,
+    .identity,
     .nav a span{
         display:none;
     }
@@ -192,22 +216,27 @@ body{
 
         <div class="brand">SmartPOS</div>
 
-        <!-- USER IDENTITY -->
-        <div class="user-box">
-            <strong>{{ username or "" }}</strong><br>
-            <span>{{ business or "" }}</span><br>
+        <!-- CLEAN IDENTITY -->
+        <div class="identity">
+            <div class="business">{{ business or "" }}</div>
+            <div class="username">{{ username or "" }}</div>
             <div class="role">{{ role or "" }}</div>
         </div>
 
         <!-- NAVIGATION -->
         <nav class="nav">
-            <a href="/auth/dashboard">🏠 <span>Dashboard</span></a>
-            <a href="/sales/recordsale">💰 <span>Sales</span></a>
-            <a href="/products/viewstocks">📦 <span>Products</span></a>
-            <a href="/sales/salesreport">📊 <span>Reports</span></a>
-            <a href="/auth/manage_staff">👥 <span>Staff</span></a>
-            <a href="/settings">⚙️ <span>Settings</span></a>
+            <a href="/auth/dashboard">Dashboard</a>
+            <a href="/sales/recordsale">Sales</a>
+            <a href="/products/viewstocks">Products</a>
+            <a href="/sales/salesreport">Reports</a>
+            <a href="/auth/manage_staff">Staff</a>
+            <a href="/settings">Settings</a>
         </nav>
+
+        <!-- LOGOUT -->
+        <div class="logout">
+            <a href="/auth/logout">Logout</a>
+        </div>
 
     </aside>
 
@@ -217,22 +246,15 @@ body{
 
         <header class="topbar">
 
-            <div>
-                <div class="page-title">
-                    {% block page_title %}Dashboard{% endblock %}
-                </div>
-
-                <div class="business-name">
-                    {{ business or "" }}
-                </div>
+            <div class="page-title">
+                {% block page_title %}Dashboard{% endblock %}
             </div>
 
-            <a href="/auth/logout" style="color:#ef4444;text-decoration:none;font-weight:600;">
-                Logout
-            </a>
+            <div class="business-name">
+                {{ business or "" }}
+            </div>
 
         </header>
-
 
         <!-- PAGE CONTENT -->
         <main class="content">
