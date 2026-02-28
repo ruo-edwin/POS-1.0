@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>{% block title %}SmartPOS{% endblock %}</title>
+<title>
+{{ business_name or business or "SmartPOS" }}
+{% block title_suffix %}{% endblock %}
+</title>
 
 <link href="https://rsms.me/inter/inter.css" rel="stylesheet">
 
