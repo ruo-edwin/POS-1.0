@@ -15,25 +15,24 @@
 /* ================= ROOT ================= */
 
 :root{
-    --bg:#f6f8fc;
-    --sidebar:#0b1220;
+    --bg:#f4f6fb;
+    --sidebar:#0b1324;
+    --sidebar-2:#0f1a33;
     --card:#ffffff;
-    --border:#e6ebf1;
+    --border:#e5e9f2;
     --text:#111827;
-    --muted:#6b7280;
+    --muted:#8a94a6;
 
-    --primary:#635bff;
-    --primary-soft:rgba(99,91,255,0.14);
-
-    --danger:#ef4444;
+    --primary:#6366f1;
+    --primary-soft:rgba(99,102,241,.18);
 }
 
-/* ================= RESET ================= */
+/* RESET */
 
 *{
-    box-sizing:border-box;
     margin:0;
     padding:0;
+    box-sizing:border-box;
     font-family:'Inter',sans-serif;
 }
 
@@ -42,7 +41,7 @@ body{
     color:var(--text);
 }
 
-/* ================= APP LAYOUT ================= */
+/* ================= LAYOUT ================= */
 
 .app{
     display:flex;
@@ -52,8 +51,8 @@ body{
 /* ================= SIDEBAR ================= */
 
 .sidebar{
-    width:250px;
-    background:var(--sidebar);
+    width:260px;
+    background:linear-gradient(180deg,var(--sidebar),var(--sidebar-2));
     color:white;
     display:flex;
     flex-direction:column;
@@ -63,11 +62,10 @@ body{
 /* BRAND */
 
 .brand{
-    font-size:21px;
+    font-size:22px;
     font-weight:700;
     letter-spacing:.4px;
-    margin-bottom:34px;
-    opacity:.95;
+    margin-bottom:28px;
 }
 
 /* ================= IDENTITY ================= */
@@ -75,62 +73,68 @@ body{
 .identity{
     padding:16px;
     border-radius:14px;
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.06);
-    margin-bottom:30px;
+    background:rgba(255,255,255,.05);
+    margin-bottom:26px;
 }
 
-/* BUSINESS (MAIN EMPHASIS) */
+/* BUSINESS NAME (BIGGEST) */
 
-.identity .business{
-    font-size:16px;
+.business{
+    font-size:17px;
     font-weight:700;
     letter-spacing:.02em;
-    margin-bottom:4px;
 }
 
-/* USERNAME */
+/* USER + ROLE ROW */
 
-.identity .username{
+.user-row{
+    margin-top:6px;
+    display:flex;
+    align-items:center;
+    gap:8px;
     font-size:13px;
     color:#cbd5e1;
 }
 
 /* ROLE BADGE */
 
-.identity .role{
-    display:inline-block;
-    margin-top:8px;
-    font-size:11px;
-    padding:4px 10px;
+.role{
+    font-size:10px;
+    padding:3px 8px;
     border-radius:20px;
     background:var(--primary-soft);
     color:#c7d2fe;
     font-weight:600;
-    letter-spacing:.04em;
     text-transform:uppercase;
 }
 
-/* ================= NAVIGATION ================= */
+/* ================= NAV SECTIONS ================= */
 
-.nav{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    flex:1;
+.nav-section{
+    margin-top:14px;
 }
 
+.nav-title{
+    font-size:11px;
+    letter-spacing:.12em;
+    color:#7c86a2;
+    margin:16px 8px 6px;
+}
+
+/* NAV LINKS */
+
 .nav a{
+    display:block;
     text-decoration:none;
     color:#cbd5e1;
-    padding:11px 14px;
+    padding:10px 14px;
     border-radius:10px;
     font-size:14px;
-    transition:.18s ease;
+    transition:.18s;
 }
 
 .nav a:hover{
-    background:rgba(255,255,255,0.06);
+    background:rgba(255,255,255,.06);
     color:white;
 }
 
@@ -140,23 +144,23 @@ body{
     font-weight:600;
 }
 
-/* ================= LOGOUT ================= */
+/* LOGOUT */
 
 .logout{
     margin-top:auto;
-    border-top:1px solid rgba(255,255,255,0.08);
-    padding-top:16px;
+    padding-top:18px;
 }
 
 .logout a{
+    display:block;
+    padding:10px 14px;
+    border-radius:10px;
     text-decoration:none;
     color:#fca5a5;
-    font-size:14px;
-    font-weight:600;
-    transition:.2s;
 }
 
 .logout a:hover{
+    background:rgba(255,255,255,.06);
     color:#ef4444;
 }
 
@@ -167,8 +171,6 @@ body{
     display:flex;
     flex-direction:column;
 }
-
-/* TOPBAR */
 
 .topbar{
     background:white;
@@ -181,30 +183,24 @@ body{
     font-weight:600;
 }
 
-.business-name{
+.business-sub{
     font-size:13px;
     color:var(--muted);
-    margin-top:3px;
+    margin-top:4px;
 }
-
-/* CONTENT */
 
 .content{
     padding:30px;
     overflow-y:auto;
 }
 
-/* ================= MOBILE ================= */
+/* MOBILE */
 
 @media(max-width:900px){
-
     .sidebar{
         width:70px;
     }
-
-    .brand,
-    .identity,
-    .nav a span{
+    .identity,.nav-title,.brand{
         display:none;
     }
 }
@@ -216,53 +212,97 @@ body{
 
 <div class="app">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+<!-- ================= SIDEBAR ================= -->
 
-        <div class="brand">SmartPOS</div>
+<aside class="sidebar">
 
-        <!-- PREMIUM IDENTITY -->
-        <div class="identity">
-            <div class="business">{{ business or "" }}</div>
-            <div class="username">{{ username or "" }}</div>
-            <div class="role">{{ role or "" }}</div>
-        </div>
+<div class="brand">SmartPOS</div>
 
-        <!-- NAV -->
-        <nav class="nav">
-            <a href="/auth/dashboard">Dashboard</a>
-            <a href="/sales/recordsale">Sales</a>
-            <a href="/products/viewstocks">Products</a>
-            <a href="/sales/salesreport">Reports</a>
-            <a href="/auth/manage_staff">Staff</a>
-            <a href="/settings">Settings</a>
-        </nav>
+<!-- USER IDENTITY -->
+<div class="identity">
+    <div class="business">{{ business }}</div>
 
-        <!-- LOGOUT -->
-        <div class="logout">
-            <a href="/auth/logout">Logout</a>
-        </div>
-
-    </aside>
-
-    <!-- MAIN -->
-    <div class="main">
-
-        <header class="topbar">
-            <div class="page-title">
-                {% block page_title %}Dashboard{% endblock %}
-            </div>
-
-            <div class="business-name">
-                {{ business or "" }}
-            </div>
-        </header>
-
-        <main class="content">
-            {% block content %}{% endblock %}
-        </main>
-
+    <div class="user-row">
+        <span>{{ username }}</span>
+        <span class="role">{{ role }}</span>
     </div>
+</div>
+
+<nav class="nav">
+
+<!-- OVERVIEW -->
+<div class="nav-section">
+<div class="nav-title">OVERVIEW</div>
+
+<a href="/auth/dashboard"
+class="{% if request.url.path.startswith('/auth/dashboard') %}active{% endif %}">
+Dashboard
+</a>
+</div>
+
+<!-- INVENTORY -->
+<div class="nav-section">
+<div class="nav-title">INVENTORY</div>
+
+<a href="/products/viewstocks"
+class="{% if request.url.path.startswith('/products') %}active{% endif %}">
+Stocks
+</a>
+</div>
+
+<!-- SALES -->
+<div class="nav-section">
+<div class="nav-title">SALES</div>
+
+<a href="/sales/recordsale"
+class="{% if request.url.path.startswith('/sales/recordsale') %}active{% endif %}">
+Sales
+</a>
+
+<a href="/sales/returns"
+class="{% if request.url.path.startswith('/sales/returns') %}active{% endif %}">
+Sales Return
+</a>
+</div>
+
+<!-- MANAGEMENT -->
+<div class="nav-section">
+<div class="nav-title">MANAGEMENT</div>
+
+<a href="/auth/manage_staff"
+class="{% if request.url.path.startswith('/auth/manage_staff') %}active{% endif %}">
+Staff
+</a>
+</div>
+
+</nav>
+
+<!-- LOGOUT -->
+<div class="logout">
+<a href="/auth/logout">Logout</a>
+</div>
+
+</aside>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main">
+
+<header class="topbar">
+<div>
+<div class="page-title">
+{% block page_title %}Dashboard{% endblock %}
+</div>
+
+<div class="business-sub">{{ business }}</div>
+</div>
+</header>
+
+<main class="content">
+{% block content %}{% endblock %}
+</main>
+
+</div>
 
 </div>
 
