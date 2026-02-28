@@ -13,31 +13,27 @@
 /* ================= ROOT ================= */
 
 :root{
-    --bg:#f5f7fb;
-    --sidebar:#0e1628;
-    --sidebar-soft:#131c33;
-    --card:#ffffff;
-    --border:#e6ebf1;
-
-    --text:#111827;
-    --muted:#94a3b8;
+    --bg:#f4f6fb;
+    --sidebar:#0b1220;
+    --sidebar-2:#0f172a;
 
     --primary:#635bff;
-    --primary-soft:rgba(99,91,255,0.14);
+    --primary-soft:rgba(99,91,255,.16);
 
-    --danger:#ef4444;
+    --text:#0f172a;
+    --muted:#94a3b8;
+    --border:#e5e7eb;
 }
 
 *{
-    box-sizing:border-box;
     margin:0;
     padding:0;
+    box-sizing:border-box;
     font-family:'Inter',sans-serif;
 }
 
 body{
     background:var(--bg);
-    color:var(--text);
 }
 
 /* ================= LAYOUT ================= */
@@ -51,28 +47,28 @@ body{
 
 .sidebar{
     width:260px;
-    background:linear-gradient(180deg,#0e1628,#111c36);
+    background:linear-gradient(180deg,#0b1220,#111c34);
     color:white;
     display:flex;
     flex-direction:column;
-    padding:26px 18px;
-    border-right:1px solid rgba(255,255,255,0.05);
+    border-right:1px solid rgba(255,255,255,.05);
 }
 
-/* ===== BUSINESS IDENTITY ===== */
+/* ACCOUNT HEADER */
 
-.identity{
-    margin-bottom:30px;
+.account{
+    padding:26px 22px;
+    border-bottom:1px solid rgba(255,255,255,.05);
 }
 
 .business{
-    font-size:19px;
+    font-size:20px;
     font-weight:700;
     letter-spacing:.4px;
-    margin-bottom:6px;
 }
 
 .user-row{
+    margin-top:6px;
     display:flex;
     align-items:center;
     gap:8px;
@@ -86,13 +82,18 @@ body{
     border-radius:999px;
     font-size:11px;
     font-weight:600;
-    text-transform:uppercase;
 }
 
-/* ================= NAVIGATION ================= */
+/* ================= NAV ================= */
+
+.nav-area{
+    flex:1;
+    overflow-y:auto;
+    padding:18px 14px;
+}
 
 .nav-section{
-    margin-top:20px;
+    margin-bottom:22px;
 }
 
 .nav-title{
@@ -100,7 +101,7 @@ body{
     text-transform:uppercase;
     letter-spacing:.8px;
     color:#7c8aa5;
-    margin:10px 10px 8px;
+    padding:6px 10px;
 }
 
 .nav{
@@ -112,42 +113,55 @@ body{
 .nav a{
     text-decoration:none;
     color:#cbd5e1;
-    padding:10px 14px;
+    padding:11px 14px;
     border-radius:10px;
     font-size:14px;
-    transition:.2s;
     position:relative;
+    transition:.2s;
 }
 
+/* hover */
 .nav a:hover{
-    background:rgba(255,255,255,0.06);
+    background:rgba(255,255,255,.06);
 }
 
+/* ACTIVE PAGE (🔥 IMPORTANT FIX) */
 .nav a.active{
     background:var(--primary-soft);
     color:white;
+    font-weight:600;
 }
 
-/* left active indicator */
+/* LEFT INDICATOR BAR */
 .nav a.active::before{
     content:"";
     position:absolute;
-    left:-18px;
-    top:6px;
-    bottom:6px;
+    left:-14px;
+    top:7px;
+    bottom:7px;
     width:3px;
     background:var(--primary);
-    border-radius:3px;
+    border-radius:4px;
 }
 
-/* logout */
-.nav a.logout{
-    margin-top:18px;
+/* ================= LOGOUT ================= */
+
+.logout-area{
+    padding:14px;
+    border-top:1px solid rgba(255,255,255,.05);
+}
+
+.logout-btn{
+    display:block;
+    text-decoration:none;
     color:#fca5a5;
+    padding:11px 14px;
+    border-radius:10px;
+    font-size:14px;
 }
 
-.nav a.logout:hover{
-    background:rgba(239,68,68,0.15);
+.logout-btn:hover{
+    background:rgba(239,68,68,.15);
 }
 
 /* ================= MAIN ================= */
@@ -158,17 +172,16 @@ body{
     flex-direction:column;
 }
 
-/* TOPBAR */
-
 .topbar{
     background:white;
     border-bottom:1px solid var(--border);
-    padding:20px 30px;
+    padding:22px 32px;
 }
 
 .page-title{
     font-size:22px;
     font-weight:600;
+    color:var(--text);
 }
 
 .business-sub{
@@ -177,10 +190,8 @@ body{
     margin-top:4px;
 }
 
-/* CONTENT */
-
 .content{
-    padding:30px;
+    padding:32px;
     overflow-y:auto;
 }
 
@@ -192,7 +203,7 @@ body{
     width:74px;
 }
 
-.identity,
+.account,
 .nav-title,
 .nav a span{
     display:none;
@@ -211,8 +222,8 @@ body{
 
 <aside class="sidebar">
 
-    <!-- Identity -->
-    <div class="identity">
+    <!-- ACCOUNT -->
+    <div class="account">
         <div class="business">{{ business }}</div>
 
         <div class="user-row">
@@ -221,71 +232,76 @@ body{
         </div>
     </div>
 
-    <!-- Overview -->
-    <div class="nav-section">
-        <div class="nav-title">Overview</div>
-        <nav class="nav">
-            <a href="/auth/dashboard"
-               class="{% if active_page == 'dashboard' %}active{% endif %}">
-               <span>Dashboard</span>
-            </a>
-        </nav>
+    <!-- NAVIGATION -->
+    <div class="nav-area">
+
+        <!-- OVERVIEW -->
+        <div class="nav-section">
+            <div class="nav-title">Overview</div>
+            <nav class="nav">
+                <a href="/auth/dashboard"
+                   class="{% if active_page=='dashboard' %}active{% endif %}">
+                   Dashboard
+                </a>
+            </nav>
+        </div>
+
+        <!-- SALES -->
+        <div class="nav-section">
+            <div class="nav-title">Sales</div>
+            <nav class="nav">
+                <a href="/sales/recordsale"
+                   class="{% if active_page=='sales' %}active{% endif %}">
+                   Record Sale
+                </a>
+
+                <a href="/sales/returns"
+                   class="{% if active_page=='returns' %}active{% endif %}">
+                   Sales Return
+                </a>
+            </nav>
+        </div>
+
+        <!-- INVENTORY -->
+        <div class="nav-section">
+            <div class="nav-title">Inventory</div>
+            <nav class="nav">
+                <a href="/products/viewstocks"
+                   class="{% if active_page=='products' %}active{% endif %}">
+                   View Products
+                </a>
+
+                <a href="/products/addproduct"
+                   class="{% if active_page=='add_product' %}active{% endif %}">
+                   Add Product
+                </a>
+            </nav>
+        </div>
+
+        <!-- MANAGEMENT -->
+        <div class="nav-section">
+            <div class="nav-title">Management</div>
+            <nav class="nav">
+                <a href="/sales/salesreport"
+                   class="{% if active_page=='reports' %}active{% endif %}">
+                   Reports
+                </a>
+
+                <a href="/auth/manage_staff"
+                   class="{% if active_page=='staff' %}active{% endif %}">
+                   Staff
+                </a>
+            </nav>
+        </div>
+
     </div>
 
-    <!-- Sales -->
-    <div class="nav-section">
-        <div class="nav-title">Sales</div>
-        <nav class="nav">
-            <a href="/sales/recordsale"
-               class="{% if active_page == 'sales' %}active{% endif %}">
-               <span>Record Sale</span>
-            </a>
-
-            <a href="/sales/returns"
-               class="{% if active_page == 'returns' %}active{% endif %}">
-               <span>Sales Return</span>
-            </a>
-        </nav>
-    </div>
-
-    <!-- Inventory -->
-    <div class="nav-section">
-        <div class="nav-title">Inventory</div>
-        <nav class="nav">
-            <a href="/products/viewstocks"
-               class="{% if active_page == 'products' %}active{% endif %}">
-               <span>View Products</span>
-            </a>
-
-            <a href="/products/addproduct"
-               class="{% if active_page == 'add_product' %}active{% endif %}">
-               <span>Add Product</span>
-            </a>
-        </nav>
-    </div>
-
-    <!-- Management -->
-    <div class="nav-section">
-        <div class="nav-title">Management</div>
-        <nav class="nav">
-            <a href="/sales/salesreport"
-               class="{% if active_page == 'reports' %}active{% endif %}">
-               <span>Reports</span>
-            </a>
-
-            <a href="/auth/manage_staff"
-               class="{% if active_page == 'staff' %}active{% endif %}">
-               <span>Staff</span>
-            </a>
-        </nav>
-    </div>
-
-    <!-- Logout -->
-    <nav class="nav">
-        <a href="/auth/logout" class="logout">
-            <span>Logout</span>
+    <!-- LOGOUT -->
+    <div class="logout-area">
+        <a href="/auth/logout" class="logout-btn">
+            Logout
         </a>
-    </nav>
+    </div>
 
 </aside>
 
@@ -305,7 +321,7 @@ body{
 </header>
 
 <main class="content">
-    {% block content %}{% endblock %}
+{% block content %}{% endblock %}
 </main>
 
 </div>
