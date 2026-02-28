@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- ✅ Dynamic Browser Title -->
 <title>
-{{ business_name or business or "SmartPOS" }}
+{{ business or business_name or "Business Dashboard" }}
 {% block title_suffix %}{% endblock %}
 </title>
 
@@ -55,7 +56,7 @@ body{
     display:flex;
     align-items:center;
     gap:10px;
-    margin-bottom:12px;
+    margin-bottom:14px;
     padding:0 8px;
 }
 
@@ -77,9 +78,10 @@ body{
 }
 
 .business-name{
-    font-size:15px;
-    font-weight:600;
-    margin-bottom:4px;
+    font-size:16px;
+    font-weight:700;
+    margin-bottom:6px;
+    letter-spacing:.3px;
 }
 
 .user-line{
@@ -145,6 +147,7 @@ body{
 
 .logout{
     color:#fca5a5 !important;
+    font-weight:500;
 }
 
 /* ================= MAIN ================= */
@@ -167,6 +170,7 @@ body{
 .topbar h1{
     margin:0;
     font-size:18px;
+    font-weight:600;
 }
 
 .topbar small{
@@ -206,12 +210,18 @@ body{
 
     <!-- USER PANEL -->
     <div class="user-panel">
-        <div class="business-name">{{ business }}</div>
 
+        <!-- ✅ BUSINESS FIRST (largest) -->
+        <div class="business-name">
+            {{ business or business_name or "Business" }}
+        </div>
+
+        <!-- USER + ROLE -->
         <div class="user-line">
             {{ username }}
             <span class="role-badge">{{ role|upper }}</span>
         </div>
+
     </div>
 
     <!-- OVERVIEW -->
@@ -240,7 +250,7 @@ body{
     <!-- INVENTORY -->
     <div class="sidebar-section">Inventory</div>
     <div class="nav">
-        <a href="/products/viewproducts"
+        <a href="/products/viewstocks"
            class="{% if active_page=='products' %}active{% endif %}">
            View Products
         </a>
@@ -282,7 +292,11 @@ body{
     <div class="topbar">
         <div>
             <h1>{% block page_title %}Dashboard{% endblock %}</h1>
-            <small>SmartPOS Business System</small>
+
+            <!-- ✅ Dynamic subtitle -->
+            <small>
+                {{ business or business_name or "Business System" }}
+            </small>
         </div>
     </div>
 
