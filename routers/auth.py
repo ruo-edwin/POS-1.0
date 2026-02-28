@@ -38,22 +38,84 @@ def get_dashboard(
     if not current_user:
         return RedirectResponse(url="/auth/login")
 
-    # staff bypass
     if current_user["role"] == "staff":
         return RedirectResponse(url="/sales/recordsale")
 
-    user = db.query(models.User).filter(
-        models.User.id == current_user["user_id"]
-    ).first()
+    business_id = current_user["business_id"]
 
-    if not user:
-        return RedirectResponse(url="/auth/login")
+    # ----------------------------
+    # TODAY RANGE
+    # ----------------------------
+    today = datetime.utcnow().date()
+
+    # ----------------------------
+    # TODAY SALES
+    # ----------------------------
+    orders_today = (
+        db.query(models.Order)
+        .filter(
+            models.Order.business_id == business_id,
+            models.Order.created_at >= today
+        )
+        .all()
+    )
+
+    today_revenue = sum(o.total_amount for o in orders_today)
+    transactions = len(orders_today)
+
+    # ----------------------------
+    # PROFIT CALCULATION
+    # ----------------------------
+    sales_rows = (
+        db.query(models.Sales, models.Product)
+        .join(models.Product, models.Sales.product_id == models.Product.id)
+        .join(models.Order, models.Sales.order_id == models.Order.id)
+        .filter(models.Order.business_id == business_id)
+        .all()
+    )
+
+    today_profit = 0
+    for sale, product in sales_rows:
+        bp = product.buying_price or 0
+        today_profit += sale.total_price - (bp * sale.quantity)
+
+    # ----------------------------
+    # LOW STOCK
+    # ----------------------------
+    low_stock_count = (
+        db.query(models.Product)
+        .filter(
+            models.Product.business_id == business_id,
+            models.Product.quantity <= 3
+        )
+        .count()
+    )
+
+    # ----------------------------
+    # RECENT ORDERS
+    # ----------------------------
+    recent_orders = (
+        db.query(models.Order)
+        .filter(models.Order.business_id == business_id)
+        .order_by(models.Order.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    user = db.query(models.User).get(current_user["user_id"])
 
     return templates.TemplateResponse(
         "index.html",
         {
             **base_context(request, user),
-            "last_login": user.last_login,
+
+            "active_page": "dashboard",
+
+            "today_revenue": today_revenue,
+            "today_profit": round(today_profit, 2),
+            "transactions": transactions,
+            "low_stock": low_stock_count,
+            "recent_orders": recent_orders,
         }
     )
 
