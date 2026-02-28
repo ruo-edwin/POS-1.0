@@ -1,98 +1,93 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard | SmartPOS{% endblock %}
-{% block page_title %}SmartPOS Dashboard{% endblock %}
+{% block page_title %}Business Overview{% endblock %}
+
 
 {% block extra_head %}
 
-<!-- PWA -->
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#635bff">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SmartPOS">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-
-<!-- Meta Pixel -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}
-(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1562977138152805');
-fbq('track', 'PageView');
-</script>
-
 <style>
 
-/* KPI GRID */
+/* ================= KPI GRID ================= */
 
 .kpi-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:18px;
-margin-bottom:24px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    margin-bottom:28px;
 }
 
 .kpi-card{
-background:white;
-border-radius:16px;
-padding:20px;
-border:1px solid rgba(0,0,0,.08);
-box-shadow:0 12px 24px rgba(0,0,0,.05);
+    background:white;
+    border-radius:16px;
+    padding:22px;
+    border:1px solid rgba(0,0,0,0.08);
+    box-shadow:0 12px 24px rgba(0,0,0,0.05);
 }
 
-.kpi-title{
-font-size:13px;
-color:#6b7280;
+.kpi-label{
+    font-size:13px;
+    color:#6b7280;
 }
 
 .kpi-value{
-font-size:24px;
-font-weight:700;
-margin-top:4px;
+    font-size:26px;
+    font-weight:700;
+    margin-top:6px;
 }
 
-/* QUICK ACTIONS */
+/* ================= PANELS ================= */
+
+.panel{
+    background:white;
+    border-radius:18px;
+    padding:24px;
+    border:1px solid rgba(0,0,0,0.08);
+    box-shadow:0 14px 30px rgba(0,0,0,0.05);
+    margin-bottom:24px;
+}
+
+.panel-title{
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:14px;
+}
+
+/* ================= QUICK ACTIONS ================= */
 
 .quick-actions{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:16px;
-margin-top:20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
 }
 
 .quick-actions a{
-text-decoration:none;
-padding:16px;
-border-radius:14px;
-background:linear-gradient(135deg,#4f46e5,#6366f1);
-color:white;
-font-weight:600;
-text-align:center;
-box-shadow:0 10px 20px rgba(79,70,229,.25);
-transition:.25s;
+    text-decoration:none;
+    padding:18px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#4f46e5,#6366f1);
+    color:white;
+    font-weight:600;
+    text-align:center;
+    box-shadow:0 10px 20px rgba(79,70,229,.25);
+    transition:.25s;
 }
 
 .quick-actions a:hover{
-transform:translateY(-3px);
+    transform:translateY(-3px);
 }
 
-.logout-btn{
-margin-top:26px;
-background:#ef4444;
-color:white;
-border:none;
-padding:12px 18px;
-border-radius:999px;
-font-weight:600;
+/* ================= ACTIVITY ================= */
+
+.activity-item{
+    padding:12px 0;
+    border-bottom:1px solid rgba(0,0,0,0.06);
+    font-size:14px;
+    color:#374151;
+}
+
+.activity-item:last-child{
+    border-bottom:none;
 }
 
 </style>
@@ -103,135 +98,83 @@ font-weight:600;
 
 {% block content %}
 
+<!-- ================= KPI CARDS ================= -->
+
 <div class="kpi-grid">
 
-<div class="kpi-card">
-<div class="kpi-title">Business</div>
-<div class="kpi-value">{{ business_name }}</div>
-</div>
+    <div class="kpi-card">
+        <div class="kpi-label">Today's Sales</div>
+        <div class="kpi-value">KSh 0</div>
+    </div>
 
-<div class="kpi-card">
-<div class="kpi-title">User</div>
-<div class="kpi-value">{{ username }}</div>
-</div>
+    <div class="kpi-card">
+        <div class="kpi-label">Profit Today</div>
+        <div class="kpi-value">KSh 0</div>
+    </div>
 
-<div class="kpi-card">
-<div class="kpi-title">Last Login</div>
-<div class="kpi-value" style="font-size:15px;">
-{{ last_login }}
-</div>
-</div>
+    <div class="kpi-card">
+        <div class="kpi-label">Transactions</div>
+        <div class="kpi-value">0</div>
+    </div>
 
-</div>
-
-
-{% if role == "superadmin" %}
-<a id="superadminBtn"
-href="/superadmin/admin_panel"
-style="display:inline-block;margin-bottom:18px;padding:12px 16px;border-radius:999px;background:linear-gradient(135deg,#ffa000,#fb8c00);color:white;text-decoration:none;font-weight:600;">
-🔐 Superadmin Panel
-</a>
-{% endif %}
-
-
-<!-- ONBOARDING -->
-<div class="onboarding-card" id="onboardingCard">
-<div class="onboarding-header" id="onboardingHeader">
-
-<div class="onboarding-left">
-<div class="onboarding-title-row">
-<p class="onboarding-title">🚀 Getting Started</p>
-<span class="micro-badge" id="startHereBadge" style="display:none;">Start here</span>
-</div>
-
-<div class="progress-line">
-<div class="progress-bar-outer">
-<div class="progress-bar-inner" id="onboardingBar"></div>
-</div>
-<div class="progress-mini" id="onboardingMini">0% • 0/4</div>
-</div>
-</div>
-
-<div class="collapse-pill" id="collapsePill">Open</div>
+    <div class="kpi-card">
+        <div class="kpi-label">Low Stock Items</div>
+        <div class="kpi-value">0</div>
+    </div>
 
 </div>
 
-<div class="onboarding-body" id="onboardingBody">
-<div class="steps" id="onboardingSteps"></div>
-</div>
-</div>
 
 
-<!-- QUICK ACTIONS -->
-<div class="quick-actions">
+<!-- ================= SALES OVERVIEW ================= -->
 
-<a href="/sales/recordsale">💰 Sell Products</a>
+<div class="panel">
 
-{% if role in ["admin","manager"] %}
-<a href="/products/addproduct">➕ Add New Product</a>
-<a href="/products/viewstocks">📦 View / Update Stock</a>
-{% endif %}
+    <div class="panel-title">Sales Overview</div>
 
-{% if role == "admin" %}
-<a href="/sales/salesreport">📊 Sales Reports</a>
-<a href="/auth/manage_staff">👥 Manage Staff</a>
-{% endif %}
+    <p style="color:#6b7280;">
+        Sales analytics will appear here once transactions begin.
+    </p>
 
 </div>
 
-<form action="/auth/logout" method="get">
-<button class="logout-btn">🚪 Logout</button>
-</form>
-
-{% endblock %}
 
 
+<!-- ================= QUICK ACTIONS ================= -->
 
-{% block scripts %}
+<div class="panel">
 
-<script>
+    <div class="panel-title">Quick Actions</div>
 
-/* ===== YOUR ORIGINAL SCRIPT (UNCHANGED) ===== */
+    <div class="quick-actions">
 
-/* I pasted your logic EXACTLY — nothing altered */
+        <a href="/sales/recordsale">💰 Record Sale</a>
 
-if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("/static/service-worker.js")
-.then(()=>console.log("Service Worker registered ✅"))
-.catch(err=>console.error("SW registration failed:",err));
-}
+        {% if role in ["admin","manager"] %}
+        <a href="/products/addproduct">➕ Add Product</a>
+        <a href="/products/viewstocks">📦 View Stock</a>
+        {% endif %}
 
-let deferredPrompt=null;
+        {% if role == "admin" %}
+        <a href="/sales/salesreport">📊 Reports</a>
+        <a href="/auth/manage_staff">👥 Staff</a>
+        {% endif %}
 
-window.addEventListener("beforeinstallprompt",(e)=>{
-e.preventDefault();
-deferredPrompt=e;
-});
+    </div>
 
-/* onboarding definitions */
-const ONBOARDING_STEP_DEFS=[
-{key:"add_product",icon:"1",name:"Add your first product",desc:"Create one product to get started.",href:"/products/addproduct?source=onboarding",cta:"Add"},
-{key:"sell_product",icon:"2",name:"Record your first sale",desc:"See your profit calculated instantly.",href:"/sales/recordsale?source=onboarding",cta:"Sell"},
-{key:"view_report",icon:"3",name:"View profit report",desc:"Understand how your business is performing.",href:"/sales/salesreport",cta:"View"},
-{key:"install_app",icon:"4",name:"Install SmartPOS app",desc:"Open SmartPOS like a normal app on your phone.",href:"#",cta:"Install"}
-];
+</div>
 
-/* ---- everything else exactly same ---- */
 
-async function loadOnboardingStatus(){
-try{
-const res=await fetch("/onboarding/status",{credentials:"include"});
-const data=await res.json();
-renderOnboarding(data.steps||{},data.progress);
-}catch(e){
-console.log("[ONBOARDING] failed:",e);
-}
-}
 
-window.addEventListener("load",()=>{
-loadOnboardingStatus();
-});
+<!-- ================= RECENT ACTIVITY ================= -->
 
-</script>
+<div class="panel">
+
+    <div class="panel-title">Recent Activity</div>
+
+    <div class="activity-item">No activity yet.</div>
+    <div class="activity-item">Sales and stock updates will appear here.</div>
+
+</div>
 
 {% endblock %}
