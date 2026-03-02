@@ -5,6 +5,14 @@
 
 {% block content %}
 
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#635bff">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SmartPOS">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
 <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
 <style>
@@ -22,61 +30,77 @@
 
   --shadow:0 10px 28px rgba(16,24,40,.08);
   --radius:14px;
+
+  /* IMPORTANT: match your base.html layout */
+  --pos-left: 260px;  /* sidebar width */
+  --pos-top: 86px;    /* top header height */
+  --pos-right: 0px;
+  --pos-bottom-gap: 16px;
+
+  --topbar-h: 74px;
+  --bottombar-h: 84px;
 }
 
 *{box-sizing:border-box;}
 
-/* ===== VIEWPORT LOCK ===== */
-.pos-viewport{
-  height:calc(100vh - 90px); /* adjust if needed */
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
+.pos-fixed{
+  position:fixed;
+  left:var(--pos-left);
+  right:var(--pos-right);
+  top:var(--pos-top);
+  bottom:0;
+  padding:16px;
+  z-index:50;
 }
 
-/* ===== MAIN WRAPPER ===== */
-.pos-wrap{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
-/* ===== POS SHELL ===== */
 .pos-shell{
-  flex:1;
-  display:flex;
-  flex-direction:column;
+  height:100%;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
   overflow:hidden;
+  display:flex;
+  flex-direction:column;
 }
 
-/* ---------- TOP ---------- */
+/* TOP (fixed inside viewport) */
 .pos-top{
+  flex:0 0 auto;
+  height:var(--topbar-h);
   padding:12px;
   border-bottom:1px solid var(--border);
-  background:white;
+  background:#fff;
+  display:flex;
+  align-items:center;
 }
 
 .sale-bar{
+  width:100%;
   display:grid;
   grid-template-columns:1.2fr 1fr;
   gap:10px;
 }
 
 .sale-bar input{
+  width:100%;
   padding:10px 12px;
   border:1px solid var(--border);
   border-radius:10px;
+  font-size:14px;
+  background:#fff;
+}
+.sale-bar input:focus{
+  outline:none;
+  border-color:rgba(99,91,255,.55);
+  box-shadow:0 0 0 3px rgba(99,91,255,.12);
 }
 
-/* ---------- GRID (ONLY SCROLL AREA) ---------- */
+/* GRID (ONLY SCROLLABLE AREA) */
 .pos-grid{
-  flex:1;
-  overflow-y:auto;
-  overflow-x:auto;
+  flex:1 1 auto;
+  overflow:auto;
+  background:#fff;
 }
 
 table{
@@ -89,9 +113,12 @@ table{
 thead th{
   position:sticky;
   top:0;
+  z-index:3;
   background:#f1f4fb;
-  font-size:12px;
   color:var(--muted);
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
   padding:10px;
   border-bottom:1px solid var(--border);
 }
@@ -106,99 +133,135 @@ tbody td:last-child{border-right:none;}
 .cell{
   width:100%;
   border:none;
-  padding:10px;
+  padding:10px 10px;
+  font-size:14px;
+  background:#fff;
 }
 .cell:focus{
   outline:none;
   background:#f9faff;
+  box-shadow:inset 0 0 0 2px rgba(99,91,255,.18);
 }
-.cell[readonly]{background:#f3f4f8;}
+.cell[readonly]{
+  background:#f3f4f8;
+  color:#111827;
+}
 
 .remove-btn{
   width:100%;
+  height:100%;
   border:none;
   background:var(--danger-bg);
   color:var(--danger);
-  font-weight:800;
+  font-weight:900;
   cursor:pointer;
 }
+.remove-btn:hover{filter:brightness(.98);}
 
-/* ---------- BOTTOM (ALWAYS VISIBLE) ---------- */
+/* BOTTOM (fixed inside viewport) */
 .pos-bottom{
+  flex:0 0 auto;
+  height:var(--bottombar-h);
   padding:12px 14px;
   border-top:1px solid var(--border);
-  background:white;
-
+  background:#fff;
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.total-box{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
 }
 
 .total-label{
   font-size:12px;
   color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
 }
 
 .total-value{
-  font-size:34px;
+  font-size:36px;
   font-weight:900;
+  line-height:1;
+  color:var(--text);
 }
+.total-value span{color:var(--primary);}
 
 .primary-btn{
   border:none;
-  color:white;
+  cursor:pointer;
+  color:#fff;
   font-weight:900;
   border-radius:999px;
   padding:13px 22px;
   background:linear-gradient(135deg,var(--primary),var(--primary2));
-  cursor:pointer;
+  font-size:15px;
+}
+.primary-btn:active{transform:translateY(1px);}
+
+#message{
+  margin-top:10px;
+  font-weight:800;
+}
+
+/* Mobile / when sidebar collapses */
+@media(max-width:900px){
+  :root{
+    --pos-left: 0px;
+    --pos-top: 70px;
+  }
+  .sale-bar{grid-template-columns:1fr;}
+  table{min-width:920px;}
 }
 </style>
 
-<div class="pos-viewport">
+<!-- FIXED POS VIEWPORT (works even if base.html scrolls) -->
+<div class="pos-fixed">
+  <div class="pos-shell">
 
-<div class="pos-wrap">
-<div class="pos-shell">
+    <!-- TOP -->
+    <div class="pos-top">
+      <div class="sale-bar">
+        <input id="clientName" placeholder="Customer Name (optional)">
+        <input id="salesPerson" placeholder="Sold By (optional)">
+      </div>
+    </div>
 
-<!-- TOP -->
-<div class="pos-top">
-  <div class="sale-bar">
-    <input id="clientName" placeholder="Customer Name (optional)">
-    <input id="salesPerson" placeholder="Sold By (optional)">
+    <!-- GRID (ONLY THIS SCROLLS) -->
+    <div class="pos-grid">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:44%;">Product</th>
+            <th style="width:13%;">Price</th>
+            <th style="width:12%;">Stock</th>
+            <th style="width:12%;">Qty</th>
+            <th style="width:15%;">Total</th>
+            <th style="width:4%;"></th>
+          </tr>
+        </thead>
+        <tbody id="salesBody"></tbody>
+      </table>
+    </div>
+
+    <!-- BOTTOM -->
+    <div class="pos-bottom">
+      <div class="total-box">
+        <div class="total-label">Total Sale</div>
+        <div class="total-value">Ksh <span id="grandTotal">0.00</span></div>
+      </div>
+
+      <button class="primary-btn" onclick="submitSale()">Record Sale</button>
+    </div>
+
   </div>
-</div>
 
-<!-- GRID -->
-<div class="pos-grid">
-<table>
-<thead>
-<tr>
-<th style="width:44%">Product</th>
-<th style="width:13%">Price</th>
-<th style="width:12%">Stock</th>
-<th style="width:12%">Qty</th>
-<th style="width:15%">Total</th>
-<th></th>
-</tr>
-</thead>
-<tbody id="salesBody"></tbody>
-</table>
-</div>
-
-<!-- BOTTOM -->
-<div class="pos-bottom">
-<div>
-<div class="total-label">Total Sale</div>
-<div class="total-value">Ksh <span id="grandTotal">0.00</span></div>
-</div>
-
-<button class="primary-btn" onclick="submitSale()">Record Sale</button>
-</div>
-
-</div>
-<p id="message"></p>
-</div>
-
+  <p id="message"></p>
 </div>
 
 <datalist id="productList"></datalist>
@@ -207,100 +270,117 @@ tbody td:last-child{border-right:none;}
 const baseURL="https://pos-10-production.up.railway.app";
 let allProducts=[];
 
-const SEED_ROWS=18;
-const EXTEND_GUARD=2;
+/* Infinite grid settings */
+const SEED_ROWS = 22;
+const EXTEND_GUARD = 3;
 
 async function loadProducts(){
- const res=await fetch(`${baseURL}/products/`,{credentials:"include"});
- allProducts=await res.json();
+  const res=await fetch(`${baseURL}/products/`,{credentials:"include"});
+  allProducts=await res.json();
 
- productList.innerHTML=allProducts.map(p=>`<option value="${p.name}"></option>`).join("");
+  productList.innerHTML=allProducts.map(p=>`<option value="${p.name}"></option>`).join("");
 
- for(let i=0;i<SEED_ROWS;i++) addRow();
+  for(let i=0;i<SEED_ROWS;i++) addRow();
+  updateGrandTotal();
 }
 
 function addRow(){
- const row=document.createElement("tr");
- row.innerHTML=`
-<td><input class="cell prod" list="productList" oninput="updateProduct(this);ensureInfiniteGrid()"></td>
-<td><input class="cell price" type="number" oninput="ensureInfiniteGrid()"></td>
-<td><input class="cell stock" readonly></td>
-<td><input class="cell qty" type="number" min="1" oninput="updateTotal(this);ensureInfiniteGrid()"></td>
-<td><input class="cell lineTotal" readonly></td>
-<td><button class="remove-btn" onclick="this.closest('tr').remove();updateGrandTotal()">×</button></td>
-`;
- salesBody.appendChild(row);
+  const row=document.createElement("tr");
+  row.innerHTML=`
+    <td><input class="cell prod" list="productList" placeholder="Search product…" oninput="updateProduct(this); ensureInfiniteGrid()"></td>
+    <td><input class="cell price" type="number" oninput="ensureInfiniteGrid()"></td>
+    <td><input class="cell stock" readonly></td>
+    <td><input class="cell qty" type="number" min="1" oninput="updateTotal(this); ensureInfiniteGrid()"></td>
+    <td><input class="cell lineTotal" readonly></td>
+    <td><button class="remove-btn" onclick="this.closest('tr').remove();updateGrandTotal();ensureInfiniteGrid()">×</button></td>
+  `;
+  salesBody.appendChild(row);
 }
 
 function ensureInfiniteGrid(){
- while(shouldExtend()) addRow();
+  while(salesBody.children.length < SEED_ROWS) addRow();
+  while(shouldExtend()) addRow();
 }
 
 function shouldExtend(){
- const rows=[...salesBody.querySelectorAll("tr")];
- const n=rows.length;
- for(let i=0;i<EXTEND_GUARD;i++){
-  const r=rows[n-1-i];
-  if(!r) return true;
-  if(r.querySelector(".prod").value ||
-     r.querySelector(".qty").value ||
-     r.querySelector(".price").value) return true;
- }
- return false;
+  const rows=[...salesBody.querySelectorAll("tr")];
+  const n=rows.length;
+  if(n < EXTEND_GUARD) return true;
+
+  for(let i=0;i<EXTEND_GUARD;i++){
+    if(rowHasData(rows[n-1-i])) return true;
+  }
+  return false;
+}
+
+function rowHasData(r){
+  if(!r) return false;
+  const prod=r.querySelector(".prod")?.value?.trim();
+  const qty=r.querySelector(".qty")?.value?.trim();
+  const price=r.querySelector(".price")?.value?.trim();
+  return !!(prod || qty || price);
 }
 
 function updateProduct(input){
- const p=allProducts.find(x=>x.name.toLowerCase()===input.value.toLowerCase());
- if(!p)return;
+  const p=allProducts.find(x=>x.name.toLowerCase()===input.value.toLowerCase());
+  if(!p) return;
 
- const r=input.closest("tr");
- r.querySelector(".price").value=p.price;
- r.querySelector(".stock").value=p.quantity;
+  const r=input.closest("tr");
+  r.querySelector(".price").value=p.price;
+  r.querySelector(".stock").value=p.quantity;
+
+  const q=r.querySelector(".qty");
+  if(q && q.value) updateTotal(q);
 }
 
 function updateTotal(q){
- const r=q.closest("tr");
- const price=+r.querySelector(".price").value||0;
- r.querySelector(".lineTotal").value=(price*q.value).toFixed(2);
- updateGrandTotal();
+  const r=q.closest("tr");
+  const price=+r.querySelector(".price").value||0;
+  r.querySelector(".lineTotal").value=(price*q.value).toFixed(2);
+  updateGrandTotal();
 }
 
 function updateGrandTotal(){
- let t=0;
- document.querySelectorAll(".lineTotal").forEach(i=>t+=+i.value||0);
- grandTotal.textContent=t.toFixed(2);
+  let t=0;
+  document.querySelectorAll(".lineTotal").forEach(i=>t+=+i.value||0);
+  grandTotal.textContent=t.toFixed(2);
 }
 
+/* Original submit logic (same endpoint + payload) */
 async function submitSale(){
- const items=[];
- document.querySelectorAll("#salesBody tr").forEach(r=>{
-  const name=r.querySelector(".prod").value;
-  const q=+r.querySelector(".qty").value;
-  const price=+r.querySelector(".price").value;
-  if(name&&q>0)items.push({product_name:name,quantity:q,selling_price:price});
- });
+  const items=[];
+  document.querySelectorAll("#salesBody tr").forEach(r=>{
+    const name=r.querySelector("input[list]")?.value;
+    const q=+r.querySelector(".qty")?.value;
+    const price=+r.querySelector(".price")?.value;
+    if(name && q>0) items.push({product_name:name,quantity:q,selling_price:price});
+  });
 
- if(!items.length)return alert("Add at least one product");
+  if(!items.length) return alert("Add at least one product");
 
- const res=await fetch(`${baseURL}/sales/record_sale/`,{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  credentials:"include",
-  body:JSON.stringify({
-    client_name:clientName.value||null,
-    sales_person:salesPerson.value||null,
-    items
-  })
- });
+  const res=await fetch(`${baseURL}/sales/record_sale/`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    credentials:"include",
+    body:JSON.stringify({
+      client_name:clientName.value||null,
+      sales_person:salesPerson.value||null,
+      items
+    })
+  });
 
- const out=await res.json();
+  const out=await res.json();
 
- if(res.ok){
-  message.textContent="Sale recorded successfully!";
-  salesBody.innerHTML="";
-  for(let i=0;i<SEED_ROWS;i++) addRow();
-  updateGrandTotal();
- }
+  if(res.ok){
+    message.style.color="green";
+    message.textContent="Sale recorded successfully!";
+    salesBody.innerHTML="";
+    for(let i=0;i<SEED_ROWS;i++) addRow();
+    updateGrandTotal();
+  }else{
+    message.style.color="red";
+    message.textContent=out.detail||"Error recording sale";
+  }
 }
 
 loadProducts();
