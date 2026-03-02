@@ -5,14 +5,11 @@
 
 {% block content %}
 
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#635bff">
-
 <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
 <style>
 :root{
-  --bg-soft:#f6f9fc;
+  --bg:#f6f9fc;
   --card:#ffffff;
   --border:#e6ebf1;
   --text:#1a1f36;
@@ -21,70 +18,62 @@
   --primary:#635bff;
   --primary-2:#7c3aed;
 
-  --radius:16px;
-  --shadow:0 10px 30px rgba(16,24,40,.08);
+  --radius:14px;
+  --shadow:0 8px 24px rgba(16,24,40,.08);
 }
 
-*{box-sizing:border-box;}
-
 .page-wrap{
-  max-width:1150px;
+  max-width:1200px;
   margin:auto;
 }
 
-/* ---------- HEADER ---------- */
-
+/* HEADER */
 .page-header{
-  margin-bottom:25px;
+  margin-bottom:18px;
 }
 
 .page-header h1{
-  font-size:28px;
   margin:0;
+  font-size:24px;
   font-weight:700;
-  color:var(--text);
 }
 
-.page-header p{
-  margin:4px 0 0;
-  color:var(--muted);
-  font-size:14px;
-}
-
-/* ---------- CARD ---------- */
+/* CARDS */
 
 .card{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:var(--radius);
+  padding:18px;
+  margin-bottom:18px;
   box-shadow:var(--shadow);
-  padding:22px;
-  margin-bottom:22px;
 }
 
 .card-title{
-  font-size:15px;
-  font-weight:600;
-  margin-bottom:14px;
-  color:var(--text);
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.05em;
 }
 
-/* ---------- ORDER INFO ---------- */
+/* SALE INFO */
 
 .order-info{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:14px;
+  gap:12px;
 }
 
 .order-info input{
-  padding:12px 14px;
-  border-radius:10px;
+  padding:11px;
+  border-radius:8px;
   border:1px solid var(--border);
   font-size:14px;
 }
 
-/* ---------- TABLE ---------- */
+/* TABLE */
 
 .table-wrapper{
   overflow-x:auto;
@@ -93,43 +82,47 @@
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:850px;
+  min-width:900px;
 }
 
 th{
-  text-align:left;
   font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:.04em;
   color:var(--muted);
-  padding:12px;
+  text-align:left;
+  padding:10px;
   border-bottom:1px solid var(--border);
 }
 
 td{
-  padding:10px;
+  padding:8px;
   border-bottom:1px solid var(--border);
 }
 
 td input{
   width:100%;
-  padding:10px;
-  border-radius:8px;
+  padding:9px;
+  border-radius:7px;
   border:1px solid var(--border);
-  font-size:14px;
+  background:#fafbff;
+}
+
+td input:focus{
+  outline:none;
+  border-color:var(--primary);
+  background:white;
 }
 
 td input[readonly]{
-  background:#f3f4f6;
+  background:#eef2ff;
 }
 
-/* ---------- BUTTONS ---------- */
+/* BUTTONS */
 
 .primary-btn{
-  border:none;
   background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  border:none;
   color:white;
-  padding:12px 20px;
+  padding:10px 18px;
   border-radius:999px;
   cursor:pointer;
   font-weight:600;
@@ -137,31 +130,55 @@ td input[readonly]{
 
 .remove-btn{
   background:#fee2e2;
-  border:none;
   color:#b91c1c;
-  padding:8px 14px;
-  border-radius:8px;
+  border:none;
+  padding:7px 12px;
+  border-radius:7px;
   cursor:pointer;
 }
 
-/* ---------- ACTION BAR ---------- */
+/* ADD ITEM */
 
-.action-bar{
+.add-row{
+  margin-top:14px;
+}
+
+/* STICKY POS BAR */
+
+.checkout-bar{
+  position:fixed;
+  bottom:0;
+  left:260px; /* aligns after sidebar */
+  right:0;
+  background:white;
+  border-top:1px solid var(--border);
+  padding:16px 28px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  flex-wrap:wrap;
-  gap:15px;
+  box-shadow:0 -8px 20px rgba(0,0,0,.06);
+  z-index:100;
 }
 
-.total-box{
-  font-size:22px;
-  font-weight:700;
-  color:var(--text);
+.total-display{
+  font-size:32px;
+  font-weight:800;
+  letter-spacing:.5px;
 }
 
-.total-box span{
+.total-display span{
   color:var(--primary);
+}
+
+.checkout-btn{
+  font-size:16px;
+  padding:14px 28px;
+  border-radius:999px;
+  border:none;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  color:white;
+  font-weight:700;
+  cursor:pointer;
 }
 
 #message{
@@ -169,44 +186,27 @@ td input[readonly]{
   font-weight:600;
 }
 
-/* ---------- CTA ---------- */
-
-.cta-row{
-  display:none;
-  margin-top:14px;
+body{
+  padding-bottom:110px;
 }
 
-.cta-row a{
-  text-decoration:none;
-  color:white;
-  padding:12px 18px;
-  border-radius:999px;
-  background:linear-gradient(135deg,var(--primary),var(--primary-2));
-}
-
-/* ---------- MOBILE ---------- */
-
-@media(max-width:768px){
+@media(max-width:900px){
   .order-info{
     grid-template-columns:1fr;
   }
-
-  .action-bar{
-    flex-direction:column;
-    align-items:flex-start;
+  .checkout-bar{
+    left:0;
   }
 }
 </style>
 
 <div class="page-wrap">
 
-<!-- HEADER -->
 <div class="page-header">
-  <h1>Record Sales</h1>
-  <p>Create a new sale and update stock automatically.</p>
+  <h1>Record Sale</h1>
 </div>
 
-<!-- SALE INFO -->
+<!-- SALE DETAILS -->
 <div class="card">
   <div class="card-title">Sale Details</div>
 
@@ -218,7 +218,8 @@ td input[readonly]{
 
 <!-- ITEMS -->
 <div class="card">
-  <div class="card-title">Sale Items</div>
+
+  <div class="card-title">Items</div>
 
   <div class="table-wrapper">
     <table>
@@ -232,33 +233,31 @@ td input[readonly]{
           <th></th>
         </tr>
       </thead>
+
       <tbody id="salesBody"></tbody>
     </table>
   </div>
 
-  <br>
-
-  <button class="primary-btn" onclick="addRow()">+ Add Item</button>
-</div>
-
-<!-- ACTION BAR -->
-<div class="card">
-  <div class="action-bar">
-
-    <div class="total-box">
-      Total Sale: Ksh <span id="grandTotal">0.00</span>
-    </div>
-
-    <button class="primary-btn" onclick="submitSale()">Record Sale</button>
-
+  <div class="add-row">
+    <button class="primary-btn" onclick="addRow()">+ Add Item</button>
   </div>
 
-  <p id="message"></p>
-
-  <div class="cta-row" id="profitCta">
-    <a href="/sales/salesreport?source=onboarding">View Profit Report</a>
-  </div>
 </div>
+
+<p id="message"></p>
+
+</div>
+
+<!-- 🔥 REAL POS CHECKOUT BAR -->
+<div class="checkout-bar">
+
+  <div class="total-display">
+    Total: Ksh <span id="grandTotal">0.00</span>
+  </div>
+
+  <button class="checkout-btn" onclick="submitSale()">
+    Record Sale
+  </button>
 
 </div>
 
