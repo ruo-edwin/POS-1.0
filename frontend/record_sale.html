@@ -382,7 +382,92 @@ async function submitSale(){
     message.textContent=out.detail||"Error recording sale";
   }
 }
+/* =========================
+   KEYBOARD CASHIER MODE
+========================= */
 
+document.addEventListener("keydown", function(e){
+
+  const active = document.activeElement;
+  if(!active.classList.contains("cell")) return;
+
+  const row = active.closest("tr");
+  const rows = [...document.querySelectorAll("#salesBody tr")];
+
+  const rowIndex = rows.indexOf(row);
+
+  const prod = row.querySelector(".prod");
+  const price = row.querySelector(".price");
+  const qty = row.querySelector(".qty");
+
+  /* ENTER NAVIGATION */
+  if(e.key === "Enter"){
+    e.preventDefault();
+
+    // Product → Qty
+    if(active === prod){
+      qty.focus();
+      qty.select();
+      return;
+    }
+
+    // Qty → Next Row Product
+    if(active === qty){
+
+      ensureInfiniteGrid();
+
+      const nextRow = rows[rowIndex + 1] || salesBody.lastElementChild;
+      const nextProd = nextRow.querySelector(".prod");
+
+      nextProd.focus();
+      nextProd.select();
+      return;
+    }
+  }
+
+  /* ARROW DOWN */
+  if(e.key === "ArrowDown"){
+    e.preventDefault();
+    const nextRow = rows[rowIndex + 1];
+    if(!nextRow) return;
+
+    const nextCell =
+      active.classList.contains("prod") ? nextRow.querySelector(".prod") :
+      active.classList.contains("price") ? nextRow.querySelector(".price") :
+      active.classList.contains("qty") ? nextRow.querySelector(".qty") :
+      null;
+
+    if(nextCell){
+      nextCell.focus();
+      nextCell.select();
+    }
+  }
+
+  /* ARROW UP */
+  if(e.key === "ArrowUp"){
+    e.preventDefault();
+    const prevRow = rows[rowIndex - 1];
+    if(!prevRow) return;
+
+    const prevCell =
+      active.classList.contains("prod") ? prevRow.querySelector(".prod") :
+      active.classList.contains("price") ? prevRow.querySelector(".price") :
+      active.classList.contains("qty") ? prevRow.querySelector(".qty") :
+      null;
+
+    if(prevCell){
+      prevCell.focus();
+      prevCell.select();
+    }
+  }
+
+  /* ESC = CLEAR CELL */
+  if(e.key === "Escape"){
+    active.value = "";
+    updateGrandTotal();
+  }
+
+});
 loadProducts();
 </script>
 
