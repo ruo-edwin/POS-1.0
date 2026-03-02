@@ -32,8 +32,8 @@
   --radius:14px;
 
   /* IMPORTANT: match your base.html layout */
-  --pos-left: 260px;  /* sidebar width */
-  --pos-top: 86px;    /* top header height */
+  --pos-left: 260px;
+  --pos-top: 86px;
   --pos-right: 0px;
   --pos-bottom-gap: 16px;
 
@@ -64,7 +64,7 @@
   flex-direction:column;
 }
 
-/* TOP (fixed inside viewport) */
+/* TOP */
 .pos-top{
   flex:0 0 auto;
   height:var(--topbar-h);
@@ -90,13 +90,8 @@
   font-size:14px;
   background:#fff;
 }
-.sale-bar input:focus{
-  outline:none;
-  border-color:rgba(99,91,255,.55);
-  box-shadow:0 0 0 3px rgba(99,91,255,.12);
-}
 
-/* GRID (ONLY SCROLLABLE AREA) */
+/* GRID */
 .pos-grid{
   flex:1 1 auto;
   overflow:auto;
@@ -156,9 +151,8 @@ tbody td:last-child{border-right:none;}
   font-weight:900;
   cursor:pointer;
 }
-.remove-btn:hover{filter:brightness(.98);}
 
-/* BOTTOM (fixed inside viewport) */
+/* BOTTOM */
 .pos-bottom{
   flex:0 0 auto;
   height:var(--bottombar-h);
@@ -202,29 +196,50 @@ tbody td:last-child{border-right:none;}
   background:linear-gradient(135deg,var(--primary),var(--primary2));
   font-size:15px;
 }
-.primary-btn:active{transform:translateY(1px);}
 
 #message{
   margin-top:10px;
   font-weight:800;
 }
+/* ===== FLOATING TOAST ===== */
+#toast{
+  position:fixed;
+  top:110px;
+  right:25px;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
-/* Mobile / when sidebar collapses */
-@media(max-width:900px){
-  :root{
-    --pos-left: 0px;
-    --pos-top: 70px;
-  }
-  .sale-bar{grid-template-columns:1fr;}
-  table{min-width:920px;}
+.toast-msg{
+  min-width:260px;
+  padding:14px 18px;
+  border-radius:10px;
+  font-weight:700;
+  color:white;
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  animation:toastIn .25s ease;
+}
+
+.toast-success{
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+.toast-error{
+  background:linear-gradient(135deg,#dc2626,#ef4444);
+}
+
+@keyframes toastIn{
+  from{opacity:0;transform:translateX(20px);}
+  to{opacity:1;transform:translateX(0);}
 }
 </style>
-
-<!-- FIXED POS VIEWPORT (works even if base.html scrolls) -->
+<!-- Toast Messages -->
+<div id="toast"></div>
 <div class="pos-fixed">
   <div class="pos-shell">
 
-    <!-- TOP -->
     <div class="pos-top">
       <div class="sale-bar">
         <input id="clientName" placeholder="Customer Name (optional)">
@@ -232,7 +247,6 @@ tbody td:last-child{border-right:none;}
       </div>
     </div>
 
-    <!-- GRID (ONLY THIS SCROLLS) -->
     <div class="pos-grid">
       <table>
         <thead>
@@ -249,7 +263,6 @@ tbody td:last-child{border-right:none;}
       </table>
     </div>
 
-    <!-- BOTTOM -->
     <div class="pos-bottom">
       <div class="total-box">
         <div class="total-label">Total Sale</div>
@@ -270,7 +283,6 @@ tbody td:last-child{border-right:none;}
 const baseURL="https://pos-10-production.up.railway.app";
 let allProducts=[];
 
-/* Infinite grid settings */
 const SEED_ROWS = 22;
 const EXTEND_GUARD = 3;
 
@@ -299,26 +311,6 @@ function addRow(){
 
 function ensureInfiniteGrid(){
   while(salesBody.children.length < SEED_ROWS) addRow();
-  while(shouldExtend()) addRow();
-}
-
-function shouldExtend(){
-  const rows=[...salesBody.querySelectorAll("tr")];
-  const n=rows.length;
-  if(n < EXTEND_GUARD) return true;
-
-  for(let i=0;i<EXTEND_GUARD;i++){
-    if(rowHasData(rows[n-1-i])) return true;
-  }
-  return false;
-}
-
-function rowHasData(r){
-  if(!r) return false;
-  const prod=r.querySelector(".prod")?.value?.trim();
-  const qty=r.querySelector(".qty")?.value?.trim();
-  const price=r.querySelector(".price")?.value?.trim();
-  return !!(prod || qty || price);
 }
 
 function updateProduct(input){
@@ -328,9 +320,6 @@ function updateProduct(input){
   const r=input.closest("tr");
   r.querySelector(".price").value=p.price;
   r.querySelector(".stock").value=p.quantity;
-
-  const q=r.querySelector(".qty");
-  if(q && q.value) updateTotal(q);
 }
 
 function updateTotal(q){
@@ -345,8 +334,19 @@ function updateGrandTotal(){
   document.querySelectorAll(".lineTotal").forEach(i=>t+=+i.value||0);
   grandTotal.textContent=t.toFixed(2);
 }
+function showToast(message,type="success"){
+  const t=document.createElement("div");
+  t.className=`toast-msg toast-${type}`;
+  t.textContent=message;
 
-/* Original submit logic (same endpoint + payload) */
+  document.getElementById("toast").appendChild(t);
+
+  setTimeout(()=>{
+    t.style.opacity="0";
+    t.style.transform="translateX(20px)";
+    setTimeout(()=>t.remove(),300);
+  },3000);
+}
 async function submitSale(){
   const items=[];
   document.querySelectorAll("#salesBody tr").forEach(r=>{
@@ -356,8 +356,10 @@ async function submitSale(){
     if(name && q>0) items.push({product_name:name,quantity:q,selling_price:price});
   });
 
-  if(!items.length) return alert("Add at least one product");
-
+  if(!items.length){
+  showToast("Add at least one product","error");
+  return;
+  }
   const res=await fetch(`${baseURL}/sales/record_sale/`,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
@@ -372,102 +374,15 @@ async function submitSale(){
   const out=await res.json();
 
   if(res.ok){
-    message.style.color="green";
-    message.textContent="Sale recorded successfully!";
+    showToast("Sale recorded successfully!","success");
     salesBody.innerHTML="";
     for(let i=0;i<SEED_ROWS;i++) addRow();
     updateGrandTotal();
   }else{
-    message.style.color="red";
-    message.textContent=out.detail||"Error recording sale";
+   showToast(out.detail||"Error recording sale","error");
   }
 }
-/* =========================
-   KEYBOARD CASHIER MODE
-========================= */
 
-document.addEventListener("keydown", function(e){
-
-  const active = document.activeElement;
-  if(!active.classList.contains("cell")) return;
-
-  const row = active.closest("tr");
-  const rows = [...document.querySelectorAll("#salesBody tr")];
-
-  const rowIndex = rows.indexOf(row);
-
-  const prod = row.querySelector(".prod");
-  const price = row.querySelector(".price");
-  const qty = row.querySelector(".qty");
-
-  /* ENTER NAVIGATION */
-  if(e.key === "Enter"){
-    e.preventDefault();
-
-    // Product → Qty
-    if(active === prod){
-      qty.focus();
-      qty.select();
-      return;
-    }
-
-    // Qty → Next Row Product
-    if(active === qty){
-
-      ensureInfiniteGrid();
-
-      const nextRow = rows[rowIndex + 1] || salesBody.lastElementChild;
-      const nextProd = nextRow.querySelector(".prod");
-
-      nextProd.focus();
-      nextProd.select();
-      return;
-    }
-  }
-
-  /* ARROW DOWN */
-  if(e.key === "ArrowDown"){
-    e.preventDefault();
-    const nextRow = rows[rowIndex + 1];
-    if(!nextRow) return;
-
-    const nextCell =
-      active.classList.contains("prod") ? nextRow.querySelector(".prod") :
-      active.classList.contains("price") ? nextRow.querySelector(".price") :
-      active.classList.contains("qty") ? nextRow.querySelector(".qty") :
-      null;
-
-    if(nextCell){
-      nextCell.focus();
-      nextCell.select();
-    }
-  }
-
-  /* ARROW UP */
-  if(e.key === "ArrowUp"){
-    e.preventDefault();
-    const prevRow = rows[rowIndex - 1];
-    if(!prevRow) return;
-
-    const prevCell =
-      active.classList.contains("prod") ? prevRow.querySelector(".prod") :
-      active.classList.contains("price") ? prevRow.querySelector(".price") :
-      active.classList.contains("qty") ? prevRow.querySelector(".qty") :
-      null;
-
-    if(prevCell){
-      prevCell.focus();
-      prevCell.select();
-    }
-  }
-
-  /* ESC = CLEAR CELL */
-  if(e.key === "Escape"){
-    active.value = "";
-    updateGrandTotal();
-  }
-
-});
 loadProducts();
 </script>
 
