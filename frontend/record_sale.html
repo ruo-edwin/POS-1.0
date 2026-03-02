@@ -5,259 +5,180 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-
 <style>
 :root{
-  --bg:#f6f9fc;
-  --card:#ffffff;
-  --border:#e6ebf1;
-  --text:#1a1f36;
-  --muted:#697386;
-
+  --border:#dfe3ea;
+  --bg:#f4f6fb;
+  --surface:#ffffff;
   --primary:#635bff;
-  --primary-2:#7c3aed;
-
-  --radius:14px;
-  --shadow:0 8px 24px rgba(16,24,40,.08);
+  --text:#1a1f36;
 }
 
-.page-wrap{
-  max-width:1200px;
+/* PAGE */
+
+.pos-container{
+  max-width:1250px;
   margin:auto;
 }
 
-/* HEADER */
-.page-header{
-  margin-bottom:18px;
-}
+/* TOP BAR */
 
-.page-header h1{
-  margin:0;
-  font-size:24px;
-  font-weight:700;
-}
-
-/* CARDS */
-
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:18px;
-  margin-bottom:18px;
-  box-shadow:var(--shadow);
-}
-
-.card-title{
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:12px;
-  color:var(--muted);
-  text-transform:uppercase;
-  letter-spacing:.05em;
-}
-
-/* SALE INFO */
-
-.order-info{
+.sale-bar{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px;
+  gap:10px;
+  margin-bottom:12px;
 }
 
-.order-info input{
-  padding:11px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  font-size:14px;
-}
-
-/* TABLE */
-
-.table-wrapper{
-  overflow-x:auto;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:900px;
-}
-
-th{
-  font-size:12px;
-  color:var(--muted);
-  text-align:left;
+.sale-bar input{
   padding:10px;
-  border-bottom:1px solid var(--border);
-}
-
-td{
-  padding:8px;
-  border-bottom:1px solid var(--border);
-}
-
-td input{
-  width:100%;
-  padding:9px;
-  border-radius:7px;
   border:1px solid var(--border);
-  background:#fafbff;
-}
-
-td input:focus{
-  outline:none;
-  border-color:var(--primary);
   background:white;
 }
 
-td input[readonly]{
-  background:#eef2ff;
+/* GRID WORKSPACE */
+
+.pos-grid{
+  background:var(--surface);
+  border:1px solid var(--border);
 }
 
-/* BUTTONS */
+/* HEADER ROW */
 
-.primary-btn{
-  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+.grid-header,
+.grid-row{
+  display:grid;
+  grid-template-columns:
+    3fr
+    1fr
+    1fr
+    1fr
+    1.2fr
+    80px;
+  align-items:center;
+}
+
+.grid-header{
+  background:#f1f3f9;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:.04em;
+  border-bottom:1px solid var(--border);
+}
+
+.grid-header div{
+  padding:10px;
+}
+
+/* ROWS */
+
+.grid-row{
+  border-bottom:1px solid var(--border);
+}
+
+.grid-row input{
+  width:100%;
   border:none;
-  color:white;
-  padding:10px 18px;
-  border-radius:999px;
-  cursor:pointer;
-  font-weight:600;
+  border-right:1px solid var(--border);
+  padding:10px;
+  background:#fff;
 }
+
+.grid-row input:focus{
+  outline:none;
+  background:#f9faff;
+}
+
+.grid-row input[readonly]{
+  background:#f3f4f8;
+}
+
+/* REMOVE BUTTON */
 
 .remove-btn{
+  border:none;
   background:#fee2e2;
   color:#b91c1c;
-  border:none;
-  padding:7px 12px;
-  border-radius:7px;
+  height:100%;
   cursor:pointer;
 }
 
-/* ADD ITEM */
+/* ADD ROW */
 
 .add-row{
-  margin-top:14px;
+  padding:10px;
 }
 
-/* STICKY POS BAR */
+.add-row button{
+  background:var(--primary);
+  color:white;
+  border:none;
+  padding:8px 14px;
+  cursor:pointer;
+}
 
-.checkout-bar{
-  position:fixed;
-  bottom:0;
-  left:260px; /* aligns after sidebar */
-  right:0;
+/* CHECKOUT BAR */
+
+.checkout{
+  margin-top:10px;
   background:white;
-  border-top:1px solid var(--border);
-  padding:16px 28px;
+  border:1px solid var(--border);
+  padding:14px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  box-shadow:0 -8px 20px rgba(0,0,0,.06);
-  z-index:100;
 }
 
-.total-display{
-  font-size:32px;
+.total{
+  font-size:28px;
   font-weight:800;
-  letter-spacing:.5px;
 }
 
-.total-display span{
-  color:var(--primary);
-}
-
-.checkout-btn{
-  font-size:16px;
-  padding:14px 28px;
-  border-radius:999px;
-  border:none;
-  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+.checkout button{
+  background:var(--primary);
   color:white;
+  border:none;
+  padding:12px 24px;
   font-weight:700;
   cursor:pointer;
 }
-
-#message{
-  margin-top:10px;
-  font-weight:600;
-}
-
-body{
-  padding-bottom:110px;
-}
-
-@media(max-width:900px){
-  .order-info{
-    grid-template-columns:1fr;
-  }
-  .checkout-bar{
-    left:0;
-  }
-}
 </style>
 
-<div class="page-wrap">
+<div class="pos-container">
 
-<div class="page-header">
-  <h1>Record Sale</h1>
+<div class="sale-bar">
+<input id="clientName" placeholder="Customer Name">
+<input id="salesPerson" placeholder="Sold By">
 </div>
 
-<!-- SALE DETAILS -->
-<div class="card">
-  <div class="card-title">Sale Details</div>
+<div class="pos-grid">
 
-  <div class="order-info">
-    <input id="clientName" placeholder="Customer Name (optional)">
-    <input id="salesPerson" placeholder="Sold By (optional)">
-  </div>
+<div class="grid-header">
+<div>PRODUCT</div>
+<div>PRICE</div>
+<div>STOCK</div>
+<div>QTY</div>
+<div>TOTAL</div>
+<div></div>
 </div>
 
-<!-- ITEMS -->
-<div class="card">
+<div id="salesBody"></div>
 
-  <div class="card-title">Items</div>
+<div class="add-row">
+<button onclick="addRow()">+ Add Item</button>
+</div>
 
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th>Qty</th>
-          <th>Total</th>
-          <th></th>
-        </tr>
-      </thead>
+</div>
 
-      <tbody id="salesBody"></tbody>
-    </table>
-  </div>
+<div class="checkout">
+<div class="total">
+Ksh <span id="grandTotal">0.00</span>
+</div>
 
-  <div class="add-row">
-    <button class="primary-btn" onclick="addRow()">+ Add Item</button>
-  </div>
-
+<button onclick="submitSale()">Record Sale</button>
 </div>
 
 <p id="message"></p>
-
-</div>
-
-<!-- 🔥 REAL POS CHECKOUT BAR -->
-<div class="checkout-bar">
-
-  <div class="total-display">
-    Total: Ksh <span id="grandTotal">0.00</span>
-  </div>
-
-  <button class="checkout-btn" onclick="submitSale()">
-    Record Sale
-  </button>
 
 </div>
 
@@ -276,15 +197,18 @@ async function loadProducts(){
 }
 
 function addRow(){
- const row=document.createElement("tr");
+ const row=document.createElement("div");
+ row.className="grid-row";
+
  row.innerHTML=`
-<td><input list="productList" placeholder="Search product…" oninput="updateProduct(this)"></td>
-<td><input class="price" type="number"></td>
-<td><input class="stock" readonly></td>
-<td><input class="qty" type="number" min="1" oninput="updateTotal(this)"></td>
-<td><input class="lineTotal" readonly></td>
-<td><button class="remove-btn" onclick="this.closest('tr').remove();updateGrandTotal()">Remove</button></td>
+<input list="productList" placeholder="Search product…" oninput="updateProduct(this)">
+<input class="price" type="number">
+<input class="stock" readonly>
+<input class="qty" type="number" min="1" oninput="updateTotal(this)">
+<input class="lineTotal" readonly>
+<button class="remove-btn" onclick="this.parentElement.remove();updateGrandTotal()">X</button>
 `;
+
  salesBody.appendChild(row);
 }
 
@@ -292,13 +216,13 @@ function updateProduct(input){
  const p=allProducts.find(x=>x.name.toLowerCase()===input.value.toLowerCase());
  if(!p)return;
 
- const r=input.closest("tr");
+ const r=input.parentElement;
  r.querySelector(".price").value=p.price;
  r.querySelector(".stock").value=p.quantity;
 }
 
 function updateTotal(q){
- const r=q.closest("tr");
+ const r=q.parentElement;
  const price=+r.querySelector(".price").value||0;
  r.querySelector(".lineTotal").value=(price*q.value).toFixed(2);
  updateGrandTotal();
@@ -312,8 +236,8 @@ function updateGrandTotal(){
 
 async function submitSale(){
  const items=[];
- document.querySelectorAll("#salesBody tr").forEach(r=>{
-  const name=r.querySelector("input[list]").value;
+ document.querySelectorAll(".grid-row").forEach(r=>{
+  const name=r.children[0].value;
   const q=+r.querySelector(".qty").value;
   const price=+r.querySelector(".price").value;
   if(name&&q>0)items.push({product_name:name,quantity:q,selling_price:price});
@@ -335,13 +259,11 @@ async function submitSale(){
  const out=await res.json();
 
  if(res.ok){
-  message.style.color="green";
   message.textContent="Sale recorded successfully!";
   salesBody.innerHTML="";
   addRow();
   updateGrandTotal();
  }else{
-  message.style.color="red";
   message.textContent=out.detail||"Error recording sale";
  }
 }
