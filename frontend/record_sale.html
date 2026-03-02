@@ -5,181 +5,395 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
 <style>
 :root{
-  --border:#dfe3ea;
   --bg:#f4f6fb;
   --surface:#ffffff;
+  --border:#dfe6ef;
+  --text:#121826;
+  --muted:#6b7280;
+
   --primary:#635bff;
-  --text:#1a1f36;
+  --primary-2:#7c3aed;
+
+  --danger:#ef4444;
+  --success:#16a34a;
+
+  --shadow:0 10px 28px rgba(16,24,40,.08);
 }
 
-/* PAGE */
+*{box-sizing:border-box;}
 
-.pos-container{
+.pos-wrap{
   max-width:1250px;
   margin:auto;
 }
 
-/* TOP BAR */
-
+/* Top sale info bar */
 .sale-bar{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1.2fr 1fr;
   gap:10px;
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 
 .sale-bar input{
-  padding:10px;
+  width:100%;
+  padding:10px 12px;
   border:1px solid var(--border);
-  background:white;
+  background:var(--surface);
+  border-radius:10px;
+  font-size:14px;
+}
+.sale-bar input:focus{
+  outline:none;
+  border-color:rgba(99,91,255,.55);
+  box-shadow:0 0 0 3px rgba(99,91,255,.12);
 }
 
-/* GRID WORKSPACE */
-
-.pos-grid{
+/* POS surface */
+.pos-surface{
   background:var(--surface);
   border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
 }
 
-/* HEADER ROW */
-
-.grid-header,
-.grid-row{
-  display:grid;
-  grid-template-columns:
-    3fr
-    1fr
-    1fr
-    1fr
-    1.2fr
-    80px;
-  align-items:center;
+/* Tight grid table */
+.pos-table-wrap{
+  height:calc(100vh - 285px);
+  min-height:420px;
+  overflow:auto;
 }
 
-.grid-header{
-  background:#f1f3f9;
-  font-weight:700;
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:980px;
+}
+
+thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#f1f4fb;
+  color:var(--muted);
   font-size:12px;
-  letter-spacing:.04em;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  padding:10px 10px;
   border-bottom:1px solid var(--border);
 }
 
-.grid-header div{
-  padding:10px;
-}
-
-/* ROWS */
-
-.grid-row{
+tbody td{
   border-bottom:1px solid var(--border);
+  border-right:1px solid var(--border);
+  padding:0;
 }
+tbody td:last-child{border-right:none;}
 
-.grid-row input{
+td .cell-input{
   width:100%;
   border:none;
-  border-right:1px solid var(--border);
-  padding:10px;
+  padding:10px 10px;
+  font-size:14px;
   background:#fff;
 }
-
-.grid-row input:focus{
+td .cell-input:focus{
   outline:none;
   background:#f9faff;
+  box-shadow:inset 0 0 0 2px rgba(99,91,255,.18);
 }
-
-.grid-row input[readonly]{
+td .cell-input[readonly]{
   background:#f3f4f8;
+  color:#111827;
 }
 
-/* REMOVE BUTTON */
-
+.row-actions{
+  display:flex;
+  align-items:stretch;
+  height:100%;
+}
 .remove-btn{
+  width:100%;
   border:none;
   background:#fee2e2;
   color:#b91c1c;
-  height:100%;
   cursor:pointer;
+  font-weight:700;
+}
+.remove-btn:hover{
+  filter:brightness(.98);
 }
 
-/* ADD ROW */
-
-.add-row{
-  padding:10px;
+/* Footer total + action */
+.pos-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  border-top:1px solid var(--border);
+  background:#ffffff;
 }
 
-.add-row button{
-  background:var(--primary);
-  color:white;
+.total-box{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.total-label{
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.total-value{
+  font-size:30px;
+  font-weight:900;
+  color:var(--text);
+}
+.total-value span{ color:var(--primary); }
+
+.primary-btn{
   border:none;
-  padding:8px 14px;
   cursor:pointer;
+  color:#fff;
+  font-weight:800;
+  border-radius:999px;
+  padding:12px 20px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  font-size:15px;
+}
+.primary-btn:active{ transform:translateY(1px); }
+
+#message{
+  margin-top:10px;
+  font-weight:700;
 }
 
-/* CHECKOUT BAR */
+/* Payment modal */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:16px;
+}
 
-.checkout{
-  margin-top:10px;
-  background:white;
+.modal{
+  width:min(520px, 100%);
+  background:#fff;
+  border-radius:16px;
   border:1px solid var(--border);
-  padding:14px;
+  box-shadow:0 22px 60px rgba(0,0,0,.25);
+  overflow:hidden;
+}
+
+.modal-head{
+  padding:14px 16px;
+  background:#f7f8ff;
+  border-bottom:1px solid var(--border);
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-.total{
-  font-size:28px;
-  font-weight:800;
+.modal-head h3{
+  margin:0;
+  font-size:14px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
 }
 
-.checkout button{
-  background:var(--primary);
-  color:white;
+.modal-close{
   border:none;
-  padding:12px 24px;
-  font-weight:700;
+  background:transparent;
+  font-size:20px;
   cursor:pointer;
+  color:#6b7280;
+}
+
+.modal-body{
+  padding:16px;
+  display:grid;
+  gap:12px;
+}
+
+.modal-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.field label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+
+.field input, .field select{
+  width:100%;
+  padding:10px 10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  font-size:14px;
+}
+.field input:focus, .field select:focus{
+  outline:none;
+  border-color:rgba(99,91,255,.55);
+  box-shadow:0 0 0 3px rgba(99,91,255,.12);
+}
+
+.summary{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  background:#fff;
+}
+.summary .k{
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.summary .v{
+  font-size:22px;
+  font-weight:900;
+}
+.summary .v.positive{ color:var(--success); }
+.summary .v.negative{ color:var(--danger); }
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  padding:14px 16px;
+  border-top:1px solid var(--border);
+  background:#fff;
+}
+
+.ghost-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  padding:10px 14px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:700;
+  color:#111827;
+}
+
+@media(max-width:900px){
+  .sale-bar{ grid-template-columns:1fr; }
+  .pos-table-wrap{ height:calc(100vh - 330px); }
 }
 </style>
 
-<div class="pos-container">
+<div class="pos-wrap">
 
-<div class="sale-bar">
-<input id="clientName" placeholder="Customer Name">
-<input id="salesPerson" placeholder="Sold By">
+  <!-- Sale info bar -->
+  <div class="sale-bar">
+    <input id="clientName" placeholder="Customer Name (optional)">
+    <input id="salesPerson" placeholder="Sold By (optional)">
+  </div>
+
+  <!-- POS Grid Surface -->
+  <div class="pos-surface">
+
+    <div class="pos-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:42%;">Product</th>
+            <th style="width:13%;">Price</th>
+            <th style="width:12%;">Stock</th>
+            <th style="width:12%;">Qty</th>
+            <th style="width:15%;">Total</th>
+            <th style="width:6%;"></th>
+          </tr>
+        </thead>
+
+        <tbody id="salesBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Footer (Total + Action) -->
+    <div class="pos-footer">
+      <div class="total-box">
+        <div class="total-label">Total Sale</div>
+        <div class="total-value">Ksh <span id="grandTotal">0.00</span></div>
+      </div>
+
+      <!-- Keep same name submitSale(), but now it opens payment mode first -->
+      <button class="primary-btn" onclick="submitSale()">Record Sale</button>
+    </div>
+  </div>
+
+  <p id="message"></p>
 </div>
 
-<div class="pos-grid">
+<!-- Payment Modal -->
+<div class="modal-backdrop" id="payModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Payment</h3>
+      <button class="modal-close" onclick="closePayModal()">×</button>
+    </div>
 
-<div class="grid-header">
-<div>PRODUCT</div>
-<div>PRICE</div>
-<div>STOCK</div>
-<div>QTY</div>
-<div>TOTAL</div>
-<div></div>
-</div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="field">
+          <label>Payment Method</label>
+          <select id="paymentMethod" onchange="updateChange()">
+            <option value="cash">Cash</option>
+            <option value="mpesa">M-PESA</option>
+            <option value="card">Card</option>
+            <option value="split">Split</option>
+          </select>
+        </div>
 
-<div id="salesBody"></div>
+        <div class="field">
+          <label>Amount Paid</label>
+          <input id="amountPaid" type="number" min="0" step="0.01" placeholder="0.00" oninput="updateChange()">
+        </div>
+      </div>
 
-<div class="add-row">
-<button onclick="addRow()">+ Add Item</button>
-</div>
+      <div class="summary">
+        <div>
+          <div class="k">Total Due</div>
+          <div class="v" id="totalDue">Ksh 0.00</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="k">Balance / Change</div>
+          <div class="v" id="balanceValue">Ksh 0.00</div>
+        </div>
+      </div>
 
-</div>
+      <div class="field">
+        <label>Reference (optional)</label>
+        <input id="paymentRef" placeholder="e.g. M-PESA code or note">
+      </div>
+    </div>
 
-<div class="checkout">
-<div class="total">
-Ksh <span id="grandTotal">0.00</span>
-</div>
-
-<button onclick="submitSale()">Record Sale</button>
-</div>
-
-<p id="message"></p>
-
+    <div class="modal-actions">
+      <button class="ghost-btn" onclick="closePayModal()">Cancel</button>
+      <button class="primary-btn" onclick="confirmPayment()">Confirm & Record</button>
+    </div>
+  </div>
 </div>
 
 <datalist id="productList"></datalist>
@@ -187,85 +401,187 @@ Ksh <span id="grandTotal">0.00</span>
 <script>
 const baseURL="https://pos-10-production.up.railway.app";
 let allProducts=[];
+let pendingItems=null;
 
+/* --- Load products and seed grid --- */
 async function loadProducts(){
- const res=await fetch(`${baseURL}/products/`,{credentials:"include"});
- allProducts=await res.json();
+  const res=await fetch(`${baseURL}/products/`,{credentials:"include"});
+  allProducts=await res.json();
 
- productList.innerHTML=allProducts.map(p=>`<option value="${p.name}"></option>`).join("");
- addRow();
+  productList.innerHTML=allProducts.map(p=>`<option value="${p.name}"></option>`).join("");
+
+  seedRows();   // create grid down the page
+  updateGrandTotal();
 }
 
+const MIN_ROWS = 16; // initial visible grid "to bottom"
+function seedRows(){
+  while(salesBody.children.length < MIN_ROWS){
+    addRow();
+  }
+}
+
+/* --- Add a row (NO button shown; we auto-add as needed) --- */
 function addRow(){
- const row=document.createElement("div");
- row.className="grid-row";
-
- row.innerHTML=`
-<input list="productList" placeholder="Search product…" oninput="updateProduct(this)">
-<input class="price" type="number">
-<input class="stock" readonly>
-<input class="qty" type="number" min="1" oninput="updateTotal(this)">
-<input class="lineTotal" readonly>
-<button class="remove-btn" onclick="this.parentElement.remove();updateGrandTotal()">X</button>
-`;
-
- salesBody.appendChild(row);
+  const row=document.createElement("tr");
+  row.innerHTML=`
+    <td><input class="cell-input prod" list="productList" placeholder="Search product…" oninput="handleRowTyping(this); updateProduct(this)"></td>
+    <td><input class="cell-input price" type="number" oninput="handleRowTyping(this)"></td>
+    <td><input class="cell-input stock" readonly></td>
+    <td><input class="cell-input qty" type="number" min="1" oninput="handleRowTyping(this); updateTotal(this)"></td>
+    <td><input class="cell-input lineTotal" readonly></td>
+    <td class="row-actions"><button class="remove-btn" onclick="this.closest('tr').remove();updateGrandTotal();ensureInfiniteGrid()">×</button></td>
+  `;
+  salesBody.appendChild(row);
 }
 
-function updateProduct(input){
- const p=allProducts.find(x=>x.name.toLowerCase()===input.value.toLowerCase());
- if(!p)return;
+/* Whenever user types near bottom, add more rows automatically */
+function ensureInfiniteGrid(){
+  // Always ensure at least MIN_ROWS exist
+  seedRows();
 
- const r=input.parentElement;
- r.querySelector(".price").value=p.price;
- r.querySelector(".stock").value=p.quantity;
+  // If any of the last 2 rows has data, add another row (repeat until last 2 are empty)
+  while(shouldExtend()){
+    addRow();
+  }
+}
+
+function shouldExtend(){
+  const rows=[...salesBody.querySelectorAll("tr")];
+  if(rows.length < 2) return true;
+
+  const last=rows[rows.length-1];
+  const prev=rows[rows.length-2];
+
+  return rowHasData(last) || rowHasData(prev);
+}
+
+function rowHasData(r){
+  if(!r) return false;
+  const prod = r.querySelector(".prod")?.value?.trim();
+  const qty  = r.querySelector(".qty")?.value?.trim();
+  const price= r.querySelector(".price")?.value?.trim();
+  return !!(prod || qty || price);
+}
+
+function handleRowTyping(el){
+  // If user is interacting close to the bottom, extend grid.
+  ensureInfiniteGrid();
+}
+
+/* --- Original logic (kept) --- */
+function updateProduct(input){
+  const p=allProducts.find(x=>x.name.toLowerCase()===input.value.toLowerCase());
+  if(!p) return;
+
+  const r=input.closest("tr");
+  r.querySelector(".price").value=p.price;
+  r.querySelector(".stock").value=p.quantity;
+
+  // If qty already exists, recompute total
+  const q = r.querySelector(".qty");
+  if(q && q.value) updateTotal(q);
 }
 
 function updateTotal(q){
- const r=q.parentElement;
- const price=+r.querySelector(".price").value||0;
- r.querySelector(".lineTotal").value=(price*q.value).toFixed(2);
- updateGrandTotal();
+  const r=q.closest("tr");
+  const price=+r.querySelector(".price").value||0;
+  r.querySelector(".lineTotal").value=(price*q.value).toFixed(2);
+  updateGrandTotal();
 }
 
 function updateGrandTotal(){
- let t=0;
- document.querySelectorAll(".lineTotal").forEach(i=>t+=+i.value||0);
- grandTotal.textContent=t.toFixed(2);
+  let t=0;
+  document.querySelectorAll(".lineTotal").forEach(i=>t+=+i.value||0);
+  grandTotal.textContent=t.toFixed(2);
 }
 
-async function submitSale(){
- const items=[];
- document.querySelectorAll(".grid-row").forEach(r=>{
-  const name=r.children[0].value;
-  const q=+r.querySelector(".qty").value;
-  const price=+r.querySelector(".price").value;
-  if(name&&q>0)items.push({product_name:name,quantity:q,selling_price:price});
- });
+/* --- Payment mode (restores the flow you described) --- */
+function openPayModal(total){
+  totalDue.textContent = `Ksh ${total.toFixed(2)}`;
+  amountPaid.value = total.toFixed(2);
+  paymentMethod.value = "cash";
+  paymentRef.value = "";
+  updateChange();
+  payModal.style.display="flex";
 
- if(!items.length)return alert("Add at least one product");
+  setTimeout(()=>amountPaid.focus(), 50);
+}
 
- const res=await fetch(`${baseURL}/sales/record_sale/`,{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  credentials:"include",
-  body:JSON.stringify({
-    client_name:clientName.value||null,
-    sales_person:salesPerson.value||null,
-    items
-  })
- });
+function closePayModal(){
+  payModal.style.display="none";
+  pendingItems=null;
+}
 
- const out=await res.json();
+function updateChange(){
+  const total = +grandTotal.textContent || 0;
+  const paid = +amountPaid.value || 0;
+  const diff = paid - total;
 
- if(res.ok){
-  message.textContent="Sale recorded successfully!";
-  salesBody.innerHTML="";
-  addRow();
-  updateGrandTotal();
- }else{
-  message.textContent=out.detail||"Error recording sale";
- }
+  const label = diff >= 0 ? "Ksh " + diff.toFixed(2) : "Ksh " + diff.toFixed(2);
+  balanceValue.textContent = label;
+
+  balanceValue.classList.remove("positive","negative");
+  balanceValue.classList.add(diff >= 0 ? "positive" : "negative");
+}
+
+/* submitSale is still the button handler name — now it opens payment modal first */
+function submitSale(){
+  const items=[];
+  document.querySelectorAll("#salesBody tr").forEach(r=>{
+    const name=r.querySelector("input[list]")?.value;
+    const q=+r.querySelector(".qty")?.value;
+    const price=+r.querySelector(".price")?.value;
+    if(name && q>0) items.push({product_name:name,quantity:q,selling_price:price});
+  });
+
+  if(!items.length) return alert("Add at least one product");
+
+  pendingItems = items;
+  const total = +grandTotal.textContent || 0;
+  openPayModal(total);
+}
+
+async function confirmPayment(){
+  if(!pendingItems || !pendingItems.length) return closePayModal();
+
+  // Optional: keep cash strict, but don’t block other methods
+  const total = +grandTotal.textContent || 0;
+  const paid = +amountPaid.value || 0;
+  const method = paymentMethod.value;
+
+  if(method === "cash" && paid < total){
+    return alert("Amount paid is less than total due.");
+  }
+
+  // Record sale using SAME payload as your original code
+  const res=await fetch(`${baseURL}/sales/record_sale/`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    credentials:"include",
+    body:JSON.stringify({
+      client_name:clientName.value||null,
+      sales_person:salesPerson.value||null,
+      items: pendingItems
+    })
+  });
+
+  const out=await res.json();
+
+  if(res.ok){
+    message.style.color="green";
+    message.textContent="Sale recorded successfully!";
+    closePayModal();
+
+    salesBody.innerHTML="";
+    seedRows();
+    updateGrandTotal();
+    ensureInfiniteGrid();
+  }else{
+    message.style.color="red";
+    message.textContent=out.detail||"Error recording sale";
+    // keep modal open so user can try again if needed
+  }
 }
 
 loadProducts();
