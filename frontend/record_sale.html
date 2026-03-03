@@ -320,12 +320,40 @@ function updateProduct(input){
   const r=input.closest("tr");
   r.querySelector(".price").value=p.price;
   r.querySelector(".stock").value=p.quantity;
+  const qtyInput = r.querySelector(".qty");
+
+if(p.quantity <= 0){
+  qtyInput.disabled = true;
+  showToast("This product is out of stock","error");
+}else{
+  qtyInput.disabled = false;
+}
 }
 
 function updateTotal(q){
   const r=q.closest("tr");
+
   const price=+r.querySelector(".price").value||0;
-  r.querySelector(".lineTotal").value=(price*q.value).toFixed(2);
+  const stock=+r.querySelector(".stock").value||0;
+  let qty=+q.value||0;
+
+  /* 🚫 Prevent selling more than stock */
+  if(qty > stock){
+    showToast("Not enough stock available","error");
+    qty = stock;
+    q.value = stock;
+  }
+
+  /* 🚫 Prevent selling when stock = 0 */
+  if(stock <= 0){
+    showToast("Item is out of stock","error");
+    q.value="";
+    r.querySelector(".lineTotal").value="";
+    updateGrandTotal();
+    return;
+  }
+
+  r.querySelector(".lineTotal").value=(price*qty).toFixed(2);
   updateGrandTotal();
 }
 
@@ -348,19 +376,45 @@ function showToast(message,type="success"){
   },3000);
 }
 async function submitSale(){
+
   const items=[];
+
   document.querySelectorAll("#salesBody tr").forEach(r=>{
-    const name=r.querySelector("input[list]")?.value;
-    const q=+r.querySelector(".qty")?.value;
-    const price=+r.querySelector(".price")?.value;
-    if(name && q>0) items.push({product_name:name,quantity:q,selling_price:price});
+
+    const name = r.querySelector("input[list]")?.value;
+    const q = +r.querySelector(".qty")?.value;
+    const price = +r.querySelector(".price")?.value;
+    const stock = +r.querySelector(".stock")?.value || 0;
+
+    if(name && q>0){
+
+      /* 🚫 OUT OF STOCK BLOCK */
+      if(stock <= 0){
+        showToast(`${name} is out of stock`,"error");
+        throw new Error("Stock validation failed");
+      }
+
+      /* 🚫 OVERSELL BLOCK */
+      if(q > stock){
+        showToast(`Insufficient stock for ${name}`,"error");
+        throw new Error("Stock validation failed");
+      }
+
+      items.push({
+        product_name:name,
+        quantity:q,
+        selling_price:price
+      });
+    }
+
   });
 
   if(!items.length){
-  showToast("Add at least one product","error");
-  return;
+    showToast("Add at least one product","error");
+    return;
   }
-  const res=await fetch(`${baseURL}/sales/record_sale/`,{
+
+  const res = await fetch(`${baseURL}/sales/record_sale/`,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     credentials:"include",
@@ -371,15 +425,17 @@ async function submitSale(){
     })
   });
 
-  const out=await res.json();
+  const out = await res.json();
 
   if(res.ok){
     showToast("Sale recorded successfully!","success");
+
     salesBody.innerHTML="";
     for(let i=0;i<SEED_ROWS;i++) addRow();
+
     updateGrandTotal();
   }else{
-   showToast(out.detail||"Error recording sale","error");
+    showToast(out.detail||"Error recording sale","error");
   }
 }
 
@@ -392,7 +448,7 @@ document.addEventListener("keydown",function(e){
 
   const active=document.activeElement;
   if(!active.classList.contains("cell")) return;
-  
+
 
   const row=active.closest("tr");
   const rows=[...document.querySelectorAll("#salesBody tr")];
