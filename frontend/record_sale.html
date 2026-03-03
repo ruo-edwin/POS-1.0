@@ -563,12 +563,6 @@ document.addEventListener("keydown",function(e){
     // Qty → Next row product
     if(active===qty){
       ensureInfiniteGrid();
-      // If last row and total exists → open payment
-        const total = parseFloat(grandTotal.textContent);
-        if(total > 0 && rowIndex === rows.length - 1){
-          openPayment();
-          return;
-        }
       const nextRow=rows[index+1] || salesBody.lastElementChild;
       const nextProd=nextRow.querySelector(".prod");
 
