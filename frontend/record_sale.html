@@ -384,6 +384,75 @@ async function submitSale(){
 }
 
 loadProducts();
+/* =====================================================
+   ✅ KEYBOARD CASHIER MODE (ADDED ONLY — NOTHING CHANGED)
+===================================================== */
+
+document.addEventListener("keydown",function(e){
+
+  const active=document.activeElement;
+  if(!active.classList.contains("cell")) return;
+
+  const row=active.closest("tr");
+  const rows=[...document.querySelectorAll("#salesBody tr")];
+  const index=rows.indexOf(row);
+
+  const prod=row.querySelector(".prod");
+  const qty=row.querySelector(".qty");
+
+  /* ENTER FLOW */
+  if(e.key==="Enter"){
+    e.preventDefault();
+
+    // Product → Qty
+    if(active===prod){
+      qty.focus();
+      qty.select();
+      return;
+    }
+
+    // Qty → Next row product
+    if(active===qty){
+      ensureInfiniteGrid();
+
+      const nextRow=rows[index+1] || salesBody.lastElementChild;
+      const nextProd=nextRow.querySelector(".prod");
+
+      nextProd.focus();
+      nextProd.select();
+      return;
+    }
+  }
+
+  /* DOWN */
+  if(e.key==="ArrowDown"){
+    e.preventDefault();
+    const nextRow=rows[index+1];
+    if(!nextRow) return;
+
+    const cls=[...active.classList].find(c=>["prod","price","qty"].includes(c));
+    const nextCell=nextRow.querySelector(`.${cls}`);
+    if(nextCell){ nextCell.focus(); nextCell.select(); }
+  }
+
+  /* UP */
+  if(e.key==="ArrowUp"){
+    e.preventDefault();
+    const prevRow=rows[index-1];
+    if(!prevRow) return;
+
+    const cls=[...active.classList].find(c=>["prod","price","qty"].includes(c));
+    const prevCell=prevRow.querySelector(`.${cls}`);
+    if(prevCell){ prevCell.focus(); prevCell.select(); }
+  }
+
+  /* ESC clears */
+  if(e.key==="Escape"){
+    active.value="";
+    updateGrandTotal();
+  }
+
+});
 </script>
 
 {% endblock %}
