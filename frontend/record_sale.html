@@ -394,17 +394,13 @@ async function loadUsers(){
 
   const select = document.getElementById("salesPerson");
 
-  select.innerHTML = users.map(u =>
-    `<option value="${u.username}">${u.username}</option>`
-  ).join("");
+  const currentUser = "{{ username }}";
 
-  /* AUTO SELECT LOGGED IN USER */
-  const currentUser = "{{ request.user.username }}";
-
-  const match = [...select.options].find(o => o.value === currentUser);
-  if(match){
-    select.value = currentUser;
-  }
+  select.innerHTML = users.map(u => `
+    <option value="${u.username}" ${u.username === currentUser ? "selected" : ""}>
+      ${u.username}
+    </option>
+  `).join("");
 
 }
 function addRow(){
