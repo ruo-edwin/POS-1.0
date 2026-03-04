@@ -547,7 +547,15 @@ async function submitSale(){
   }else{
     showToast(out.detail||"Error recording sale","error");
   }
+
+  setTimeout(()=>{
+  const first = document.querySelector("#salesBody .prod");
+  if(first){
+    first.focus();
+  }
+},50);
 }
+
 
 loadProducts();
 loadUsers();
