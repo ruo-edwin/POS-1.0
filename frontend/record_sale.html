@@ -389,7 +389,7 @@ async function loadProducts(){
 }
 async function loadUsers(){
 
-  const res = await fetch(`${baseURL}/users/`,{credentials:"include"});
+  const res = await fetch(`${baseURL}/auth/users/`,{credentials:"include"});
   const users = await res.json();
 
   const select = document.getElementById("salesPerson");
