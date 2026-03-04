@@ -64,6 +64,8 @@ class SaleRequest(BaseModel):
     sales_person: Optional[str] = None
     items: List[SaleItem]
 
+
+
 # =======================================================================
 # 🚀 RECORD SALE
 # =======================================================================

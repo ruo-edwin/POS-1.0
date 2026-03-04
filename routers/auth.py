@@ -174,6 +174,25 @@ def manage_staff_page(
         }
     )
 
+
+
+@router.get("/users/")
+def get_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    
+    users = db.query(User).filter(
+        User.business_id == current_user.business_id
+    ).all()
+
+    return [
+        {
+            "username": u.username,
+            "role": u.role
+        }
+        for u in users
+    ]
 # ✅ Register: Business + Admin + Subscription + AUTO LOGIN
 @router.post("/register_form")
 def register_business(

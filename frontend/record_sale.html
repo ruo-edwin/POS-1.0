@@ -335,7 +335,7 @@ tbody td:last-child{border-right:none;}
     <div class="pos-top">
       <div class="sale-bar">
         <input id="clientName" placeholder="Customer Name (optional)">
-        <input id="salesPerson" placeholder="Sold By (optional)">
+        <select id="salesPerson"></select>
       </div>
     </div>
 
@@ -387,7 +387,26 @@ async function loadProducts(){
   for(let i=0;i<SEED_ROWS;i++) addRow();
   updateGrandTotal();
 }
+async function loadUsers(){
 
+  const res = await fetch(`${baseURL}/users/`,{credentials:"include"});
+  const users = await res.json();
+
+  const select = document.getElementById("salesPerson");
+
+  select.innerHTML = users.map(u =>
+    `<option value="${u.username}">${u.username}</option>`
+  ).join("");
+
+  /* AUTO SELECT LOGGED IN USER */
+  const currentUser = "{{ request.user.username }}";
+
+  const match = [...select.options].find(o => o.value === currentUser);
+  if(match){
+    select.value = currentUser;
+  }
+
+}
 function addRow(){
   const row=document.createElement("tr");
   row.innerHTML=`
@@ -526,7 +545,7 @@ async function submitSale(){
     for(let i=0;i<SEED_ROWS;i++) addRow();
 
     document.getElementById("clientName").value = "";
-    document.getElementById("salesPerson").value = "";
+    
 
     updateGrandTotal();
   }else{
@@ -535,6 +554,7 @@ async function submitSale(){
 }
 
 loadProducts();
+loadUsers();
 /* =====================================================
    ✅ KEYBOARD CASHIER MODE 
 ===================================================== */
