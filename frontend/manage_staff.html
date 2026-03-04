@@ -1,212 +1,235 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manage Staff | SmartPOS</title>
+{% extends "base.html" %}
 
-  <!-- Inter Font -->
-  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+{% block title_suffix %} | Manage Staff{% endblock %}
+{% block page_title %}Manage Staff{% endblock %}
 
-  <style>
-    :root {
-      --accent: #4f46e5;
-      --accent-strong: #6366f1;
-      --bg-body: linear-gradient(135deg, #f7f9fc, #e7ebf5);
-      --bg-card: #ffffff;
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-      --border-soft: rgba(0,0,0,0.08);
-      --radius: 18px;
-      --shadow-soft: 0 18px 40px rgba(0,0,0,0.08);
-    }
+{% block content %}
 
-    * {
-      box-sizing: border-box;
-      font-family: "Inter", system-ui, sans-serif;
-    }
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
-    body {
-      margin: 0;
-      padding: 40px 20px;
-      background: var(--bg-body);
-      display: flex;
-      justify-content: center;
-      color: var(--text-main);
-      min-height: 100vh;
-    }
+<style>
 
-    .container {
-      width: 100%;
-      max-width: 520px;
-      background: var(--bg-card);
-      padding: 36px 32px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-soft);
-      border: 1px solid var(--border-soft);
-      animation: fadeIn 0.4s ease;
-    }
+:root{
+  --surface:#ffffff;
+  --border:#e6ebf1;
+  --text:#1a1f36;
+  --muted:#697386;
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+  --primary:#635bff;
+  --primary2:#7c3aed;
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 1.6rem;
-      background: linear-gradient(90deg, #1f2937, #6366f1);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
+  --radius:14px;
+  --shadow:0 12px 30px rgba(16,24,40,.08);
+}
 
-    .subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin-bottom: 28px;
-    }
+/* PAGE WRAPPER */
 
-    h3 {
-      font-size: 1rem;
-      margin-bottom: 14px;
-    }
+.staff-page{
+  max-width:720px;
+  margin:40px auto;
+}
 
-    .staff-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 30px;
-    }
+/* CARD */
 
-    .staff-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border-soft);
-      background: rgba(0,0,0,0.02);
-      font-size: 0.92rem;
-    }
+.staff-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:28px 26px;
+}
 
-    .role-badge {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(79,70,229,0.12);
-      color: var(--accent);
-      border: 1px solid rgba(79,70,229,0.25);
-    }
+/* HEADER */
 
-    .empty-state {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px dashed var(--border-soft);
-      text-align: center;
-    }
+.staff-header{
+  margin-bottom:26px;
+}
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+.staff-header h2{
+  margin:0 0 6px;
+  font-size:20px;
+  font-weight:800;
+  color:var(--text);
+}
 
-    label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-      display: block;
-    }
+.staff-header p{
+  margin:0;
+  font-size:14px;
+  color:var(--muted);
+}
 
-    input, select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border-soft);
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
+/* SECTION TITLE */
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
-    }
+.section-title{
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin:24px 0 12px;
+}
 
-    button {
-      margin-top: 6px;
-      padding: 12px;
-      border-radius: 999px;
-      border: none;
-      font-weight: 600;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 10px 20px rgba(79,70,229,0.25);
-      transition: 0.25s;
-    }
+/* STAFF LIST */
 
-    button:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.05);
-    }
+.staff-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
-    .back-link {
-      display: inline-block;
-      margin-top: 24px;
-      font-size: 0.85rem;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
+.staff-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 
-    .back-link:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
+  padding:12px 14px;
 
-<body>
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#f9fafc;
 
-  <div class="container">
+  font-size:14px;
+}
 
-    <h1>👥 Manage Staff</h1>
-    <div class="subtitle">Add and manage users for your business</div>
+.role-badge{
+  font-size:12px;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:999px;
 
-    <!-- Existing Staff -->
-    <h3>Existing Staff</h3>
-    <div class="staff-list">
-      {% for s in staff_list %}
-        <div class="staff-item">
-          <span>{{ s.username }}</span>
-          <span class="role-badge">{{ s.role }}</span>
-        </div>
-      {% else %}
-        <div class="empty-state">
-          No staff added yet.
-        </div>
-      {% endfor %}
+  background:rgba(99,91,255,.1);
+  color:var(--primary);
+  border:1px solid rgba(99,91,255,.25);
+}
+
+/* EMPTY */
+
+.empty-state{
+  padding:14px;
+  border:1px dashed var(--border);
+  border-radius:10px;
+  text-align:center;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* FORM */
+
+.staff-form{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+label{
+  font-size:12px;
+  font-weight:700;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+input,select{
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  font-size:14px;
+  background:#fff;
+}
+
+input:focus,select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(99,91,255,.12);
+}
+
+/* BUTTON */
+
+.primary-btn{
+  border:none;
+  cursor:pointer;
+  color:#fff;
+  font-weight:800;
+  border-radius:999px;
+  padding:12px 18px;
+
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+
+  font-size:14px;
+  margin-top:4px;
+}
+
+/* BACK */
+
+.back-link{
+  display:inline-block;
+  margin-top:18px;
+  font-size:13px;
+  color:var(--primary);
+  font-weight:700;
+  text-decoration:none;
+}
+
+.back-link:hover{
+  text-decoration:underline;
+}
+
+</style>
+
+
+<div class="staff-page">
+
+  <div class="staff-card">
+
+    <div class="staff-header">
+      <h2>👥 Manage Staff</h2>
+      <p>Add and manage users for your business</p>
     </div>
 
-    <!-- Add New Staff -->
-    <h3>Add New Staff</h3>
 
-    <form method="post" action="/auth/create_staff">
-      <div>
+    <!-- EXISTING STAFF -->
+
+    <div class="section-title">Existing Staff</div>
+
+    <div class="staff-list">
+
+      {% for s in staff_list %}
+      <div class="staff-item">
+        <span>{{ s.username }}</span>
+        <span class="role-badge">{{ s.role }}</span>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        No staff added yet.
+      </div>
+      {% endfor %}
+
+    </div>
+
+
+    <!-- ADD STAFF -->
+
+    <div class="section-title">Add New Staff</div>
+
+    <form method="post" action="/auth/create_staff" class="staff-form">
+
+      <div class="form-group">
         <label>Username</label>
         <input type="text" name="username" required>
       </div>
 
-      <div>
+      <div class="form-group">
         <label>Password</label>
         <input type="password" name="password" required>
       </div>
 
-      <div>
+      <div class="form-group">
         <label>Role</label>
         <select name="role" required>
           <option value="staff">Staff (Sell Only)</option>
@@ -214,12 +237,16 @@
         </select>
       </div>
 
-      <button type="submit">Create Staff</button>
+      <button class="primary-btn" type="submit">
+        Create Staff
+      </button>
+
     </form>
 
     <a href="/auth/dashboard" class="back-link">⬅ Back to Dashboard</a>
 
   </div>
 
-</body>
-</html>
+</div>
+
+{% endblock %}
