@@ -525,6 +525,9 @@ async function submitSale(){
     salesBody.innerHTML="";
     for(let i=0;i<SEED_ROWS;i++) addRow();
 
+    document.getElementById("clientName").value = "";
+    document.getElementById("salesPerson").value = "";
+
     updateGrandTotal();
   }else{
     showToast(out.detail||"Error recording sale","error");
