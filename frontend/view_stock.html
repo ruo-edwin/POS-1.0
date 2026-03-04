@@ -1,301 +1,264 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- PWA -->
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#635bff">
+{% extends "base.html" %}
 
-<!-- iOS support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SmartPOS">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+{% block title_suffix %} | View / Update Stocks{% endblock %}
+{% block page_title %}Inventory{% endblock %}
 
-  <title>View / Update Stocks | SmartPOS</title>
+{% block content %}
 
-  <!-- Stripe Font -->
-  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>
 
-  <style>
-    :root {
-      --accent: #4f46e5;
-      --accent-strong: #6366f1;
+.stock-card{
+  background:#fff;
+  border:1px solid #e6ebf1;
+  border-radius:14px;
+  padding:26px;
+}
 
-      --bg-light: #f7f9fc;
-      --bg-gradient: linear-gradient(135deg, #f9fbff 0%, #eef2f9 40%, #e2e7f3 100%);
+.stock-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
 
-      --card-bg: #ffffff;
-      --border-soft: rgba(0,0,0,0.08);
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
+.stock-title{
+  font-size:18px;
+  font-weight:700;
+}
 
-      --radius: 16px;
-      --shadow-soft: 0 18px 40px rgba(0,0,0,0.08);
-    }
+.add-btn{
+  background:linear-gradient(135deg,#635bff,#7c3aed);
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+}
 
-    * {
-      box-sizing: border-box;
-      font-family: "Inter", system-ui, sans-serif;
-    }
+.add-btn:hover{
+  opacity:.9;
+}
 
-    body {
-      margin: 0;
-      padding: 40px 20px;
-      background: var(--bg-gradient);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: var(--text-main);
-      min-height: 100vh;
-    }
+/* table */
 
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-      font-size: 2rem;
-      letter-spacing: -0.02em;
-      background: linear-gradient(90deg, #111827, #6366f1);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
+.table-wrap{
+  border:1px solid #e6ebf1;
+  border-radius:12px;
+  overflow:hidden;
+}
 
-    .container {
-      width: 100%;
-      max-width: 1100px;
-      background: var(--card-bg);
-      padding: 28px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-soft);
-      border: 1px solid var(--border-soft);
-      animation: fadeIn 0.4s ease;
-    }
+table{
+  width:100%;
+  border-collapse:collapse;
+}
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+thead{
+  background:#f6f9fc;
+}
 
-    /* Add Button */
-    .add-btn {
-      text-decoration: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: white;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-weight: 600;
-      margin-bottom: 20px;
-      display: inline-block;
-      box-shadow: 0 12px 26px rgba(79, 70, 229, 0.25);
-      transition: 0.25s;
-    }
+th{
+  padding:12px;
+  text-align:left;
+  font-size:12px;
+  text-transform:uppercase;
+  color:#697386;
+  letter-spacing:.06em;
+}
 
-    .add-btn:hover {
-      transform: translateY(-3px);
-      filter: brightness(1.07);
-    }
+td{
+  padding:12px;
+  border-top:1px solid #eef2f7;
+}
 
-    /* TABLE */
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: var(--radius);
-      border: 1px solid var(--border-soft);
-    }
+tr:hover{
+  background:#f9fafc;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 900px;
-      background: white;
-    }
+/* inputs */
 
-    th {
-      background: var(--accent);
-      color: white;
-      padding: 12px;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+td input{
+  width:100px;
+  padding:7px;
+  border-radius:8px;
+  border:1px solid #dfe6ef;
+  background:#f8fafc;
+}
 
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #e5e7eb;
-      color: var(--text-main);
-      text-align: center;
-    }
+/* update button */
 
-    tr:hover {
-      background: #f1f4fb;
-    }
+.update-btn{
+  border:none;
+  background:#16a34a;
+  color:white;
+  padding:8px 14px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+}
 
-    /* Inputs */
-    td input {
-      width: 90px;
-      padding: 8px;
-      border-radius: 10px;
-      border: 1px solid #cbd5e1;
-      font-size: 0.9rem;
-      text-align: center;
-      background: #f8fafc;
-    }
+.update-btn:hover{
+  opacity:.9;
+}
 
-    /* Update Button */
-    .update-btn {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      padding: 8px 14px;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.25s;
-      box-shadow: 0 8px 18px rgba(34,197,94,0.25);
-    }
+#message{
+  margin-top:16px;
+  font-weight:600;
+}
 
-    .update-btn:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.07);
-    }
+</style>
 
-    #message {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 1rem;
-    }
+<div class="stock-card">
 
-    /* Back Link */
-    .back-link {
-      margin-top: 25px;
-      display: inline-block;
-      text-decoration: none;
-      color: var(--accent);
-      font-weight: 600;
-      transition: 0.2s;
-    }
-    .back-link:hover {
-      color: var(--accent-strong);
-    }
+  <div class="stock-header">
+      <div class="stock-title">Product Stock Management</div>
 
-  </style>
-</head>
+      <a class="add-btn" href="/products/addproduct">
+        + Add Product
+      </a>
+  </div>
 
-<body>
+  <div class="table-wrap">
 
-  <h1>View / Update Stocks</h1>
+    <table id="stockTable">
 
-  <div class="container">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Selling Price</th>
+          <th>Buying Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
 
-    <a class="add-btn" href="https://pos-10-production.up.railway.app/products/addproduct">
-      ➕ Add New Product
-    </a>
+      <tbody></tbody>
 
-    <div class="table-wrapper">
-      <table id="stockTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Quantity</th>
-            <th>Selling Price (Ksh)</th>
-            <th>Buying Price (Ksh)</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <p id="message"></p>
-
-    <a class="back-link" href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
+    </table>
 
   </div>
 
-  <script>
-    // Fetch and display all products
-    async function fetchStocks() {
-      try {
-        const res = await fetch("https://pos-10-production.up.railway.app/products/");
-        const data = await res.json();
-        const tbody = document.querySelector("#stockTable tbody");
-        tbody.innerHTML = "";
+  <p id="message"></p>
 
-        data.forEach(product => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${product.id}</td>
-            <td>${product.name}</td>
+</div>
 
-            <td>
-              <input type="number" value="${product.quantity}" id="qty-${product.id}">
-            </td>
 
-            <td>
-              <input type="number" step="0.01" value="${product.price}" id="price-${product.id}">
-            </td>
+<script>
 
-            <td>
-              <input type="number" step="0.01" value="${product.buying_price}" id="buying-${product.id}">
-            </td>
+async function fetchStocks(){
 
-            <td>
-              <button class="update-btn" onclick="updateProduct(${product.id})">Update</button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      } catch (err) {
-        const msg = document.getElementById("message");
-        msg.style.color = "red";
-        msg.textContent = "⚠️ Failed to load products.";
-      }
-    }
+  try{
 
-    // Update product details
-    async function updateProduct(id) {
-      const quantity = parseInt(document.getElementById(`qty-${id}`).value);
-      const price = parseFloat(document.getElementById(`price-${id}`).value);
-      const buying_price = parseFloat(document.getElementById(`buying-${id}`).value);
+    const res = await fetch("/products/",{credentials:"include"});
+    const data = await res.json();
 
-      try {
-        const response = await fetch(`https://pos-10-production.up.railway.app/products/update_stock/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quantity, price, buying_price })
-        });
+    const tbody = document.querySelector("#stockTable tbody");
+    tbody.innerHTML="";
 
-        const result = await response.json();
-        const msg = document.getElementById("message");
+    data.forEach(product => {
 
-        if (response.ok) {
-          msg.style.color = "green";
-          msg.textContent = result.message || "✅ Product updated successfully!";
-        } else {
-          msg.style.color = "red";
-          msg.textContent = result.detail || "❌ Failed to update product.";
-        }
+      const row=document.createElement("tr");
 
-        fetchStocks(); // Refresh table
-      } catch (err) {
-        const msg = document.getElementById("message");
-        msg.style.color = "red";
-        msg.textContent = "⚠️ Network error. Please try again.";
-      }
-    }
+      row.innerHTML=`
 
-    fetchStocks();
-    
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/static/service-worker.js")
-      .then(() => console.log("Service Worker registered"))
-      .catch(err => console.error("SW registration failed:", err));
+        <td>${product.id}</td>
+
+        <td>${product.name}</td>
+
+        <td>
+          <input type="number" value="${product.quantity}" id="qty-${product.id}">
+        </td>
+
+        <td>
+          <input type="number" step="0.01" value="${product.price}" id="price-${product.id}">
+        </td>
+
+        <td>
+          <input type="number" step="0.01" value="${product.buying_price}" id="buying-${product.id}">
+        </td>
+
+        <td>
+          <button class="update-btn" onclick="updateProduct(${product.id})">
+            Update
+          </button>
+        </td>
+
+      `;
+
+      tbody.appendChild(row);
+
+    });
+
+  }
+  catch(err){
+
+    const msg=document.getElementById("message");
+    msg.style.color="red";
+    msg.textContent="Failed to load products.";
+
   }
 
+}
+
+
+async function updateProduct(id){
+
+  const quantity=parseInt(document.getElementById(`qty-${id}`).value);
+  const price=parseFloat(document.getElementById(`price-${id}`).value);
+  const buying_price=parseFloat(document.getElementById(`buying-${id}`).value);
+
+  try{
+
+    const response = await fetch(`/products/update_stock/${id}`,{
+
+      method:"PUT",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      credentials:"include",
+
+      body:JSON.stringify({
+        quantity,
+        price,
+        buying_price
+      })
+
+    });
+
+    const result=await response.json();
+
+    const msg=document.getElementById("message");
+
+    if(response.ok){
+
+      msg.style.color="green";
+      msg.textContent=result.message || "Product updated successfully.";
+
+    }else{
+
+      msg.style.color="red";
+      msg.textContent=result.detail || "Failed to update product.";
+
+    }
+
+  }
+  catch(err){
+
+    const msg=document.getElementById("message");
+    msg.style.color="red";
+    msg.textContent="Network error.";
+
+  }
+
+}
+
+
+fetchStocks();
 
 </script>
 
-</body>
-</html>
+{% endblock %}
