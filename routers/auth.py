@@ -178,12 +178,17 @@ def manage_staff_page(
 
 @router.get("/users/")
 def get_users(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
 ):
-    
-    users = db.query(User).filter(
-        User.business_id == current_user.business_id
+
+    # 🔒 Ensure user is authenticated
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # Only return users belonging to the same business
+    users = db.query(models.User).filter(
+        models.User.business_id == current_user["business_id"]
     ).all()
 
     return [
