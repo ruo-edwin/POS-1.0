@@ -7,7 +7,7 @@ from backend.config import templates
 from backend.auth_utils import verify_token
 from backend.onboarding_utils import record_onboarding_event
 from backend.template_context import base_context
-
+from datetime import datetime
 
 # ✅ Define base URL for production (Railway)
 BASE_URL = "https://pos-10-production.up.railway.app"
