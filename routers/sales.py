@@ -205,7 +205,23 @@ def record_sale(sale_data: SaleRequest, request: Request, db: Session = Depends(
         # ✅ NEW: reduce stock ONLY for real sales
         # --------------------------------------------------
         if not is_demo_sale:
-            product.quantity -= item.quantity
+
+    qty = item.quantity
+
+    # reduce product stock
+    product.quantity -= qty
+
+    # record inventory movement
+    movement = models.InventoryMovement(
+        product_id=product.id,
+        business_id=business_id,
+        movement_type="sale",
+        quantity=-qty,               # negative because stock leaves
+        reference_id=new_order.id,   # link to the order
+        reason="POS Sale"
+    )
+
+    db.add(movement)
 
         bp = product.buying_price if product.buying_price is not None else 0
         total_profit += (item.selling_price - bp) * item.quantity
