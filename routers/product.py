@@ -6,6 +6,8 @@ from backend import models
 from backend.config import templates
 from backend.auth_utils import verify_token
 from backend.onboarding_utils import record_onboarding_event
+from backend.template_context import base_context
+
 
 # ✅ Define base URL for production (Railway)
 BASE_URL = "https://pos-10-production.up.railway.app"
@@ -38,6 +40,36 @@ async def add_product_page(request: Request):
     source = request.query_params.get("source")  # "onboarding" or None
     return templates.TemplateResponse("add_product.html", {"request": request, "source": source})
 
+
+@router.get("/adjust/{product_id}", response_class=HTMLResponse)
+async def adjust_stock_page(
+    product_id: int,
+    request: Request,
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    # ✅ admin/manager only
+    if not current_user or current_user.get("role") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    product = db.query(models.Product).filter(
+        models.Product.id == product_id,
+        models.Product.business_id == current_user["business_id"]
+    ).first()
+
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    user_obj = db.query(models.User).filter(models.User.id == current_user["user_id"]).first()
+
+    return templates.TemplateResponse(
+        "adjust_stock.html",
+        {
+            **base_context(request, user_obj),
+            "active_page": "products",
+            "product": product
+        }
+    )
 @router.get("/viewstocks", response_class=HTMLResponse)
 async def view_stocks_page(
     request: Request,
@@ -50,7 +82,38 @@ async def view_stocks_page(
 
     # ✅ Stock page still exists, but we are NOT tracking it as an onboarding step anymore
     return templates.TemplateResponse("view_stock.html", {"request": request})
+@router.get("/history/{product_id}", response_class=HTMLResponse)
+async def product_history(
+    product_id: int,
+    request: Request,
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
 
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    product = db.query(models.Product).filter(
+        models.Product.id == product_id,
+        models.Product.business_id == current_user["business_id"]
+    ).first()
+
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    movements = db.query(models.InventoryMovement).filter(
+        models.InventoryMovement.product_id == product_id,
+        models.InventoryMovement.business_id == current_user["business_id"]
+    ).order_by(models.InventoryMovement.created_at.desc()).all()
+
+    return templates.TemplateResponse(
+        "product_history.html",
+        {
+            "request": request,
+            "product": product,
+            "movements": movements
+        }
+    )
 # ---------------- ADD PRODUCT ----------------
 
 @router.post("/add_product")
@@ -139,3 +202,61 @@ def update_stock(
     db.commit()
     db.refresh(product)
     return {"message": "✅ Product updated successfully", "product": product.name}
+
+    @router.post("/adjust/{product_id}")
+async def adjust_stock_submit(
+    product_id: int,
+    request: Request,
+    action: str = Form(...),   # "increase" or "decrease"
+    qty: int = Form(...),
+    reason: str = Form(""),
+    current_user: dict = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    # ✅ admin/manager only
+    if not current_user or current_user.get("role") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if qty is None or qty <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be greater than 0")
+
+    if action not in ["increase", "decrease"]:
+        raise HTTPException(status_code=400, detail="Invalid action")
+
+    product = db.query(models.Product).filter(
+        models.Product.id == product_id,
+        models.Product.business_id == current_user["business_id"]
+    ).with_for_update().first()
+
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    signed_qty = qty if action == "increase" else -qty
+
+    # ✅ Block negative stock (recommended)
+    if product.quantity + signed_qty < 0:
+        raise HTTPException(status_code=400, detail="Cannot reduce below 0 stock")
+
+    try:
+        # 1) Write movement (ledger)
+        mv = models.InventoryMovement(
+            product_id=product.id,
+            business_id=current_user["business_id"],
+            movement_type="adjustment",
+            quantity=signed_qty,
+            reference_id=None,
+            reason=(reason.strip() or None),
+            created_at=datetime.utcnow()
+        )
+        db.add(mv)
+
+        # 2) Update cached stock
+        product.quantity = product.quantity + signed_qty
+
+        db.commit()
+
+        return RedirectResponse(url="/products/viewstocks", status_code=303)
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))

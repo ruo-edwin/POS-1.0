@@ -141,3 +141,27 @@ class OnboardingEvent(Base):
     __table_args__ = (
         UniqueConstraint("business_id", "event", name="uq_onboarding_event"),
     )
+
+class InventoryMovement(Base):
+    __tablename__ = "inventory_movements"
+
+    id = Column(Integer, primary_key=True)
+
+    product_id = Column(Integer, ForeignKey("products.id"), index=True)
+    business_id = Column(Integer, ForeignKey("business.id"), index=True)
+
+    movement_type = Column(String(50))
+    # sale, purchase, adjustment, return
+
+    quantity = Column(Integer) 
+    # positive = increase
+    # negative = decrease
+
+    reference_id = Column(Integer, nullable=True)
+    # order id or purchase id
+
+    reason = Column(String(255), nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    product = relationship("Product")
