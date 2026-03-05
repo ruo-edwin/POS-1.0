@@ -174,10 +174,10 @@ class Supplier(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    name = Column(String, nullable=False)
+    name = Column(String(100), nullable=False)
 
-    phone = Column(String, nullable=True)
-    email = Column(String, nullable=True)
+    phone = Column(String(20), nullable=True)
+    email = Column(String(100), nullable=True)
 
     business_id = Column(Integer, nullable=False)
 
@@ -192,7 +192,7 @@ class Purchase(Base):
 
     business_id = Column(Integer, nullable=False)
 
-    invoice_number = Column(String, nullable=True)
+    invoice_number = Column(String(50), nullable=True)
 
     total_amount = Column(Float, default=0)
 
