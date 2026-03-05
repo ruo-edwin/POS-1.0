@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title_suffix %} | Receive Stock{% endblock %}
+{% block page_title %}Receive Stock{% endblock %}
+
+{% block content %}
+
+<style>
+  .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > *{flex:1 1 220px;}
+  input,select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;
+    background:#fff;
+  }
+  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:14px;}
+  thead th{background:#f1f4fb;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:10px;border-bottom:1px solid var(--border);}
+  tbody td{padding:10px;border-bottom:1px solid var(--border);}
+  .btn{
+    border:none;cursor:pointer;color:#fff;font-weight:800;border-radius:999px;padding:12px 18px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  }
+  .btn-lite{
+    border:1px solid var(--border);background:#fff;color:var(--text);font-weight:700;border-radius:999px;padding:10px 16px;cursor:pointer;
+  }
+  .danger{background:#fee2e2;color:#b91c1c;border:none;border-radius:10px;padding:8px 12px;font-weight:900;cursor:pointer;}
+  #toast{position:fixed;top:110px;right:25px;z-index:9999;display:flex;flex-direction:column;gap:10px;}
+  .toast-msg{min-width:260px;padding:14px 18px;border-radius:10px;font-weight:800;color:white;box-shadow:0 10px 25px rgba(0,0,0,.15);}
+  .toast-success{background:linear-gradient(135deg,#16a34a,#22c55e);}
+  .toast-error{background:linear-gradient(135deg,#dc2626,#ef4444);}
+</style>
+
+<div id="toast"></div>
+
+<div class="panel">
+
+  <div class="row">
+    <div>
+      <label>Supplier</label>
+      <select id="supplierSelect">
+        <option value="">Walk-in / No Supplier</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Invoice Number (optional)</label>
+      <input id="invoiceNumber" placeholder="e.g. INV-1029">
+    </div>
+  </div>
+
+  <div style="margin-top:12px;">
+    <label>Notes (optional)</label>
+    <textarea id="notes" rows="2" placeholder="Any note about this stock receipt..."></textarea>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; gap:10px; flex-wrap:wrap;">
+    <div style="font-weight:900;">Items</div>
+    <button class="btn-lite" onclick="addRow()">+ Add Item</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:38%;">Product</th>
+        <th style="width:12%;">Qty</th>
+        <th style="width:16%;">Buying Price</th>
+        <th style="width:16%;">Selling Price</th>
+        <th style="width:14%;">Line Total</th>
+        <th style="width:4%;"></th>
+      </tr>
+    </thead>
+    <tbody id="itemsBody"></tbody>
+  </table>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; gap:10px; flex-wrap:wrap;">
+    <div style="font-size:14px;color:var(--muted);">
+      Total: <span style="font-weight:900;color:var(--text);">Ksh <span id="grandTotal">0.00</span></span>
+    </div>
+
+    <button class="btn" onclick="submitReceive()">Receive Stock</button>
+  </div>
+
+</div>
+
+<script>
+let products = [];
+
+function showToast(message,type="success"){
+  const t=document.createElement("div");
+  t.className=`toast-msg toast-${type}`;
+  t.textContent=message;
+  document.getElementById("toast").appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+async function loadSuppliers(){
+  const res = await fetch("/purchases/suppliers", {credentials:"include"});
+  const data = await res.json();
+  const sel = document.getElementById("supplierSelect");
+  data.forEach(s=>{
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadProducts(){
+  const res = await fetch("/purchases/products", {credentials:"include"});
+  products = await res.json();
+}
+
+function addRow(){
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>
+      <select class="prod"></select>
+    </td>
+    <td><input class="qty" type="number" min="1" value="1" oninput="recalc(this)"></td>
+    <td><input class="bp" type="number" step="0.01" placeholder="Optional" oninput="recalc(this)"></td>
+    <td><input class="sp" type="number" step="0.01" placeholder="Optional"></td>
+    <td style="font-weight:900;">Ksh <span class="lt">0.00</span></td>
+    <td><button class="danger" onclick="this.closest('tr').remove();calcTotal()">×</button></td>
+  `;
+
+  const select = tr.querySelector(".prod");
+  select.innerHTML = `<option value="">Select product</option>` + products.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+  select.addEventListener("change", ()=>recalc(select));
+
+  document.getElementById("itemsBody").appendChild(tr);
+  calcTotal();
+}
+
+function recalc(el){
+  const tr = el.closest("tr");
+  const qty = parseInt(tr.querySelector(".qty").value || "0");
+  const bp = parseFloat(tr.querySelector(".bp").value || "0");
+  const line = (qty > 0 && bp > 0) ? (qty * bp) : 0;
+  tr.querySelector(".lt").textContent = line.toFixed(2);
+  calcTotal();
+}
+
+function calcTotal(){
+  let total = 0;
+  document.querySelectorAll(".lt").forEach(x=> total += parseFloat(x.textContent||"0"));
+  document.getElementById("grandTotal").textContent = total.toFixed(2);
+}
+
+async function submitReceive(){
+  const supplier_id = document.getElementById("supplierSelect").value || null;
+  const invoice_number = document.getElementById("invoiceNumber").value || null;
+  const notes = document.getElementById("notes").value || null;
+
+  const items = [];
+  document.querySelectorAll("#itemsBody tr").forEach(tr=>{
+    const product_id = parseInt(tr.querySelector(".prod").value || "0");
+    const quantity = parseInt(tr.querySelector(".qty").value || "0");
+    const buying_price = tr.querySelector(".bp").value ? parseFloat(tr.querySelector(".bp").value) : null;
+    const selling_price = tr.querySelector(".sp").value ? parseFloat(tr.querySelector(".sp").value) : null;
+
+    if(product_id && quantity > 0){
+      items.push({product_id, quantity, buying_price, selling_price});
+    }
+  });
+
+  if(items.length === 0){
+    showToast("Add at least one item","error");
+    return;
+  }
+
+  const res = await fetch("/purchases/receive_submit",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    credentials:"include",
+    body:JSON.stringify({supplier_id, invoice_number, notes, items})
+  });
+
+  const out = await res.json();
+
+  if(res.ok){
+    showToast(out.message || "✅ Stock received","success");
+    document.getElementById("itemsBody").innerHTML = "";
+    document.getElementById("invoiceNumber").value = "";
+    document.getElementById("notes").value = "";
+    document.getElementById("supplierSelect").value = "";
+    addRow();
+  }else{
+    showToast(out.detail || "❌ Failed","error");
+  }
+}
+
+(async function init(){
+  await loadSuppliers();
+  await loadProducts();
+  addRow();
+})();
+</script>
+
+{% endblock %}

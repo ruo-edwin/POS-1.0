@@ -165,3 +165,50 @@ class InventoryMovement(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     product = relationship("Product")
+
+from sqlalchemy import Column, Integer, String, Float, DateTime
+from datetime import datetime
+
+class Supplier(Base):
+    __tablename__ = "suppliers"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    name = Column(String, nullable=False)
+
+    phone = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+
+    business_id = Column(Integer, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Purchase(Base):
+    __tablename__ = "purchases"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    supplier_id = Column(Integer, nullable=True)
+
+    business_id = Column(Integer, nullable=False)
+
+    invoice_number = Column(String, nullable=True)
+
+    total_amount = Column(Float, default=0)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PurchaseItem(Base):
+    __tablename__ = "purchase_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    purchase_id = Column(Integer, nullable=False)
+
+    product_id = Column(Integer, nullable=False)
+
+    quantity = Column(Integer, nullable=False)
+
+    buying_price = Column(Float, nullable=False)
+
+    subtotal = Column(Float, nullable=False)

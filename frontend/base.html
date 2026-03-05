@@ -260,6 +260,10 @@ body{
            class="{% if active_page=='addproduct' %}active{% endif %}">
            Add Product
         </a>
+        <a href="/purchases/receive"
+            class="{% if active_page=='receive_stock' %}active{% endif %}">
+            Purchases
+        </a>
         {% endif %}
     </div>
 
@@ -275,6 +279,10 @@ body{
         <a href="/auth/manage_staff"
            class="{% if active_page=='staff' %}active{% endif %}">
            Manage Staff
+        </a>
+        <a href="/suppliers"
+            class="{% if active_page=='suppliers' %}active{% endif %}">
+            Manage Suppliers
         </a>
     </div>
     {% endif %}

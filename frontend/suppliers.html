@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title_suffix %} | Suppliers{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+<h3>Add Supplier</h3>
+
+<form id="supplierForm">
+
+<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+
+<input type="text" name="name" placeholder="Supplier Name" required>
+
+<input type="text" name="phone" placeholder="Phone">
+
+<input type="email" name="email" placeholder="Email">
+
+<button type="submit">Add Supplier</button>
+
+</div>
+
+</form>
+
+</div>
+
+
+<div class="card" style="margin-top:20px;">
+
+<h3>Suppliers List</h3>
+
+<table style="width:100%; border-collapse:collapse;">
+
+<thead>
+
+<tr style="text-align:left; border-bottom:1px solid #e6ebf1;">
+
+<th style="padding:10px;">Name</th>
+<th style="padding:10px;">Phone</th>
+<th style="padding:10px;">Email</th>
+
+</tr>
+
+</thead>
+
+<tbody id="suppliersTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<script>
+
+async function loadSuppliers(){
+
+    const res = await fetch("/suppliers/list")
+    const suppliers = await res.json()
+
+    const table = document.getElementById("suppliersTable")
+
+    table.innerHTML = ""
+
+    suppliers.forEach(s => {
+
+        table.innerHTML += `
+        <tr style="border-bottom:1px solid #f0f2f5;">
+            <td style="padding:10px;">${s.name}</td>
+            <td style="padding:10px;">${s.phone || ""}</td>
+            <td style="padding:10px;">${s.email || ""}</td>
+        </tr>
+        `
+
+    })
+
+}
+
+document.getElementById("supplierForm").addEventListener("submit", async function(e){
+
+    e.preventDefault()
+
+    const form = new FormData(this)
+
+    const res = await fetch("/suppliers/add", {
+        method:"POST",
+        body:form
+    })
+
+    const data = await res.json()
+
+    alert(data.message)
+
+    this.reset()
+
+    loadSuppliers()
+
+})
+
+loadSuppliers()
+
+</script>
+
+{% endblock %}
