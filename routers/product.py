@@ -203,7 +203,7 @@ def update_stock(
     db.refresh(product)
     return {"message": "✅ Product updated successfully", "product": product.name}
 
-    @router.post("/adjust/{product_id}")
+@router.post("/adjust/{product_id}")
 async def adjust_stock_submit(
     product_id: int,
     request: Request,

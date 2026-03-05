@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title_suffix %} | Inventory History{% endblock %}
+{% block page_title %}Inventory History{% endblock %}
+
+{% block content %}
+
+<style>
+
+.history-card{
+background:#fff;
+border:1px solid var(--border);
+border-radius:14px;
+padding:22px;
+}
+
+.history-header{
+margin-bottom:20px;
+}
+
+.history-header h2{
+margin:0;
+font-size:18px;
+}
+
+.stock-box{
+margin-top:6px;
+color:var(--muted);
+}
+
+.table-box{
+border:1px solid var(--border);
+border-radius:14px;
+overflow:hidden;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+thead{
+background:#f6f9fc;
+}
+
+th{
+text-align:left;
+padding:12px;
+font-size:12px;
+text-transform:uppercase;
+color:var(--muted);
+}
+
+td{
+padding:12px;
+border-top:1px solid var(--border);
+}
+
+.qty-plus{
+color:#16a34a;
+font-weight:700;
+}
+
+.qty-minus{
+color:#dc2626;
+font-weight:700;
+}
+
+.back-btn{
+margin-top:16px;
+display:inline-block;
+text-decoration:none;
+background:#635bff;
+color:white;
+padding:10px 14px;
+border-radius:10px;
+font-weight:600;
+}
+
+</style>
+
+
+<div class="history-card">
+
+<div class="history-header">
+
+<h2>{{ product.name }}</h2>
+
+<div class="stock-box">
+Current Stock: <strong>{{ product.quantity }}</strong>
+</div>
+
+</div>
+
+
+<div class="table-box">
+
+<table>
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Type</th>
+<th>Quantity</th>
+<th>Reason</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for m in movements %}
+
+<tr>
+
+<td>{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+
+<td>{{ m.movement_type }}</td>
+
+<td>
+{% if m.quantity > 0 %}
+<span class="qty-plus">+{{ m.quantity }}</span>
+{% else %}
+<span class="qty-minus">{{ m.quantity }}</span>
+{% endif %}
+</td>
+
+<td>{{ m.reason or "-" }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<a href="/products/viewstocks" class="back-btn">← Back to Inventory</a>
+
+</div>
+
+{% endblock %}
