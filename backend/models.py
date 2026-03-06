@@ -177,6 +177,7 @@ class Supplier(Base):
     email = Column(String(100), nullable=True)
     business_id = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
 
 class Purchase(Base):
     __tablename__ = "purchases"
@@ -187,7 +188,7 @@ class Purchase(Base):
     invoice_number = Column(String(50), nullable=True)
     notes = Column(String(500), nullable=True)
     total_amount = Column(Float, default=0)
-
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class PurchaseItem(Base):
