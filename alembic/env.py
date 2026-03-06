@@ -8,7 +8,8 @@ from alembic import context
 
 from backend.db import Base
 import backend.models  # make sure models are registered on Base.metadata
-
+from dotenv import load_dotenv
+load_dotenv("backend/.env")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
