@@ -29,8 +29,7 @@ class Product(Base):
         
     sales = relationship("Sales", back_populates="product")
     business = relationship("Business", back_populates="products")
-    purchases = relationship("PurchaseItem", backref="product")
-
+    purchases = relationship("PurchaseItem", back_populates="product")
 
 class Sales(Base):
     __tablename__ = "sales"
@@ -205,4 +204,4 @@ class PurchaseItem(Base):
     buying_price = Column(Float, nullable=False)
     subtotal = Column(Float, nullable=False)
 
-    product = relationship("Product")
+    product = relationship("Product", back_populates="purchases")
