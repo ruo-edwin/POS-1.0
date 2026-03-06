@@ -19,6 +19,8 @@ class Product(Base):
     buying_price = Column(Float, nullable=True)
     quantity = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    item_code = Column(String(100), nullable=True, index=True)
+    packaging_unit = Column(String(100), nullable=True)
      
     @validates("price")
     def validate_price(self, key, value):

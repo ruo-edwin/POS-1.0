@@ -1,237 +1,306 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- PWA -->
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#635bff">
+{% extends "base.html" %}
 
-<!-- iOS support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SmartPOS">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+{% block title_suffix %} | Create Products{% endblock %}
+{% block page_title %}Create Products{% endblock %}
 
-  <title>Add Product | SmartPOS</title>
+{% block content %}
 
-  <!-- Stripe Font -->
-  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>
 
-  <style>
-    :root {
-      --accent: #4f46e5;
-      --accent-strong: #6366f1;
+.panel{
+background:#fff;
+border:1px solid var(--border);
+border-radius:18px;
+padding:24px;
+box-shadow:0 10px 35px rgba(0,0,0,.06);
+}
 
-      --bg-light: #f7f9fc;
-      --bg-gradient: linear-gradient(135deg, #fafcff 0%, #eef2f7 50%, #e2e8f3 100%);
+.section-title{
+font-weight:900;
+font-size:18px;
+margin-bottom:10px;
+}
 
-      --card-bg: #ffffff;
-      --border-soft: rgba(0,0,0,0.08);
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
+.table{
+width:100%;
+border-collapse:separate;
+border-spacing:0;
+margin-top:12px;
+}
 
-      --radius: 18px;
-      --shadow-soft: 0 20px 45px rgba(0,0,0,0.08);
-    }
+thead th{
+background:#f4f6fc;
+padding:12px;
+font-size:12px;
+text-transform:uppercase;
+letter-spacing:.08em;
+color:var(--muted);
+border-bottom:1px solid var(--border);
+}
 
-    * {
-      box-sizing: border-box;
-      font-family: "Inter", system-ui, sans-serif;
-    }
+tbody td{
+padding:8px;
+border-bottom:1px solid var(--border);
+}
 
-    body {
-      margin: 0;
-      padding: 30px 16px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: var(--bg-gradient);
-    }
+input{
+width:100%;
+padding:10px 12px;
+border-radius:10px;
+border:1px solid var(--border);
+font-size:14px;
+background:#fff;
+}
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      background: linear-gradient(90deg, #1f2937, var(--accent-strong));
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      letter-spacing: -0.03em;
-      font-weight: 700;
-    }
+input:focus{
+outline:none;
+border-color:var(--primary);
+box-shadow:0 0 0 3px rgba(99,91,255,.1);
+}
 
-    /* Form Container */
-    .form-card {
-      background: var(--card-bg);
-      padding: 28px;
-      width: 100%;
-      max-width: 420px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-soft);
-      border: 1px solid var(--border-soft);
-      animation: fadeIn 0.4s ease;
-    }
+.btn{
+border:none;
+cursor:pointer;
+color:#fff;
+font-weight:800;
+border-radius:999px;
+padding:12px 18px;
+background:linear-gradient(135deg,var(--primary),var(--primary-2));
+}
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+.btn-lite{
+border:1px solid var(--border);
+background:#fff;
+font-weight:700;
+border-radius:999px;
+padding:8px 16px;
+cursor:pointer;
+}
 
-    .form-card input {
-      width: 100%;
-      padding: 13px;
-      margin-top: 12px;
-      border-radius: 12px;
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      font-size: 0.95rem;
-      outline: none;
-      transition: 0.15s;
-    }
+.danger{
+background:#fee2e2;
+color:#b91c1c;
+border:none;
+border-radius:10px;
+padding:6px 10px;
+font-weight:900;
+cursor:pointer;
+}
 
-    .form-card input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-    }
+.toolbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:14px;
+flex-wrap:wrap;
+gap:10px;
+}
 
-    /* Button */
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      margin-top: 20px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: 0.25s;
-      box-shadow: 0 12px 28px rgba(79,70,229,0.25);
-    }
+.import-box{
+margin-top:20px;
+padding:16px;
+border-radius:14px;
+border:1px dashed var(--border);
+background:#fafbff;
+}
 
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.06);
-    }
+#toast{
+position:fixed;
+top:110px;
+right:25px;
+z-index:9999;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
 
-    #message {
-      margin-top: 15px;
-      font-weight: 600;
-      text-align: center;
-      font-size: 1rem;
-    }
+.toast{
+padding:14px 18px;
+border-radius:10px;
+color:#fff;
+font-weight:800;
+box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
 
-    /* Back Link */
-    .back-link {
-      margin-top: 20px;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-      transition: 0.2s;
-    }
+.success{background:linear-gradient(135deg,#16a34a,#22c55e);}
+.error{background:linear-gradient(135deg,#dc2626,#ef4444);}
 
-    .back-link:hover {
-      color: var(--accent-strong);
-    }
+</style>
 
-  </style>
-</head>
+<div id="toast"></div>
 
-<body>
+<div class="panel">
 
-  <h1>Add Product</h1>
+<div class="toolbar">
 
-  <form id="productForm" class="form-card">
-    <input type="text" id="name" placeholder="Product Name" required>
-    <input type="number" id="quantity" placeholder="Quantity" required>
-    <input type="number" step="0.01" id="buying_price" placeholder="Buying Price" required>
-    <input type="number" step="0.01" id="price" placeholder="Selling Price" required>
+<div class="section-title">
+Create Products
+</div>
 
-    <button type="submit" class="submit-btn" id="submitBtn">Add Product</button>
-  </form>
+<div>
+<button class="btn-lite" onclick="addRow()">+ Add Row</button>
+<button class="btn" onclick="saveProducts()">Save Products</button>
+</div>
 
-  <p id="message"></p>
+</div>
 
-  <a class="back-link" href="https://pos-10-production.up.railway.app/auth/dashboard">⬅ Back to Home</a>
+<table class="table">
 
-  <script>
-    const BASE_URL = "https://pos-10-production.up.railway.app";
+<thead>
+<tr>
+<th style="width:18%">Item Code</th>
+<th style="width:32%">Product Name</th>
+<th style="width:18%">Packaging Unit</th>
+<th style="width:14%">Buying Price</th>
+<th style="width:14%">Selling Price</th>
+<th style="width:4%"></th>
+</tr>
+</thead>
 
-    // ✅ Detect onboarding mode from URL
-    const params = new URLSearchParams(window.location.search);
-    const isOnboarding = params.get("source") === "onboarding";
+<tbody id="productRows"></tbody>
 
-    // ✅ Change button text in onboarding mode
-    const submitBtn = document.getElementById("submitBtn");
-    if (isOnboarding && submitBtn) {
-      submitBtn.textContent = "Save & Record First Sale";
-    }
+</table>
 
-    document.getElementById('productForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
+<div class="import-box">
 
-      const name = document.getElementById('name').value;
-      const quantity = document.getElementById('quantity').value;
-      const price = document.getElementById('price').value;
-      const buying_price = document.getElementById('buying_price').value;
+<div style="font-weight:800;margin-bottom:6px;">
+Import from Excel
+</div>
 
-      const message = document.getElementById('message');
+<input type="file" id="excelFile" accept=".xlsx,.csv">
 
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('quantity', quantity);
-      formData.append('price', price);
-      formData.append('buying_price', buying_price);
+<div style="font-size:13px;color:var(--muted);margin-top:6px;">
+Expected columns: item_code, name, packaging_unit, buying_price, price
+</div>
 
-      try {
-        // ✅ Include source=onboarding in the POST so backend can redirect
-        const postUrl = isOnboarding
-          ? `${BASE_URL}/products/add_product?source=onboarding`
-          : `${BASE_URL}/products/add_product`;
+</div>
 
-        const response = await fetch(postUrl, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-          redirect: "follow"
-        });
+</div>
 
-        // ✅ Onboarding mode: backend may redirect (303) to record sale page
-        if (isOnboarding) {
-          if (response.redirected) {
-            window.location.href = response.url;
-            return;
-          }
-          // fallback just in case
-          window.location.href = `${BASE_URL}/sales/recordsale?source=onboarding`;
-          return;
-        }
+<script>
 
-        // ✅ Normal mode: keep your existing JSON behavior
-        const result = await response.json();
+function showToast(msg,type="success"){
+const t=document.createElement("div");
+t.className=`toast ${type}`;
+t.textContent=msg;
+document.getElementById("toast").appendChild(t);
+setTimeout(()=>t.remove(),3000);
+}
 
-        if (response.ok) {
-          message.style.color = 'green';
-          message.textContent = result.message || "✅ Product added successfully!";
-          document.getElementById('productForm').reset();
-        } else {
-          message.style.color = 'red';
-          message.textContent = result.detail || "❌ Failed to add product.";
-        }
-      } catch (error) {
-        message.style.color = 'red';
-        message.textContent = "⚠️ Error connecting to the server.";
-      }
-    });
+function addRow(){
 
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/static/service-worker.js")
-        .then(() => console.log("Service Worker registered"))
-        .catch(err => console.error("SW registration failed:", err));
-    }
-  </script>
+const tr=document.createElement("tr");
 
-</body>
-</html>
+tr.innerHTML=`
+
+<td><input class="code"></td>
+
+<td><input class="name"></td>
+
+<td><input class="unit"></td>
+
+<td><input class="buy" type="number" step="0.01"></td>
+
+<td><input class="sell" type="number" step="0.01"></td>
+
+<td><button class="danger">×</button></td>
+
+`;
+
+tr.querySelector(".danger").onclick=()=>{
+tr.remove();
+};
+
+enableKeyboard(tr);
+
+document.getElementById("productRows").appendChild(tr);
+
+}
+
+function enableKeyboard(tr){
+
+const inputs=tr.querySelectorAll("input");
+
+inputs.forEach((input,i)=>{
+
+input.addEventListener("keydown",function(e){
+
+if(e.key==="Enter"){
+
+e.preventDefault();
+
+if(inputs[i+1]){
+inputs[i+1].focus();
+}else{
+
+addRow();
+
+const rows=document.querySelectorAll("#productRows tr");
+rows[rows.length-1].querySelector("input").focus();
+
+}
+
+}
+
+});
+
+});
+
+}
+
+async function saveProducts(){
+
+const rows=document.querySelectorAll("#productRows tr");
+
+if(rows.length===0){
+showToast("Add at least one product","error");
+return;
+}
+
+let success=0;
+
+for(const tr of rows){
+
+const item_code=tr.querySelector(".code").value;
+const name=tr.querySelector(".name").value;
+const unit=tr.querySelector(".unit").value;
+const buy=tr.querySelector(".buy").value;
+const sell=tr.querySelector(".sell").value;
+
+if(!name) continue;
+
+const formData=new FormData();
+
+formData.append("item_code",item_code);
+formData.append("name",name);
+formData.append("packaging_unit",unit);
+formData.append("buying_price",buy);
+formData.append("price",sell);
+formData.append("quantity",0);
+
+try{
+
+const res=await fetch("/products/add_product",{
+method:"POST",
+credentials:"include",
+body:formData
+});
+
+if(res.ok) success++;
+
+}catch(e){}
+
+}
+
+showToast(`${success} product(s) created`);
+
+document.getElementById("productRows").innerHTML="";
+addRow();
+
+}
+
+addRow();
+
+</script>
+
+{% endblock %}

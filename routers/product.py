@@ -119,10 +119,11 @@ async def product_history(
 @router.post("/add_product")
 def add_product(
     request: Request,  # ✅ add request so we can read ?source=onboarding
+    item_code: str = Form(None),
     name: str = Form(...),
+    packaging_unit: str = Form(None),
     price: float = Form(...),
     buying_price: float = Form(...),
-    quantity: int = Form(...),
     current_user: dict = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -132,10 +133,11 @@ def add_product(
 
     try:
         new_product = models.Product(
+            item_code=item_code,
             name=name,
+            packaging_unit=packaging_unit,
             price=price,
             buying_price=buying_price,
-            quantity=quantity,
             business_id=current_user["business_id"]
         )
         db.add(new_product)
