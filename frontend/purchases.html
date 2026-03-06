@@ -574,6 +574,13 @@ showToast(out.detail||"Failed","error");
 }
 
 }
+(async function init(){
+
+await loadSuppliers();
+await loadProducts();
+addRow();
+
+})();
 
 </script>
 
