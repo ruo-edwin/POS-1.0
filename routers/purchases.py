@@ -158,7 +158,8 @@ def receive_stock_submit(
                 purchase_id=purchase.id,
                 product_id=product.id,
                 quantity=item.quantity,
-                buying_price=item.buying_price,
+                buying_price=item.buying_price or 0,
+                subtotal=subtotal
             )
             db.add(purchase_item)
 

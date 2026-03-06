@@ -22,13 +22,14 @@ class Product(Base):
      
     @validates("price")
     def validate_price(self, key, value):
-        if self.buying_price is not None and value < self.buying_price:
+        if self.buying_price and value < self.buying_price:
             raise ValueError("Selling price cannot be below buying price")
         return value
 
         
     sales = relationship("Sales", back_populates="product")
     business = relationship("Business", back_populates="products")
+    purchases = relationship("PurchaseItem", backref="product")
 
 
 class Sales(Base):
@@ -161,6 +162,7 @@ class InventoryMovement(Base):
     # order id or purchase id
 
     reason = Column(String(255), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     product = relationship("Product")
 
@@ -175,7 +177,7 @@ class Supplier(Base):
     name = Column(String(100), nullable=False)
     phone = Column(String(20), nullable=True)
     email = Column(String(100), nullable=True)
-    business_id = Column(Integer, nullable=False)
+    business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
 
@@ -183,20 +185,24 @@ class Purchase(Base):
     __tablename__ = "purchases"
 
     id = Column(Integer, primary_key=True, index=True)
-    supplier_id = Column(Integer, nullable=True)
     business_id = Column(Integer, nullable=False)
     invoice_number = Column(String(50), nullable=True)
     notes = Column(String(500), nullable=True)
     total_amount = Column(Float, default=0)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=True)
+
+    items = relationship("PurchaseItem", backref="purchase", cascade="all, delete")
 
 class PurchaseItem(Base):
     __tablename__ = "purchase_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    purchase_id = Column(Integer, nullable=False)
-    product_id = Column(Integer, nullable=False)
+    purchase_id = Column(Integer, ForeignKey("purchases.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
     buying_price = Column(Float, nullable=False)
     subtotal = Column(Float, nullable=False)
+
+    product = relationship("Product")
