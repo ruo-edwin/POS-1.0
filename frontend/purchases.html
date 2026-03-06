@@ -144,6 +144,82 @@ background:linear-gradient(135deg,#16a34a,#22c55e);
 background:linear-gradient(135deg,#dc2626,#ef4444);
 }
 
+.modal-overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.35);
+backdrop-filter:blur(4px);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:10000;
+}
+
+.modal{
+background:#fff;
+border-radius:16px;
+padding:26px;
+width:420px;
+max-width:90%;
+box-shadow:0 25px 60px rgba(0,0,0,.25);
+animation:modalIn .18s ease;
+}
+
+@keyframes modalIn{
+from{transform:translateY(8px);opacity:0}
+to{transform:translateY(0);opacity:1}
+}
+
+.modal-title{
+font-size:18px;
+font-weight:900;
+margin-bottom:12px;
+}
+
+.modal-details{
+font-size:14px;
+color:var(--muted);
+margin-bottom:18px;
+line-height:1.6;
+}
+
+.modal-row{
+display:flex;
+justify-content:space-between;
+margin-bottom:6px;
+}
+
+.modal-total{
+font-size:20px;
+font-weight:900;
+margin-top:10px;
+}
+
+.modal-actions{
+display:flex;
+gap:10px;
+margin-top:20px;
+justify-content:flex-end;
+}
+
+.modal-cancel{
+background:#f3f4f6;
+border:none;
+padding:10px 16px;
+border-radius:10px;
+font-weight:700;
+cursor:pointer;
+}
+
+.modal-confirm{
+background:linear-gradient(135deg,var(--primary),var(--primary-2));
+border:none;
+color:white;
+padding:10px 18px;
+border-radius:10px;
+font-weight:800;
+cursor:pointer;
+}
 </style>
 
 
@@ -205,7 +281,7 @@ Total: Ksh <span id="grandTotal">0.00</span>
 <button class="btn" onclick="submitReceive()">Receive Stock</button>
 
 </div>
-
+<div id="confirmModal" style="display:none"></div>
 </div>
 
 
@@ -360,11 +436,14 @@ document.getElementById("grandTotal").textContent=total.toFixed(2);
 
 }
 
-async function submitReceive(){
+function submitReceive(){
 
-const supplier_id=document.getElementById("supplierSelect").value||null;
-const invoice_number=document.getElementById("invoiceNumber").value||null;
-const notes=document.getElementById("notes").value||null;
+const supplierSelect = document.getElementById("supplierSelect");
+const supplier_id = supplierSelect.value || null;
+const supplier_name = supplierSelect.options[supplierSelect.selectedIndex].text;
+
+const invoice_number = document.getElementById("invoiceNumber").value || "—";
+const notes = document.getElementById("notes").value || null;
 
 const items=[];
 
@@ -375,30 +454,109 @@ const quantity=parseInt(tr.querySelector(".qty").value||0);
 const buying_price=parseFloat(tr.querySelector(".bp").value||0);
 
 if(product_id && quantity>0){
-
 items.push({product_id,quantity,buying_price});
-
 }
 
 });
 
 if(items.length===0){
-
 showToast("Add at least one item","error");
 return;
+}
+
+const total=document.getElementById("grandTotal").textContent;
+
+showConfirmModal({
+supplier:supplier_name,
+invoice:invoice_number,
+total:total,
+items:items.length,
+payload:{supplier_id,invoice_number,notes,items}
+});
 
 }
+function showConfirmModal(data){
+
+const modal=document.getElementById("confirmModal");
+
+modal.innerHTML=`
+
+<div class="modal-overlay">
+
+<div class="modal">
+
+<div class="modal-title">
+Confirm Stock Receipt
+</div>
+
+<div class="modal-details">
+
+<div class="modal-row">
+<span>Supplier</span>
+<strong>${data.supplier}</strong>
+</div>
+
+<div class="modal-row">
+<span>Invoice</span>
+<strong>${data.invoice}</strong>
+</div>
+
+<div class="modal-row">
+<span>Items</span>
+<strong>${data.items}</strong>
+</div>
+
+<div class="modal-total">
+Total: Ksh ${data.total}
+</div>
+
+</div>
+
+<div class="modal-actions">
+
+<button class="modal-cancel" onclick="closeConfirmModal()">
+Cancel
+</button>
+
+<button class="modal-confirm" onclick="confirmReceive()">
+Confirm Receive
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+modal.style.display="block";
+
+window.receivePayload=data.payload;
+
+}
+
+
+function closeConfirmModal(){
+document.getElementById("confirmModal").style.display="none";
+}
+
+
+async function confirmReceive(){
+
+const payload=window.receivePayload;
 
 const res=await fetch("/purchases/receive_submit",{
 
 method:"POST",
 headers:{"Content-Type":"application/json"},
 credentials:"include",
-body:JSON.stringify({supplier_id,invoice_number,notes,items})
+body:JSON.stringify(payload)
 
 });
 
 const out=await res.json();
+
+closeConfirmModal();
 
 if(res.ok){
 
@@ -416,14 +574,6 @@ showToast(out.detail||"Failed","error");
 }
 
 }
-
-(async function init(){
-
-await loadSuppliers();
-await loadProducts();
-addRow();
-
-})();
 
 </script>
 
