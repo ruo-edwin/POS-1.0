@@ -154,6 +154,8 @@ def receive_stock_submit(
 
             total_amount += line_total
 
+            subtotal = line_total
+
             purchase_item = models.PurchaseItem(
                 purchase_id=purchase.id,
                 product_id=product.id,
@@ -161,6 +163,7 @@ def receive_stock_submit(
                 buying_price=item.buying_price or 0,
                 subtotal=subtotal
             )
+
             db.add(purchase_item)
 
             movement = models.InventoryMovement(
