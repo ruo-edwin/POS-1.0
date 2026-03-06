@@ -159,7 +159,6 @@ def receive_stock_submit(
                 product_id=product.id,
                 quantity=item.quantity,
                 buying_price=item.buying_price,
-                selling_price=item.selling_price,
                 line_total=line_total
             )
             db.add(purchase_item)
