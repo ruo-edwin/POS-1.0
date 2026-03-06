@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
@@ -37,9 +37,9 @@ def suppliers_page(request: Request):
 @router.post("/add")
 def add_supplier(
     request: Request,
-    name: str,
-    phone: str = None,
-    email: str = None,
+    name: str = Form(...),
+    phone: str = Form(None),
+    email: str = Form(None),
     db: Session = Depends(get_db)
 ):
 
